@@ -190,8 +190,9 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
             <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-gray-900 transition-colors">How It Works</a>
-            <a href="#directory" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#5BBE00' }}>Directory</a>
-            <a href="#impact" className="hover:text-gray-900 transition-colors">Impact</a>
+            <a href="#schools" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#1A8FD1' }}>Schools</a>
+            <a href="#ngos" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#5BBE00' }}>NGOs</a>
+            <a href="#products" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#1A8FD1' }}>Products</a>
           </div>
 
           {/* CTA */}
@@ -221,6 +222,9 @@ export default function Home() {
           <div className="md:hidden bg-white border-t border-gray-100 px-6 py-5 space-y-4">
             <a href="#features" className="block text-sm text-gray-600">Features</a>
             <a href="#how-it-works" className="block text-sm text-gray-600">How It Works</a>
+            <a href="#schools" className="block text-sm font-semibold" style={{ color: '#1A8FD1' }}>Schools</a>
+            <a href="#ngos" className="block text-sm font-semibold" style={{ color: '#5BBE00' }}>NGOs</a>
+            <a href="#products" className="block text-sm font-semibold" style={{ color: '#1A8FD1' }}>Products</a>
             <a href="/login" className="block text-sm text-gray-600">Sign In</a>
             <a href="/register" className="block text-white text-sm font-semibold px-4 py-2.5 rounded text-center" style={{ backgroundColor: '#1A8FD1' }}>
               Get Started
@@ -459,180 +463,160 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Community Directory ─────────────────── */}
-      <section id="directory" className="py-28 bg-white">
+      {/* ── Schools Section ─────────────────────── */}
+      <section id="schools" className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: '#5BBE00' }}>
-              Community Directory
-            </p>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
-              <div>
-                <h2 className="text-4xl md:text-5xl font-black text-gray-900">
-                  Browse without signing in.
-                </h2>
-                <p className="text-gray-500 mt-3 text-lg max-w-xl">
-                  Explore products from startups, schools seeking support, and NGOs making a difference — all verified by our team.
-                </p>
-              </div>
-              <a href="/register" className="shrink-0 text-sm font-semibold text-white px-5 py-3 rounded hover:opacity-90 transition-opacity" style={{ backgroundColor: '#1A8FD1' }}>
-                Join to Contribute
-              </a>
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#1A8FD1' }}>Schools</p>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900">Schools seeking support</h2>
+              <p className="text-gray-500 mt-2 max-w-lg">
+                Verified schools posting requirements and connecting with the community.
+              </p>
             </div>
+            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
+              {directory.schools.length} registered
+            </span>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-8">
-            {[
-              { key: 'products', label: 'Products', count: directory.products.length },
-              { key: 'schools', label: 'Schools', count: directory.schools.length },
-              { key: 'ngos', label: 'NGOs', count: directory.ngos.length },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-semibold transition-all duration-200"
-                style={activeTab === tab.key
-                  ? { backgroundColor: '#1A8FD1', color: '#fff' }
-                  : { backgroundColor: 'transparent', color: '#6b7280' }
-                }
-              >
-                {tab.label}
-                <span
-                  className="text-xs px-1.5 py-0.5 rounded-full font-bold"
-                  style={activeTab === tab.key
-                    ? { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }
-                    : { backgroundColor: '#e5e7eb', color: '#6b7280' }
-                  }
-                >
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Content */}
           {dirLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>
-              ))}
+              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
             </div>
           ) : (
-            <>
-              {/* ── Products Grid ── */}
-              {activeTab === 'products' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {directory.products.length === 0 ? (
-                    <EmptyState msg="No products listed yet. Check back soon." />
-                  ) : (
-                    directory.products.slice(0, 9).map((p) => (
-                      <div key={p.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
-                        <div className="flex items-start justify-between mb-3">
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-                            {p.category || 'Product'}
-                          </span>
-                          <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>
-                            ₹{Number(p.price).toLocaleString('en-IN')}
-                          </span>
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{p.name}</h3>
-                        <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{p.description || 'No description provided.'}</p>
-                        <div className="mt-4 flex items-center justify-between">
-                          <span className="text-xs text-gray-400">{p.stockQuantity} in stock</span>
-                          <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>
-                            Buy now →
-                          </a>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* ── Schools Grid ── */}
-              {activeTab === 'schools' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {directory.schools.length === 0 ? (
-                    <EmptyState msg="No schools registered yet." />
-                  ) : (
-                    directory.schools.slice(0, 9).map((s) => (
-                      <div key={s.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
-                        onClick={() => window.location.href = `/schools/${s.id}`}>
-                        <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
-                          <div className="flex flex-wrap gap-1.5">
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
-                              School
-                            </span>
-                            {s.specialSchool && (
-                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FCE4EC', color: '#C62828' }}>
-                                Special School
-                              </span>
-                            )}
-                          </div>
-                          {s.verified && (
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-                              <Icons.Check /> Verified
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{s.name}</h3>
-                        <p className="text-xs text-gray-400 mb-2">{[s.city, s.state].filter(Boolean).join(', ') || s.address}</p>
-                        {s.specialSchool && s.disabilityTypes && (
-                          <p className="text-xs mb-2" style={{ color: '#C62828' }}>Supports: {s.disabilityTypes}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {directory.schools.length === 0 ? (
+                <EmptyState msg="No schools registered yet." />
+              ) : (
+                directory.schools.slice(0, 9).map((s) => (
+                  <div key={s.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+                    onClick={() => window.location.href = `/schools/${s.id}`}>
+                    <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>School</span>
+                        {s.specialSchool && (
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FCE4EC', color: '#C62828' }}>Special School</span>
                         )}
-                        <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{s.description || 'A school seeking community support.'}</p>
-                        <div className="mt-4">
-                          <span className="text-xs font-semibold group-hover:opacity-70 transition-opacity" style={{ color: '#1A8FD1' }}>
-                            View details →
-                          </span>
-                        </div>
                       </div>
-                    ))
-                  )}
-                </div>
+                      {s.verified && (
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
+                          <Icons.Check /> Verified
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{s.name}</h3>
+                    <p className="text-xs text-gray-400 mb-2">{[s.city, s.state].filter(Boolean).join(', ') || s.address}</p>
+                    {s.specialSchool && s.disabilityTypes && (
+                      <p className="text-xs mb-2" style={{ color: '#C62828' }}>Supports: {s.disabilityTypes}</p>
+                    )}
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{s.description || 'A school seeking community support.'}</p>
+                    <div className="mt-4">
+                      <span className="text-xs font-semibold group-hover:opacity-70 transition-opacity" style={{ color: '#1A8FD1' }}>View details →</span>
+                    </div>
+                  </div>
+                ))
               )}
+            </div>
+          )}
+        </div>
+      </section>
 
-              {/* ── NGOs Grid ── */}
-              {activeTab === 'ngos' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {directory.ngos.length === 0 ? (
-                    <EmptyState msg="No NGOs registered yet." />
-                  ) : (
-                    directory.ngos.slice(0, 9).map((n) => (
-                      <div key={n.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
-                        <div className="flex items-start justify-between mb-3">
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-                            NGO
-                          </span>
-                          {n.verified && (
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
-                              <Icons.Check /> Verified
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1.5">{n.name}</h3>
-                        <p className="text-xs text-gray-400 mb-2">{[n.city, n.state].filter(Boolean).join(', ') || n.address}</p>
-                        {n.mission && <p className="text-xs text-gray-400 italic line-clamp-2">"{n.mission}"</p>}
-                        <div className="mt-4">
-                          <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#5BBE00' }}>
-                            Donate or Volunteer →
-                          </a>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+      {/* ── NGOs Section ─────────────────────────── */}
+      <section id="ngos" className="py-20" style={{ backgroundColor: '#F7FAFD' }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#5BBE00' }}>NGOs</p>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900">NGOs making a difference</h2>
+              <p className="text-gray-500 mt-2 max-w-lg">
+                Verified non-profits running campaigns and mobilizing volunteers.
+              </p>
+            </div>
+            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
+              {directory.ngos.length} registered
+            </span>
+          </div>
+
+          {dirLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {directory.ngos.length === 0 ? (
+                <EmptyState msg="No NGOs registered yet." />
+              ) : (
+                directory.ngos.slice(0, 9).map((n) => (
+                  <div key={n.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group bg-white">
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>NGO</span>
+                      {n.verified && (
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
+                          <Icons.Check /> Verified
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-1.5">{n.name}</h3>
+                    <p className="text-xs text-gray-400 mb-2">{[n.city, n.state].filter(Boolean).join(', ') || n.address}</p>
+                    {n.mission && <p className="text-xs text-gray-400 italic line-clamp-2">"{n.mission}"</p>}
+                    <div className="mt-4">
+                      <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#5BBE00' }}>
+                        Donate or Volunteer →
+                      </a>
+                    </div>
+                  </div>
+                ))
               )}
+            </div>
+          )}
+        </div>
+      </section>
 
-              {/* View all link */}
-              <div className="mt-8 text-center">
-                <a href="/register" className="inline-flex items-center gap-2 text-sm font-semibold border rounded px-6 py-3 transition-colors hover:bg-gray-50"
-                  style={{ color: '#1A8FD1', borderColor: '#1A8FD1' }}>
-                  Sign up to see all listings <Icons.Arrow />
-                </a>
-              </div>
-            </>
+      {/* ── Products Section ─────────────────────── */}
+      <section id="products" className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#1A8FD1' }}>Products</p>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900">Products from startups</h2>
+              <p className="text-gray-500 mt-2 max-w-lg">
+                Social-impact products from verified startups available to the community.
+              </p>
+            </div>
+            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
+              {directory.products.length} listed
+            </span>
+          </div>
+
+          {dirLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {directory.products.length === 0 ? (
+                <EmptyState msg="No products listed yet. Check back soon." />
+              ) : (
+                directory.products.slice(0, 9).map((p) => (
+                  <div key={p.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
+                        {p.category || 'Product'}
+                      </span>
+                      <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>
+                        ₹{Number(p.price).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{p.name}</h3>
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{p.description || 'No description provided.'}</p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-xs text-gray-400">{p.stockQuantity} in stock</span>
+                      <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>Buy now →</a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
       </section>
