@@ -13,6 +13,16 @@ const CATEGORY_STYLE = {
   OTHER:          { bg: '#F5F5F5', text: '#616161', label: 'Other' },
 }
 
+const ACH_STYLE = {
+  ACADEMIC:       { bg: '#E8F4FC', text: '#1A8FD1', label: 'Academic' },
+  SPORTS:         { bg: '#EEF8E0', text: '#5BBE00', label: 'Sports' },
+  ARTS:           { bg: '#F3E5F5', text: '#7B1FA2', label: 'Arts & Culture' },
+  COMMUNITY:      { bg: '#FFF3E0', text: '#e65100', label: 'Community' },
+  AWARD:          { bg: '#FCE4EC', text: '#C62828', label: 'Award / Recognition' },
+  INFRASTRUCTURE: { bg: '#E0F2F1', text: '#00796B', label: 'Infrastructure' },
+  OTHER:          { bg: '#F5F5F5', text: '#616161', label: 'Other' },
+}
+
 async function fetchJSON(url) {
   try {
     const r = await fetch(url)
@@ -26,20 +36,23 @@ export default function SchoolDetail() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const [school,   setSchool]   = useState(null)
-  const [needs,    setNeeds]    = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [notFound, setNotFound] = useState(false)
-  const [tab,      setTab]      = useState('overview')
+  const [school,       setSchool]       = useState(null)
+  const [needs,        setNeeds]        = useState([])
+  const [achievements, setAchievements] = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [notFound,     setNotFound]     = useState(false)
+  const [tab,          setTab]          = useState('overview')
 
   useEffect(() => {
     Promise.all([
       fetchJSON(`${BASE}/schools/${id}`),
       fetchJSON(`${BASE}/schools/${id}/needs`),
-    ]).then(([schoolData, needsData]) => {
+      fetchJSON(`${BASE}/schools/${id}/achievements`),
+    ]).then(([schoolData, needsData, achData]) => {
       if (!schoolData) { setNotFound(true); setLoading(false); return }
       setSchool(schoolData)
       setNeeds(Array.isArray(needsData) ? needsData : [])
+      setAchievements(Array.isArray(achData) ? achData : [])
       setLoading(false)
     })
   }, [id])
@@ -64,8 +77,8 @@ export default function SchoolDetail() {
     </div>
   )
 
-  const activeNeeds   = needs.filter(n => n.status === 'ACTIVE')
-  const disabTypes    = (school.disabilityTypes || '').split(',').map(s => s.trim()).filter(Boolean)
+  const activeNeeds = needs.filter(n => n.status === 'ACTIVE')
+  const disabTypes  = (school.disabilityTypes || '').split(',').map(s => s.trim()).filter(Boolean)
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -89,14 +102,13 @@ export default function SchoolDetail() {
               <span className="text-xs font-bold text-gray-900">Inclusive Connect</span>
             </a>
           </div>
-
           <div className="flex items-center gap-3">
             {user ? (
               <a href="/dashboard" className="text-xs font-semibold text-white px-3 py-1.5 rounded transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#1A8FD1' }}>Dashboard</a>
             ) : (
               <>
-                <a href="/login"    className="text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors">Sign in</a>
+                <a href="/login" className="text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors">Sign in</a>
                 <a href="/register" className="text-xs font-semibold text-white px-3 py-1.5 rounded hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#5BBE00' }}>Join</a>
               </>
@@ -109,14 +121,15 @@ export default function SchoolDetail() {
       <div className="border-b border-gray-100 bg-white">
         <div className="max-w-5xl mx-auto px-6 py-10">
           <div className="flex items-start gap-6">
-            {/* Logo / Avatar */}
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white flex-shrink-0"
               style={{ backgroundColor: '#1A8FD1' }}>
-              {school.name?.[0] || 'S'}
+              {school.logoUrl
+                ? <img src={school.logoUrl} alt={school.name} className="w-full h-full rounded-2xl object-cover" />
+                : (school.name?.[0] || 'S')
+              }
             </div>
 
             <div className="flex-1 min-w-0">
-              {/* Badges */}
               <div className="flex flex-wrap gap-2 mb-2">
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>School</span>
                 {school.specialSchool && (
@@ -137,6 +150,11 @@ export default function SchoolDetail() {
                     {activeNeeds.length} Active Requirement{activeNeeds.length > 1 ? 's' : ''}
                   </span>
                 )}
+                {achievements.length > 0 && (
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
+                    🏆 {achievements.length} Achievement{achievements.length > 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
 
               <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-1">{school.name}</h1>
@@ -153,23 +171,17 @@ export default function SchoolDetail() {
               )}
             </div>
 
-            {/* Action */}
             <div className="flex-shrink-0 hidden md:block">
               {user ? (
                 <a href="/dashboard" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#5BBE00' }}>
-                  Support this School
-                </a>
+                  style={{ backgroundColor: '#5BBE00' }}>Support this School</a>
               ) : (
                 <a href="/register" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#5BBE00' }}>
-                  Join to Support
-                </a>
+                  style={{ backgroundColor: '#5BBE00' }}>Join to Support</a>
               )}
             </div>
           </div>
 
-          {/* Website link */}
           {school.websiteUrl && (
             <div className="mt-4 ml-22">
               <a href={school.websiteUrl} target="_blank" rel="noopener noreferrer"
@@ -187,6 +199,7 @@ export default function SchoolDetail() {
           <div className="flex gap-0">
             {[
               { key: 'overview',      label: 'Overview' },
+              { key: 'achievements',  label: `Achievements (${achievements.length})` },
               { key: 'requirements',  label: `Requirements (${activeNeeds.length})` },
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
@@ -245,6 +258,32 @@ export default function SchoolDetail() {
                   </div>
                 )}
 
+                {/* Achievements preview */}
+                {achievements.length > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="font-black text-gray-900">🏆 Achievements</h2>
+                      <button onClick={() => setTab('achievements')} className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>
+                        View all →
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {achievements.slice(0, 3).map(ach => {
+                        const cat = ACH_STYLE[ach.category] || ACH_STYLE.OTHER
+                        return (
+                          <div key={ach.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: cat.bg, color: cat.text }}>
+                              {cat.label}
+                            </span>
+                            <span className="text-sm text-gray-700 font-medium truncate">{ach.title}</span>
+                            {ach.year && <span className="text-xs text-gray-400 ml-auto flex-shrink-0">{ach.year}</span>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Requirements preview */}
                 {activeNeeds.length > 0 && (
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -268,6 +307,45 @@ export default function SchoolDetail() {
                         )
                       })}
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Achievements Tab ───────────────────── */}
+            {tab === 'achievements' && (
+              <div className="space-y-4">
+                {achievements.length === 0 ? (
+                  <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
+                    <p className="text-3xl mb-3">🏆</p>
+                    <p className="text-gray-400 text-sm">No achievements posted yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {achievements.map(ach => {
+                      const cat = ACH_STYLE[ach.category] || ACH_STYLE.OTHER
+                      return (
+                        <div key={ach.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+                          {ach.imageUrl && (
+                            <div className="h-40 overflow-hidden">
+                              <img src={ach.imageUrl} alt={ach.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            </div>
+                          )}
+                          <div className="p-5">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: cat.bg, color: cat.text }}>
+                                {cat.label}
+                              </span>
+                              {ach.year && <span className="text-xs text-gray-400 font-medium">{ach.year}</span>}
+                            </div>
+                            <h3 className="font-bold text-gray-900 text-sm mb-1 leading-snug">{ach.title}</h3>
+                            {ach.description && (
+                              <p className="text-xs text-gray-400 leading-relaxed">{ach.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -319,14 +397,10 @@ export default function SchoolDetail() {
                         <div className="mt-4">
                           {user ? (
                             <a href="/dashboard" className="inline-block text-xs font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                              style={{ backgroundColor: '#5BBE00' }}>
-                              Help Fulfil This →
-                            </a>
+                              style={{ backgroundColor: '#5BBE00' }}>Help Fulfil This →</a>
                           ) : (
                             <a href="/register" className="inline-block text-xs font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                              style={{ backgroundColor: '#5BBE00' }}>
-                              Join to Support →
-                            </a>
+                              style={{ backgroundColor: '#5BBE00' }}>Join to Support →</a>
                           )}
                         </div>
                       </div>
@@ -373,10 +447,14 @@ export default function SchoolDetail() {
               </div>
             </div>
 
-            {/* Stats mini card */}
+            {/* Stats card */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Quick Stats</h3>
               <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Achievements</span>
+                  <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>{achievements.length}</span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Active Requirements</span>
                   <span className="text-sm font-black" style={{ color: activeNeeds.some(n => n.urgent) ? '#C62828' : '#1A8FD1' }}>
@@ -385,9 +463,7 @@ export default function SchoolDetail() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Urgent Needs</span>
-                  <span className="text-sm font-black" style={{ color: '#C62828' }}>
-                    {activeNeeds.filter(n => n.urgent).length}
-                  </span>
+                  <span className="text-sm font-black" style={{ color: '#C62828' }}>{activeNeeds.filter(n => n.urgent).length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Special School</span>
@@ -405,14 +481,10 @@ export default function SchoolDetail() {
               </p>
               {user ? (
                 <a href="/dashboard" className="block text-sm font-semibold text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#5BBE00' }}>
-                  Contribute Now
-                </a>
+                  style={{ backgroundColor: '#5BBE00' }}>Contribute Now</a>
               ) : (
                 <a href="/register" className="block text-sm font-semibold text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#5BBE00' }}>
-                  Join to Support
-                </a>
+                  style={{ backgroundColor: '#5BBE00' }}>Join to Support</a>
               )}
             </div>
           </div>

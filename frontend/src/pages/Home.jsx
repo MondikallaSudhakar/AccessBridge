@@ -73,7 +73,6 @@ function EmptyState({ msg }) {
 export default function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
-  const [activeTab, setActiveTab] = useState('products')
   const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [] })
   const [dirLoading, setDirLoading] = useState(true)
   const { user } = useAuth()
@@ -685,8 +684,9 @@ export default function Home() {
               <div className="space-y-2.5">
                 <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Community</div>
                 <a href="#features" className="block hover:text-white transition-colors">Features</a>
-                <a href="#how-it-works" className="block hover:text-white transition-colors">How It Works</a>
-                <a href="#impact" className="block hover:text-white transition-colors">Impact</a>
+                <a href="#schools" className="block hover:text-white transition-colors">Schools</a>
+                <a href="#ngos" className="block hover:text-white transition-colors">NGOs</a>
+                <a href="#products" className="block hover:text-white transition-colors">Products</a>
               </div>
             </div>
           </div>

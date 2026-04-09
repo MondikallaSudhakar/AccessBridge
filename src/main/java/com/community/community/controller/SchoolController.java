@@ -2,7 +2,9 @@ package com.community.community.controller;
 
 import com.community.community.model.Need;
 import com.community.community.model.School;
+import com.community.community.model.SchoolAchievement;
 import com.community.community.repository.NeedRepository;
+import com.community.community.repository.SchoolAchievementRepository;
 import com.community.community.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,61 +21,53 @@ public class SchoolController {
 
     private final SchoolService schoolService;
     private final NeedRepository needRepository;
+    private final SchoolAchievementRepository achievementRepository;
+
+    // ── School CRUD ──────────────────────────────────────────────────────────
 
     @PostMapping
     public ResponseEntity<School> createSchool(@RequestBody School school) {
-        School createdSchool = schoolService.createSchool(school);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSchool);
+        return ResponseEntity.status(HttpStatus.CREATED).body(schoolService.createSchool(school));
     }
 
     @GetMapping
     public ResponseEntity<List<School>> getAllSchools() {
-        List<School> schools = schoolService.getAllSchools();
-        return ResponseEntity.ok(schools);
+        return ResponseEntity.ok(schoolService.getAllSchools());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<School> getSchoolById(@PathVariable Long id) {
-        School school = schoolService.getSchoolById(id);
-        return ResponseEntity.ok(school);
+        return ResponseEntity.ok(schoolService.getSchoolById(id));
     }
 
     @GetMapping("/email/{email}")
     public ResponseEntity<School> getSchoolByEmail(@PathVariable String email) {
-        School school = schoolService.getSchoolByEmail(email);
-        return ResponseEntity.ok(school);
+        return ResponseEntity.ok(schoolService.getSchoolByEmail(email));
     }
 
     @GetMapping("/verified")
     public ResponseEntity<List<School>> getVerifiedSchools() {
-        List<School> schools = schoolService.getVerifiedSchools();
-        return ResponseEntity.ok(schools);
+        return ResponseEntity.ok(schoolService.getVerifiedSchools());
     }
 
     @GetMapping("/city/{city}")
     public ResponseEntity<List<School>> getSchoolsByCity(@PathVariable String city) {
-        List<School> schools = schoolService.getSchoolsByCity(city);
-        return ResponseEntity.ok(schools);
+        return ResponseEntity.ok(schoolService.getSchoolsByCity(city));
     }
 
     @GetMapping("/state/{state}")
     public ResponseEntity<List<School>> getSchoolsByState(@PathVariable String state) {
-        List<School> schools = schoolService.getSchoolsByState(state);
-        return ResponseEntity.ok(schools);
+        return ResponseEntity.ok(schoolService.getSchoolsByState(state));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<School> updateSchool(
-            @PathVariable Long id,
-            @RequestBody School school) {
-        School updatedSchool = schoolService.updateSchool(id, school);
-        return ResponseEntity.ok(updatedSchool);
+    public ResponseEntity<School> updateSchool(@PathVariable Long id, @RequestBody School school) {
+        return ResponseEntity.ok(schoolService.updateSchool(id, school));
     }
 
     @PatchMapping("/{id}/verify")
     public ResponseEntity<School> verifySchool(@PathVariable Long id) {
-        School verifiedSchool = schoolService.verifySchool(id);
-        return ResponseEntity.ok(verifiedSchool);
+        return ResponseEntity.ok(schoolService.verifySchool(id));
     }
 
     @DeleteMapping("/{id}")
@@ -86,26 +80,22 @@ public class SchoolController {
 
     @GetMapping("/{id}/needs")
     public ResponseEntity<List<Need>> getSchoolNeeds(@PathVariable Long id) {
-        List<Need> needs = needRepository.findBySchoolId(id);
-        return ResponseEntity.ok(needs);
+        return ResponseEntity.ok(needRepository.findBySchoolId(id));
     }
 
     @PostMapping("/{id}/needs")
-    public ResponseEntity<Need> postSchoolNeed(
-            @PathVariable Long id,
-            @RequestBody Need needRequest) {
+    public ResponseEntity<Need> postSchoolNeed(@PathVariable Long id, @RequestBody Need req) {
         School school = schoolService.getSchoolById(id);
         Need need = new Need();
-        need.setTitle(needRequest.getTitle());
-        need.setDescription(needRequest.getDescription());
-        need.setCategory(needRequest.getCategory());
-        need.setTargetAmount(needRequest.getTargetAmount() != null ? needRequest.getTargetAmount() : BigDecimal.ZERO);
-        need.setUrgent(needRequest.getUrgent() != null && needRequest.getUrgent());
-        need.setDeadline(needRequest.getDeadline());
+        need.setTitle(req.getTitle());
+        need.setDescription(req.getDescription());
+        need.setCategory(req.getCategory());
+        need.setTargetAmount(req.getTargetAmount() != null ? req.getTargetAmount() : BigDecimal.ZERO);
+        need.setUrgent(req.getUrgent() != null && req.getUrgent());
+        need.setDeadline(req.getDeadline());
         need.setStatus("ACTIVE");
         need.setSchool(school);
-        Need saved = needRepository.save(need);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(needRepository.save(need));
     }
 
     @PatchMapping("/needs/{needId}/close")
@@ -119,6 +109,52 @@ public class SchoolController {
     @DeleteMapping("/needs/{needId}")
     public ResponseEntity<Void> deleteNeed(@PathVariable Long needId) {
         needRepository.deleteById(needId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Achievements Endpoints ───────────────────────────────────────────────
+
+    /** Public – list all achievements for a school */
+    @GetMapping("/{id}/achievements")
+    public ResponseEntity<List<SchoolAchievement>> getAchievements(@PathVariable Long id) {
+        return ResponseEntity.ok(achievementRepository.findBySchoolIdOrderByYearDescCreatedAtDesc(id));
+    }
+
+    /** Protected – create a new achievement */
+    @PostMapping("/{id}/achievements")
+    public ResponseEntity<SchoolAchievement> postAchievement(
+            @PathVariable Long id,
+            @RequestBody SchoolAchievement req) {
+        School school = schoolService.getSchoolById(id);
+        SchoolAchievement a = new SchoolAchievement();
+        a.setTitle(req.getTitle());
+        a.setDescription(req.getDescription());
+        a.setCategory(req.getCategory() != null ? req.getCategory() : "OTHER");
+        a.setYear(req.getYear());
+        a.setImageUrl(req.getImageUrl());
+        a.setSchool(school);
+        return ResponseEntity.status(HttpStatus.CREATED).body(achievementRepository.save(a));
+    }
+
+    /** Protected – update an existing achievement */
+    @PutMapping("/achievements/{achievementId}")
+    public ResponseEntity<SchoolAchievement> updateAchievement(
+            @PathVariable Long achievementId,
+            @RequestBody SchoolAchievement req) {
+        SchoolAchievement a = achievementRepository.findById(achievementId)
+                .orElseThrow(() -> new RuntimeException("Achievement not found"));
+        a.setTitle(req.getTitle());
+        a.setDescription(req.getDescription());
+        if (req.getCategory() != null) a.setCategory(req.getCategory());
+        a.setYear(req.getYear());
+        a.setImageUrl(req.getImageUrl());
+        return ResponseEntity.ok(achievementRepository.save(a));
+    }
+
+    /** Protected – delete an achievement */
+    @DeleteMapping("/achievements/{achievementId}")
+    public ResponseEntity<Void> deleteAchievement(@PathVariable Long achievementId) {
+        achievementRepository.deleteById(achievementId);
         return ResponseEntity.noContent().build();
     }
 }

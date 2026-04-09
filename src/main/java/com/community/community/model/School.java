@@ -71,4 +71,9 @@ public class School {
     @JsonIgnore
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Event> events = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SchoolAchievement> achievements = new ArrayList<>();
 }
+
