@@ -10,6 +10,7 @@ import Marketplace from './pages/marketplace/Marketplace'
 import Search from './pages/search/Search'
 import AdminApproval from './pages/dashboard/AdminApproval'
 import SchoolProfile from './pages/dashboard/SchoolProfile'
+import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/schools/:id" element={<SchoolDetail />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<Dashboard />} />

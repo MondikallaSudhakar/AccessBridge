@@ -31,6 +31,8 @@ public class SchoolService {
         school.setDescription(schoolDetails.getDescription());
         school.setWebsiteUrl(schoolDetails.getWebsiteUrl());
         school.setLogoUrl(schoolDetails.getLogoUrl());
+        school.setSpecialSchool(schoolDetails.getSpecialSchool() != null && schoolDetails.getSpecialSchool());
+        school.setDisabilityTypes(schoolDetails.getDisabilityTypes());
         return schoolRepository.save(school);
     }
 

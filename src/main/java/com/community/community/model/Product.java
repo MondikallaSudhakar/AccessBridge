@@ -1,5 +1,6 @@
 package com.community.community.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,6 +41,7 @@ public class Product {
     @Column(nullable = false)
     private Boolean available = true;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "startup_id", nullable = false)
     private Startup startup;

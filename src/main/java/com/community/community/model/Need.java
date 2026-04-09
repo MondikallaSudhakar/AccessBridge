@@ -1,5 +1,6 @@
 package com.community.community.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,14 +49,17 @@ public class Need {
     @Column(nullable = false)
     private Boolean urgent = false;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id")
     private School school;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ngo_id")
     private NGO ngo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "need", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Donation> donations = new ArrayList<>();
 

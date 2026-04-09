@@ -557,24 +557,35 @@ export default function Home() {
                     <EmptyState msg="No schools registered yet." />
                   ) : (
                     directory.schools.slice(0, 9).map((s) => (
-                      <div key={s.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
-                        <div className="flex items-start justify-between mb-3">
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
-                            School
-                          </span>
+                      <div key={s.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+                        onClick={() => window.location.href = `/schools/${s.id}`}>
+                        <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
+                              School
+                            </span>
+                            {s.specialSchool && (
+                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FCE4EC', color: '#C62828' }}>
+                                Special School
+                              </span>
+                            )}
+                          </div>
                           {s.verified && (
                             <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
                               <Icons.Check /> Verified
                             </span>
                           )}
                         </div>
-                        <h3 className="font-bold text-gray-900 mb-1.5">{s.name}</h3>
-                        <p className="text-xs text-gray-400 mb-3">{[s.city, s.state].filter(Boolean).join(', ') || s.address}</p>
+                        <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{s.name}</h3>
+                        <p className="text-xs text-gray-400 mb-2">{[s.city, s.state].filter(Boolean).join(', ') || s.address}</p>
+                        {s.specialSchool && s.disabilityTypes && (
+                          <p className="text-xs mb-2" style={{ color: '#C62828' }}>Supports: {s.disabilityTypes}</p>
+                        )}
                         <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{s.description || 'A school seeking community support.'}</p>
                         <div className="mt-4">
-                          <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>
-                            Support this school →
-                          </a>
+                          <span className="text-xs font-semibold group-hover:opacity-70 transition-opacity" style={{ color: '#1A8FD1' }}>
+                            View details →
+                          </span>
                         </div>
                       </div>
                     ))

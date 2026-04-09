@@ -1,5 +1,6 @@
 package com.community.community.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,6 +49,12 @@ public class School {
     private String logoUrl;
 
     @Column(nullable = false)
+    private Boolean specialSchool = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String disabilityTypes; // e.g. "Visual, Hearing, Physical, Intellectual"
+
+    @Column(nullable = false)
     private Boolean verified = false;
 
     @CreationTimestamp
@@ -57,9 +64,11 @@ public class School {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Need> needs = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Event> events = new ArrayList<>();
 }
