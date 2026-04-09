@@ -147,36 +147,7 @@ export default function Dashboard() {
 
           {/* Sidebar Area */}
           <div className="md:col-span-4 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-gray-50 rounded-full"></div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6 relative z-10">System Status</h3>
-              
-              <div className="space-y-4 relative z-10">
-                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-700">Role Identity</span>
-                  </div>
-                  <span className="text-xs font-black px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md">
-                    {roleLabel}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-green-500">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-700">Account Access</span>
-                  </div>
-                  <span className="text-xs font-black px-3 py-1.5 bg-green-100 text-green-700 rounded-md flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
-                  </span>
-                </div>
-              </div>
-            </div>
+
 
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-gray-800 shadow-md p-8 text-white text-center shadow-lg relative overflow-hidden">
                <div className="absolute top-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -ml-10 -mt-10 pointer-events-none"></div>
