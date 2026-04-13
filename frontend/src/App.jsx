@@ -12,6 +12,7 @@ import AdminApproval from './pages/dashboard/AdminApproval'
 import SchoolProfile from './pages/dashboard/SchoolProfile'
 import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
+import StartupProfile from './pages/startup/StartupProfile'
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/approvals" element={<AdminApproval />} />
         <Route path="/school/profile" element={<SchoolProfile />} />
+        <Route path="/startup/profile" element={<StartupProfile />} />
 
         {/* 404 Not Found */}
         <Route path="*" element={<NotFound />} />

@@ -59,6 +59,12 @@ export default function Dashboard() {
                 <svg className="w-5 h-5" fill="none" stroke="#1A8FD1" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
               </button>
             )}
+            {user?.role === 'STARTUP_ADMIN' && (
+              <button onClick={() => navigate('/startup/profile')} className="flex items-center gap-2 bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                Go to Startup Dashboard 
+                <svg className="w-5 h-5" fill="none" stroke="#1A8FD1" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+              </button>
+            )}
             {user?.role === 'SUPER_ADMIN' && (
               <button onClick={() => navigate('/admin/approvals')} className="flex items-center gap-2 bg-white text-gray-900 font-bold px-6 py-3 rounded-xl hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                 Review Approvals
@@ -91,6 +97,22 @@ export default function Dashboard() {
                     Update your school's public profile, manage active requirements, post achievements, and interact with the community.
                   </p>
                   <div className="flex items-center mt-auto font-bold text-sm transition-colors group-hover:text-green-600" style={{ color: '#5BBE00' }}>
+                    Open Dashboard <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </div>
+                </div>
+              )}
+
+              {user?.role === 'STARTUP_ADMIN' && (
+                <div onClick={() => navigate('/startup/profile')} className="group cursor-pointer bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hover:shadow-xl hover:border-orange-200 transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden flex flex-col h-full">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-50 to-transparent rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 relative z-10" style={{ backgroundColor: '#FFF3E0', color: '#e65100' }}>
+                    <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                  </div>
+                  <h3 className="text-lg font-black text-gray-900 mb-2 relative z-10">Startup Dashboard</h3>
+                  <p className="text-sm text-gray-500 mb-6 leading-relaxed relative z-10 flex-grow">
+                    Manage your startup's profile and list your assistive products on the community marketplace.
+                  </p>
+                  <div className="flex items-center mt-auto font-bold text-sm transition-colors group-hover:text-orange-600" style={{ color: '#e65100' }}>
                     Open Dashboard <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                   </div>
                 </div>
