@@ -17,9 +17,9 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product createdProduct = productService.createProduct(product);
+    @PostMapping("/startup/{startupId}")
+    public ResponseEntity<Product> createProductWithStartup(@PathVariable Long startupId, @RequestBody Product product) {
+        Product createdProduct = productService.createProductForStartup(startupId, product);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 

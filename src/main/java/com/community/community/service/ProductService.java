@@ -21,6 +21,13 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product createProductForStartup(Long startupId, Product product) {
+        com.community.community.model.Startup startup = startupRepository.findById(startupId)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
+        product.setStartup(startup);
+        return productRepository.save(product);
+    }
+
     public Product updateProduct(Long id, Product productDetails) {
         Product product = getProductById(id);
         product.setName(productDetails.getName());
