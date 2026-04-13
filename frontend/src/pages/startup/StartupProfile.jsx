@@ -13,9 +13,15 @@ export default function StartupProfile() {
   const [products, setProducts] = useState([])
   const [productsLoading, setProductsLoading] = useState(false)
   const [showProductForm, setShowProductForm] = useState(false)
-  const [productForm, setProductForm] = useState({ name: '', description: '', price: '', category: '', stockQuantity: '', imageUrl: '', available: true })
+  const [productForm, setProductForm] = useState({ name: '', description: '', price: '', category: 'Hardware', stockQuantity: '', imageUrl: '', available: true })
   const [submittingProduct, setSubmittingProduct] = useState(false)
   const [productError, setProductError] = useState('')
+  const [editingProductId, setEditingProductId] = useState(null)
+
+  const PRODUCT_CATEGORIES = [
+    'Hardware', 'Software', 'Educational Tool', 
+    'Therapy Equipment', 'Mobility Aid', 'Other'
+  ]
 
   useEffect(() => {
     if (user && user.role !== 'STARTUP_ADMIN') navigate('/dashboard')
@@ -78,16 +84,43 @@ export default function StartupProfile() {
         available: productForm.available
       }
       
-      await api.post(`/products/startup/${startup.id}`, payload)
+      if (editingProductId) {
+        await api.put(`/products/${editingProductId}`, payload)
+      } else {
+        await api.post(`/products/startup/${startup.id}`, payload)
+      }
       
-      setProductForm({ name: '', description: '', price: '', category: '', stockQuantity: '', imageUrl: '', available: true })
+      setProductForm({ name: '', description: '', price: '', category: 'Hardware', stockQuantity: '', imageUrl: '', available: true })
       setShowProductForm(false)
+      setEditingProductId(null)
       fetchProducts(startup.id)
     } catch (err) {
-      setProductError(err.message || 'Failed to add product')
+      setProductError(err.message || (editingProductId ? 'Failed to update product' : 'Failed to add product'))
     } finally {
       setSubmittingProduct(false)
     }
+  }
+
+  const openNewProductForm = () => {
+    setProductForm({ name: '', description: '', price: '', category: 'Hardware', stockQuantity: '', imageUrl: '', available: true })
+    setEditingProductId(null)
+    setProductError('')
+    setShowProductForm(true)
+  }
+
+  const openEditProductForm = (p) => {
+    setProductForm({ 
+      name: p.name || '', 
+      description: p.description || '', 
+      price: p.price || '', 
+      category: p.category || 'Hardware', 
+      stockQuantity: p.stockQuantity || '', 
+      imageUrl: p.imageUrl || '', 
+      available: p.available 
+    })
+    setEditingProductId(p.id)
+    setProductError('')
+    setShowProductForm(true)
   }
 
   const handleDeleteProduct = async (productId) => {
@@ -143,10 +176,10 @@ export default function StartupProfile() {
                 <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
                   <div>
                     <h2 className="font-bold text-gray-900">Manage Products</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Add products to display them on the community marketplace</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Add and edit products to display them on the community marketplace</p>
                   </div>
                   {!showProductForm && (
-                     <button onClick={() => setShowProductForm(true)}
+                     <button onClick={openNewProductForm}
                        className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
                        style={{ backgroundColor: '#e65100' }}>
                        + Add Product
@@ -167,10 +200,11 @@ export default function StartupProfile() {
                        </div>
                        <div className="md:col-span-1">
                          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Category *</label>
-                         <input type="text" name="category" value={productForm.category} onChange={handleProductFormChange}
-                           required placeholder="e.g. Hardware"
-                           className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
-                         />
+                         <select name="category" value={productForm.category} onChange={handleProductFormChange}
+                           required
+                           className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2">
+                           {PRODUCT_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                         </select>
                        </div>
                        <div className="md:col-span-1">
                          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Price (₹) *</label>
@@ -186,6 +220,13 @@ export default function StartupProfile() {
                            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
                          />
                        </div>
+                       <div className="md:col-span-1">
+                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Image URL</label>
+                         <input type="text" name="imageUrl" value={productForm.imageUrl} onChange={handleProductFormChange}
+                           placeholder="https://example.com/image.jpg"
+                           className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
+                         />
+                       </div>
                        <div className="md:col-span-2">
                          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description *</label>
                          <textarea name="description" rows={3} value={productForm.description} onChange={handleProductFormChange}
@@ -198,9 +239,9 @@ export default function StartupProfile() {
                        <button type="submit" disabled={submittingProduct}
                          className="text-sm font-semibold text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
                          style={{ backgroundColor: '#e65100' }}>
-                         {submittingProduct ? 'Saving...' : 'Add Product'}
+                         {submittingProduct ? 'Saving...' : (editingProductId ? 'Update Product' : 'Add Product')}
                        </button>
-                       <button type="button" onClick={() => setShowProductForm(false)}
+                       <button type="button" onClick={() => { setShowProductForm(false); setEditingProductId(null); }}
                          className="text-sm font-semibold border rounded-lg px-6 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors bg-white">
                          Cancel
                        </button>
@@ -221,26 +262,35 @@ export default function StartupProfile() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {products.map(p => (
-                         <div key={p.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                           <div className="h-32 bg-gray-200 flex items-center justify-center">
-                             <span className="text-gray-400 text-4xl">📦</span>
-                           </div>
-                           <div className="p-4">
-                             <div className="flex justify-between items-start mb-2">
-                               <h3 className="font-semibold text-gray-800 line-clamp-1">{p.name}</h3>
-                               <span className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded ml-2">{p.category}</span>
-                             </div>
-                             <p className="text-gray-600 text-xs mb-3 line-clamp-2">{p.description}</p>
-                             <div className="flex justify-between items-center mb-3">
-                               <span className="text-lg font-bold text-gray-900">₹{p.price}</span>
-                               <span className="text-xs text-gray-500">Stock: {p.stockQuantity}</span>
-                             </div>
-                             <button onClick={() => handleDeleteProduct(p.id)} className="w-full border border-red-200 text-red-600 hover:bg-red-50 py-1.5 rounded text-sm transition-colors font-medium">
-                               Delete Product
-                             </button>
-                           </div>
-                         </div>
-                      ))}
+                          <div key={p.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow flex flex-col">
+                            <div className="h-32 bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100 relative">
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-gray-300 text-4xl">📦</span>
+                              )}
+                            </div>
+                            <div className="p-4 flex flex-col flex-grow">
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-semibold text-gray-800 line-clamp-1">{p.name}</h3>
+                                <span className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5 rounded ml-2 whitespace-nowrap">{p.category}</span>
+                              </div>
+                              <p className="text-gray-600 text-xs mb-3 line-clamp-2 flex-grow">{p.description}</p>
+                              <div className="flex justify-between items-center mb-4 mt-auto">
+                                <span className="text-lg font-bold text-gray-900">₹{parseFloat(p.price).toLocaleString()}</span>
+                                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">Stock: {p.stockQuantity}</span>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={() => openEditProductForm(p)} className="flex-1 border border-indigo-200 text-indigo-600 hover:bg-indigo-50 py-1.5 rounded text-sm transition-colors font-medium">
+                                  Edit
+                                </button>
+                                <button onClick={() => handleDeleteProduct(p.id)} className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 py-1.5 rounded text-sm transition-colors font-medium">
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                       ))}
                     </div>
                   )}
                 </div>
