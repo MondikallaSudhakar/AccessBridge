@@ -22,5 +22,20 @@ public interface NGOMessageRepository extends JpaRepository<NGOMessage, Long> {
             """)
     List<NGOMessage> findConversationForUser(@Param("ngoId") Long ngoId, @Param("userId") Long userId);
 
+        @Query("""
+            SELECT m FROM NGOMessage m
+            WHERE m.ngo.id = :ngoId
+            AND m.recipient IS NOT NULL
+            AND m.recipient.id = :recipientId
+            AND m.seen = false
+            AND (:senderEmail IS NULL OR LOWER(m.sender.email) = LOWER(:senderEmail))
+            ORDER BY m.createdAt ASC
+            """)
+        List<NGOMessage> findUnseenForRecipient(
+            @Param("ngoId") Long ngoId,
+            @Param("recipientId") Long recipientId,
+            @Param("senderEmail") String senderEmail
+        );
+
     Optional<NGOMessage> findFirstByNgoIdAndSenderRoleNotOrderByCreatedAtDesc(Long ngoId, String senderRole);
 }

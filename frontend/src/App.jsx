@@ -15,6 +15,7 @@ import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
 import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoDetail from './pages/ngo/NgoDetail'
+import UserMessages from './pages/messages/UserMessages'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
+        <Route path="/messages" element={<UserMessages />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<Dashboard />} />

@@ -72,11 +72,13 @@ const Icons = {
 }
 
 function TopNav({ user }) {
+  const messagingHref = user?.role === 'USER' ? '/messages' : '/ngo/profile?tab=messages'
+
   const navItems = [
     { label: 'Home', href: '/', Icon: Icons.Home },
     { label: 'My Network', href: '/search', Icon: Icons.Network },
     { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
-    { label: 'Messaging', href: '/dashboard', Icon: Icons.Messages },
+    { label: 'Messaging', href: messagingHref, Icon: Icons.Messages },
     { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
   ]
 

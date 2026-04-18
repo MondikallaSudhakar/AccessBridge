@@ -41,6 +41,11 @@ public class NGOMessage {
     @Column(nullable = false)
     private String senderRole;
 
+    @Column(nullable = false)
+    private boolean seen = false;
+
+    private LocalDateTime seenAt;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

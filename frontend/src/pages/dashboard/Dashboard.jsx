@@ -1,9 +1,16 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user?.role === 'NGO_ADMIN') {
+      navigate('/ngo/profile', { replace: true })
+    }
+  }, [navigate, user])
 
   const handleLogout = () => { logout(); navigate('/login') }
 

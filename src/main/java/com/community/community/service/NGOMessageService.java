@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,8 @@ public class NGOMessageService {
         message.setSender(sender);
         message.setSenderRole(sender.getRole().name());
         message.setContent(content.trim());
+        message.setSeen(false);
+        message.setSeenAt(null);
 
         User recipient = resolveRecipientForMessage(ngoId, sender, ngo, recipientEmail);
         if (recipient != null) {
@@ -83,6 +86,53 @@ public class NGOMessageService {
         return messages.stream().map(this::toResponse).toList();
     }
 
+    public List<NGOMessageResponse> markMessagesAsSeen(Long ngoId, String requesterEmail, String senderEmail) {
+        User requester = userRepository.findByEmail(requesterEmail)
+                .orElseThrow(() -> new RuntimeException("Requester not found"));
+
+        NGO ngo = ngoRepository.findById(ngoId)
+                .orElseThrow(() -> new RuntimeException("NGO not found"));
+
+        boolean isNgoOwner = requester.getRole() == Role.NGO_ADMIN && requester.getEmail().equalsIgnoreCase(ngo.getEmail());
+        if (requester.getRole() == Role.NGO_ADMIN && !isNgoOwner) {
+            throw new RuntimeException("Unauthorized access to NGO messages");
+        }
+
+        String senderFilter = isNgoOwner
+                ? ((senderEmail != null && !senderEmail.isBlank()) ? senderEmail.trim() : null)
+                : ngo.getEmail();
+
+        List<NGOMessage> unseen = ngoMessageRepository.findUnseenForRecipient(
+                ngoId,
+                requester.getId(),
+                senderFilter
+        );
+
+        if (unseen.isEmpty()) {
+            return List.of();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        unseen.forEach(message -> {
+            message.setSeen(true);
+            message.setSeenAt(now);
+        });
+
+        List<NGOMessage> saved = ngoMessageRepository.saveAll(unseen);
+        List<NGOMessageResponse> responses = saved.stream().map(this::toResponse).toList();
+
+        for (NGOMessage message : saved) {
+            Set<String> participants = new LinkedHashSet<>();
+            participants.add(message.getSender().getEmail());
+            if (message.getRecipient() != null) {
+                participants.add(message.getRecipient().getEmail());
+            }
+            ngoMessageRealtimeService.broadcastToUsers(participants, toResponse(message));
+        }
+
+        return responses;
+    }
+
     private User resolveRecipientForMessage(Long ngoId, User sender, NGO ngo, String recipientEmail) {
         boolean senderIsNgoOwner = sender.getRole() == Role.NGO_ADMIN && sender.getEmail().equalsIgnoreCase(ngo.getEmail());
 
@@ -117,6 +167,8 @@ public class NGOMessageService {
                 message.getRecipient() != null ? message.getRecipient().getEmail() : null,
                 message.getSenderRole(),
                 message.getContent(),
+                message.isSeen(),
+                message.getSeenAt(),
                 message.getCreatedAt()
         );
     }

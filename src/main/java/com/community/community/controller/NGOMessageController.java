@@ -66,6 +66,27 @@ public class NGOMessageController {
         }
     }
 
+    @PutMapping("/ngo/{ngoId}/seen")
+    public ResponseEntity<?> markMessagesAsSeen(
+            @PathVariable Long ngoId,
+            @RequestParam(required = false) String senderEmail,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            List<NGOMessageResponse> updated = ngoMessageService.markMessagesAsSeen(
+                    ngoId,
+                    principal.getName(),
+                    senderEmail
+            );
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException ex) {
+            return mapError(ex);
+        }
+    }
+
     private ResponseEntity<Map<String, String>> mapError(RuntimeException ex) {
         String message = ex.getMessage() == null ? "Unexpected error" : ex.getMessage();
         String normalized = message.toLowerCase();

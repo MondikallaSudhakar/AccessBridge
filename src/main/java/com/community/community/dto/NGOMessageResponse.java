@@ -19,5 +19,7 @@ public class NGOMessageResponse {
     private String recipientEmail;
     private String senderRole;
     private String content;
+    private boolean seen;
+    private LocalDateTime seenAt;
     private LocalDateTime createdAt;
 }

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import api from '../../services/api'
 
 const BASE = 'http://localhost:8081/api'
 const NGO_GREEN = '#5BCB2B'
@@ -29,10 +28,6 @@ export default function NgoDetail() {
   const [services, setServices] = useState([])
   const [achievements, setAchievements] = useState([])
   const [tab, setTab] = useState('requirements')
-  const [messages, setMessages] = useState([])
-  const [messageText, setMessageText] = useState('')
-  const [sending, setSending] = useState(false)
-  const [chatError, setChatError] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -58,45 +53,21 @@ export default function NgoDetail() {
     load()
   }, [id])
 
-  useEffect(() => {
-    if (!user || !localStorage.getItem('token')) return
-
-    let active = true
-    const token = localStorage.getItem('token')
-    const stream = new EventSource(`${BASE}/messages/stream?token=${encodeURIComponent(token)}`)
-
-    api.get(`/messages/ngo/${id}`)
-      .then((data) => {
-        if (!active) return
-        setMessages(Array.isArray(data) ? data : [])
-      })
-      .catch(() => {
-        if (!active) return
-        setMessages([])
-      })
-
-    stream.addEventListener('message', (event) => {
-      if (!active) return
-      try {
-        const incoming = JSON.parse(event.data)
-        if (Number(incoming.ngoId) !== Number(id)) return
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === incoming.id)) return prev
-          return [...prev, incoming]
-        })
-      } catch {
-        // Ignore malformed stream events
-      }
-    })
-
-    return () => {
-      active = false
-      stream.close()
-    }
-  }, [id, user])
-
   const activeNeeds = useMemo(() => needs.filter((n) => n.status !== 'CLOSED'), [needs])
   const openJobs = useMemo(() => jobs.filter((j) => j.status !== 'CLOSED'), [jobs])
+
+  const openChat = (source, title) => {
+    if (!user || !localStorage.getItem('token')) {
+      navigate('/login')
+      return
+    }
+
+    const params = new URLSearchParams({ ngoId: String(id) })
+    if (source) params.set('source', source)
+    if (title) params.set('title', title)
+
+    navigate(`/messages?${params.toString()}`)
+  }
 
   if (loading) {
     return <div className="min-h-screen bg-gray-50 p-10 text-gray-500">Loading NGO profile...</div>
@@ -120,29 +91,6 @@ export default function NgoDetail() {
     { key: 'services', label: `Services (${services.length})` },
     { key: 'achievements', label: `Achievements (${achievements.length})` },
   ]
-
-  const sendMessage = async (e) => {
-    e.preventDefault()
-    const token = localStorage.getItem('token')
-    if (!user || !token) {
-      navigate('/login')
-      return
-    }
-
-    const text = messageText.trim()
-    if (!text) return
-
-    setSending(true)
-    setChatError('')
-    try {
-      await api.post(`/messages/ngo/${id}`, { content: text })
-      setMessageText('')
-    } catch (err) {
-      setChatError(err.message || 'Failed to send message')
-    } finally {
-      setSending(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -185,6 +133,7 @@ export default function NgoDetail() {
                   </div>
                   <p className="mt-1 text-sm text-gray-600">{n.description}</p>
                   <p className="mt-2 text-xs font-semibold" style={{ color: NGO_GREEN }}>Target: Rs {Number(n.targetAmount || 0).toLocaleString('en-IN')}</p>
+                  <button onClick={() => openChat('requirement', n.title)} className="mt-3 text-xs font-bold" style={{ color: NGO_GREEN }}>Chat with NGO</button>
                 </div>
               ))}
             </div>
@@ -198,6 +147,7 @@ export default function NgoDetail() {
                   <h3 className="text-base font-bold text-gray-900">{j.title}</h3>
                   <p className="mt-1 text-xs font-semibold text-gray-500">{j.employmentType || 'Role'} | {j.location || 'Location flexible'}</p>
                   <p className="mt-2 text-sm text-gray-600">{j.description}</p>
+                  <button onClick={() => openChat('hiring', j.title)} className="mt-2 text-xs font-bold" style={{ color: NGO_GREEN }}>Chat about this role</button>
                   {j.salaryRange && <p className="mt-2 text-xs font-semibold" style={{ color: NGO_GREEN }}>Salary: {j.salaryRange}</p>}
                   {j.applicationUrl && (
                     <a href={j.applicationUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-bold text-blue-600">Apply Now</a>
@@ -230,6 +180,7 @@ export default function NgoDetail() {
                   <h3 className="text-base font-bold text-gray-900">{s.title}</h3>
                   <p className="text-xs text-gray-500">{s.category || 'Service'} | {s.availability || 'Availability not specified'}</p>
                   <p className="mt-1 text-sm text-gray-600">{s.description}</p>
+                  <button onClick={() => openChat('service', s.title)} className="mt-2 text-xs font-bold" style={{ color: NGO_GREEN }}>Chat about this service</button>
                   {s.contactInfo && <p className="mt-2 text-xs font-semibold" style={{ color: NGO_GREEN }}>Contact: {s.contactInfo}</p>}
                 </div>
               ))}
@@ -251,54 +202,6 @@ export default function NgoDetail() {
           )}
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-          <div className="border-b bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-6 py-4 text-white">
-            <h2 className="text-lg font-black">Chat with {ngo.name}</h2>
-            <p className="text-xs text-slate-200">Real-time replies. No refresh needed.</p>
-          </div>
-
-          {!user && (
-            <div className="m-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-              Login is required to send messages.
-              <button onClick={() => navigate('/login')} className="ml-2 font-semibold underline">Sign In</button>
-            </div>
-          )}
-
-          {user && (
-            <>
-              <div className="max-h-80 space-y-3 overflow-y-auto bg-[#f1f5f9] p-4">
-                {messages.length === 0 && <p className="text-xs text-gray-500">No messages yet. Start the conversation.</p>}
-                {messages.map((m) => {
-                  const mine = user.email === m.senderEmail
-                  return (
-                    <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${mine ? 'text-white rounded-br-md' : 'bg-white text-gray-700 border border-gray-200 rounded-bl-md'}`} style={mine ? { backgroundColor: NGO_GREEN } : {}}>
-                        <p className={`text-[11px] font-bold ${mine ? 'text-white/90' : 'text-gray-500'}`}>{mine ? 'You' : m.senderName}</p>
-                        <p className="mt-0.5 whitespace-pre-wrap break-words">{m.content}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {chatError && <p className="px-4 pt-3 text-xs text-red-600">{chatError}</p>}
-
-              <form onSubmit={sendMessage} className="border-t border-gray-200 bg-white p-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#5BCB2B]"
-                    placeholder="Write your message to NGO..."
-                  />
-                  <button type="submit" disabled={sending} className="rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: NGO_GREEN }}>
-                    {sending ? 'Sending...' : 'Send'}
-                  </button>
-                </div>
-              </form>
-            </>
-          )}
-        </div>
       </div>
     </div>
   )
