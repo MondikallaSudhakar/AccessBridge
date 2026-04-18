@@ -13,6 +13,8 @@ import SchoolProfile from './pages/dashboard/SchoolProfile'
 import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
+import NgoProfile from './pages/dashboard/NgoProfile'
+import NgoDetail from './pages/ngo/NgoDetail'
 
 function App() {
   return (
@@ -25,12 +27,14 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
+        <Route path="/ngos/:id" element={<NgoDetail />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/approvals" element={<AdminApproval />} />
         <Route path="/school/profile" element={<SchoolProfile />} />
         <Route path="/startup/profile" element={<StartupProfile />} />
+        <Route path="/ngo/profile" element={<NgoProfile />} />
 
         {/* 404 Not Found */}
         <Route path="*" element={<NotFound />} />

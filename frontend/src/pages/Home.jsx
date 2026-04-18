@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 const API = 'http://localhost:8081/api'
+
+const COLORS = {
+  green: '#5BCB2B',
+  greenSoft: '#eaf6ef',
+  greenBorder: '#c8e6d2',
+  white: '#ffffff',
+  blue: '#0d6efd',
+}
 
 async function fetchPublic(path) {
   try {
@@ -13,691 +21,395 @@ async function fetchPublic(path) {
   }
 }
 
-// Brand colors: Blue #1A8FD1 | Green #5BBE00
-
 const Icons = {
-  School: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 19V9l8-5 8 5v10M9 19v-5h6v5" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2M9 9h6" />
+  Search: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
     </svg>
   ),
-  NGO: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+  Home: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-10.5Z" />
     </svg>
   ),
-  Startup: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+  Network: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="6" cy="8" r="2.5" />
+      <circle cx="18" cy="8" r="2.5" />
+      <circle cx="12" cy="17" r="2.5" />
+      <path d="M8.2 9.2 10.7 15M15.8 9.2 13.3 15M8.5 8h7" />
     </svg>
   ),
-  Donor: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  Marketplace: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M4 8h16l-1.3 11.2a1 1 0 0 1-1 .8H6.3a1 1 0 0 1-1-.8L4 8Z" />
+      <path d="M8 8V6a4 4 0 0 1 8 0v2" />
     </svg>
   ),
-  Check: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  Messages: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M4 5h16v11H7l-3 3V5Z" />
     </svg>
   ),
-  Arrow: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+  Bell: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M6 10a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6" />
+      <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
     </svg>
   ),
-  Menu: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  User: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
     </svg>
   ),
-  X: () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  Verified: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="h-3.5 w-3.5">
+      <path d="m5 12 4.5 4.5L19 7" />
     </svg>
   ),
 }
 
-function EmptyState({ msg }) {
+function TopNav({ user }) {
+  const navItems = [
+    { label: 'Home', href: '/', Icon: Icons.Home },
+    { label: 'My Network', href: '/search', Icon: Icons.Network },
+    { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
+    { label: 'Messaging', href: '/dashboard', Icon: Icons.Messages },
+    { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
+  ]
+
   return (
-    <div className="col-span-3 py-16 text-center border border-dashed border-gray-200 rounded-xl">
-      <p className="text-gray-400 text-sm">{msg}</p>
-      <a href="/register" className="inline-block mt-4 text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>
-        Be the first to register →
+    <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.greenBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 md:px-6">
+        <div className="flex min-w-0 items-center gap-3 md:gap-4">
+          <a href="/" className="flex shrink-0 items-center gap-2">
+            <div className="h-8 w-8 rounded-lg text-sm font-black text-white grid place-items-center" style={{ backgroundColor: COLORS.green }}>IC</div>
+            <span className="hidden text-sm font-extrabold tracking-tight text-slate-900 md:inline">Inclusive Connect</span>
+          </a>
+
+          <label className="relative hidden md:block">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
+            <input
+              type="text"
+              placeholder="Search NGOs, schools, and products"
+              className="h-10 w-72 rounded-full border bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
+              style={{ borderColor: COLORS.greenBorder }}
+            />
+          </label>
+        </div>
+
+        <nav className="flex items-center gap-1 md:gap-2">
+          {navItems.map((item) => (
+            <a key={item.label} href={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
+              <item.Icon />
+              <span className="text-xs font-medium">{item.label}</span>
+            </a>
+          ))}
+
+          <a href={user ? '/dashboard' : '/login'} className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-slate-700 hover:bg-slate-50">
+            <Icons.User />
+            <span className="hidden text-xs font-semibold md:inline">{user ? 'Me' : 'Sign In'}</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+  )
+}
+
+function RoleTabs({ activeTab, setActiveTab, counts }) {
+  const tabs = [
+    { id: 'all', label: 'All', count: counts.total },
+    { id: 'jobs', label: 'Jobs', count: counts.jobs },
+    { id: 'requirements', label: 'Requirements', count: counts.requirements },
+    { id: 'products', label: 'Products', count: counts.products },
+  ]
+
+  return (
+    <div className="mb-4 rounded-2xl border bg-white p-2" style={{ borderColor: COLORS.greenBorder }}>
+      <div className="flex flex-wrap gap-2">
+        {tabs.map((tab) => {
+          const selected = tab.id === activeTab
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className="rounded-xl px-4 py-2 text-sm font-semibold transition-all"
+              style={{
+                backgroundColor: selected ? COLORS.green : COLORS.greenSoft,
+                color: selected ? COLORS.white : COLORS.green,
+              }}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function EmptyFeed({ activeTab }) {
+  return (
+    <div className="rounded-2xl border border-dashed p-8 text-center" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.white }}>
+      <h3 className="text-lg font-bold text-slate-800">No {activeTab === 'all' ? 'entries' : activeTab} found right now.</h3>
+      <p className="mt-2 text-sm text-slate-500">Try another tab or register your organization to be visible in this community feed.</p>
+      <a href="/register" className="mt-4 inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+        Register Now
       </a>
     </div>
   )
 }
 
+function formatLocation(item) {
+  const cityState = [item.city, item.state].filter(Boolean).join(', ')
+  return cityState || item.address || 'Location not specified'
+}
+
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileMenu, setMobileMenu] = useState(false)
-  const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [] })
-  const [dirLoading, setDirLoading] = useState(true)
   const { user } = useAuth()
+  const [query, setQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [] })
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
+    const load = async () => {
+      setLoading(true)
+      const [schools, ngos] = await Promise.all([
+        fetchPublic('/schools'),
+        fetchPublic('/ngos'),
+      ])
+
+      const ngoNeedsGroups = await Promise.all(
+        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/needs`) }))
+      )
+
+      const schoolNeedsGroups = await Promise.all(
+        schools.map(async (school) => ({ school, items: await fetchPublic(`/schools/${school.id}/needs`) }))
+      )
+
+      const ngoJobsGroups = await Promise.all(
+        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/jobs`) }))
+      )
+
+      const ngoProductsGroups = await Promise.all(
+        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/products`) }))
+      )
+
+      const requirements = [
+        ...ngoNeedsGroups.flatMap(({ ngo, items }) =>
+          items
+            .filter((need) => need.status !== 'CLOSED')
+            .map((need) => ({
+              id: `ngo-need-${need.id}`,
+              type: 'requirements',
+              title: need.title,
+              subtitle: need.description || 'Support request from NGO.',
+              meta: `${ngo.name} • ${formatLocation(ngo)}`,
+              verified: ngo.verified,
+              cta: 'View NGO Profile',
+              href: `/ngos/${ngo.id}`,
+              accent: COLORS.green,
+            }))
+        ),
+        ...schoolNeedsGroups.flatMap(({ school, items }) =>
+          items
+            .filter((need) => need.status !== 'CLOSED')
+            .map((need) => ({
+              id: `school-need-${need.id}`,
+              type: 'requirements',
+              title: need.title,
+              subtitle: need.description || 'Support request from school.',
+              meta: `${school.name} • ${formatLocation(school)}`,
+              verified: school.verified,
+              cta: 'View School Profile',
+              href: `/schools/${school.id}`,
+              accent: COLORS.blue,
+            }))
+        ),
+      ]
+
+      const jobs = ngoJobsGroups.flatMap(({ ngo, items }) =>
+        items
+          .filter((job) => job.status !== 'CLOSED')
+          .map((job) => ({
+            id: `job-${job.id}`,
+            type: 'jobs',
+            title: job.title,
+            subtitle: job.description || 'Hiring requirement posted by NGO.',
+            meta: `${ngo.name} • ${job.location || formatLocation(ngo)}`,
+            verified: ngo.verified,
+            cta: 'View NGO Profile',
+            href: `/ngos/${ngo.id}`,
+            accent: COLORS.green,
+          }))
+      )
+
+      const products = ngoProductsGroups.flatMap(({ ngo, items }) =>
+        items
+          .filter((product) => product.available !== false)
+          .map((product) => ({
+            id: `ngo-product-${product.id}`,
+            type: 'products',
+            title: product.name,
+            subtitle: product.description || 'Product listed by NGO.',
+            meta: `${ngo.name} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
+            verified: ngo.verified,
+            cta: 'View NGO Profile',
+            href: `/ngos/${ngo.id}`,
+            accent: COLORS.green,
+          }))
+      )
+
+      setDirectory({ schools, ngos, requirements, jobs, products })
+      setLoading(false)
+    }
+
+    load()
   }, [])
 
-  useEffect(() => {
-    Promise.all([
-      fetchPublic('/products/available'),
-      fetchPublic('/schools'),
-      fetchPublic('/ngos'),
-    ]).then(([products, schools, ngos]) => {
-      setDirectory({ products, schools, ngos })
-      setDirLoading(false)
-    })
-  }, [])
+  const allFeedItems = useMemo(() => {
+    return [...directory.jobs, ...directory.requirements, ...directory.products]
+  }, [directory])
 
-  const stats = [
-    { value: '500+', label: 'Schools Connected' },
-    { value: '200+', label: 'NGOs Empowered' },
-    { value: '1,200+', label: 'Startups Launched' },
-    { value: '50L+', label: 'Rupees Donated' },
-  ]
+  const filteredFeedItems = useMemo(() => {
+    let items = allFeedItems
+    if (activeTab !== 'all') {
+      items = items.filter((item) => item.type === activeTab)
+    }
+    if (query.trim()) {
+      const text = query.toLowerCase()
+      items = items.filter((item) => {
+        return item.title.toLowerCase().includes(text) || item.subtitle.toLowerCase().includes(text) || item.meta.toLowerCase().includes(text)
+      })
+    }
+    return items
+  }, [activeTab, allFeedItems, query])
 
-  const features = [
-    {
-      Icon: Icons.School,
-      title: 'Schools',
-      desc: 'Post resource needs, celebrate milestones, and connect with donors who are invested in the future of education.',
-      accent: 'blue',
-    },
-    {
-      Icon: Icons.NGO,
-      title: 'NGOs',
-      desc: 'Plan campaigns, coordinate volunteers, and mobilize community support for the causes that matter most.',
-      accent: 'green',
-    },
-    {
-      Icon: Icons.Startup,
-      title: 'Startups',
-      desc: 'List your social-impact products, reach a motivated customer base, and grow your purpose-driven business.',
-      accent: 'blue',
-    },
-    {
-      Icon: Icons.Donor,
-      title: 'Donors',
-      desc: 'Browse verified causes, contribute directly, and get clear visibility into where every rupee goes.',
-      accent: 'green',
-    },
-  ]
-
-  const steps = [
-    {
-      num: '01',
-      title: 'Create an Account',
-      desc: 'Sign up in under two minutes. Choose your role — School, NGO, Startup, or Donor — and complete your profile.',
-      color: '#1A8FD1',
-    },
-    {
-      num: '02',
-      title: 'Get Verified',
-      desc: 'Our admin team reviews and approves your organization, ensuring every member meets our trust standards.',
-      color: '#5BBE00',
-    },
-    {
-      num: '03',
-      title: 'Create Impact',
-      desc: 'Post needs, launch campaigns, list products, or donate. Every action strengthens the community.',
-      color: '#1A8FD1',
-    },
-  ]
-
-  const testimonials = [
-    {
-      quote: 'Inclusive Connect helped our school raise funds for a computer lab in just three weeks. The platform is simple and trustworthy.',
-      author: 'Priya Sharma',
-      role: 'Principal, Delhi Public School',
-      tag: 'School',
-    },
-    {
-      quote: 'As an NGO we struggled to reach donors. This platform gave us visibility and a structured way to run campaigns.',
-      author: 'Amit Desai',
-      role: 'Director, Asha Foundation',
-      tag: 'NGO',
-    },
-    {
-      quote: 'We listed our eco-friendly products on the marketplace and saw immediate traction from the donor community.',
-      author: 'Riya Kapoor',
-      role: 'Co-founder, GreenLeaf Startup',
-      tag: 'Startup',
-    },
-  ]
+  const counts = {
+    jobs: directory.jobs.length,
+    requirements: directory.requirements.length,
+    products: directory.products.length,
+    total: directory.jobs.length + directory.requirements.length + directory.products.length,
+  }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #f3fbf6 0%, #ffffff 25%)' }}>
+      <TopNav user={user} />
 
-      {/* ── Navbar ─────────────────────────────────── */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-sm border-b border-gray-100' : 'bg-white/0'}`}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <a href="/" className="flex items-center gap-2.5">
-            <div className="flex items-center">
-              <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-              <div className="w-4 h-7 rounded-sm -ml-1" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-            </div>
-            <span className="font-bold text-gray-900 text-sm tracking-tight">Inclusive Connect</span>
-          </a>
-
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
-            <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-gray-900 transition-colors">How It Works</a>
-            <a href="#schools" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#1A8FD1' }}>Schools</a>
-            <a href="#ngos" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#5BBE00' }}>NGOs</a>
-            <a href="#products" className="hover:text-gray-900 transition-colors font-semibold" style={{ color: '#1A8FD1' }}>Products</a>
-          </div>
-
-          {/* CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            {user ? (
-              <a href="/dashboard" style={{ backgroundColor: '#1A8FD1' }} className="text-white px-5 py-2.5 rounded text-sm font-semibold hover:opacity-90 transition-opacity">
-                Dashboard
-              </a>
-            ) : (
-              <>
-                <a href="/login" className="text-gray-500 hover:text-gray-900 px-4 py-2.5 rounded text-sm font-medium transition-colors">
-                  Sign In
-                </a>
-                <a href="/register" style={{ backgroundColor: '#1A8FD1' }} className="text-white px-5 py-2.5 rounded text-sm font-semibold hover:opacity-90 transition-opacity">
-                  Get Started
-                </a>
-              </>
-            )}
-          </div>
-
-          <button className="md:hidden text-gray-600" onClick={() => setMobileMenu(!mobileMenu)}>
-            {mobileMenu ? <Icons.X /> : <Icons.Menu />}
-          </button>
-        </div>
-
-        {mobileMenu && (
-          <div className="md:hidden bg-white border-t border-gray-100 px-6 py-5 space-y-4">
-            <a href="#features" className="block text-sm text-gray-600">Features</a>
-            <a href="#how-it-works" className="block text-sm text-gray-600">How It Works</a>
-            <a href="#schools" className="block text-sm font-semibold" style={{ color: '#1A8FD1' }}>Schools</a>
-            <a href="#ngos" className="block text-sm font-semibold" style={{ color: '#5BBE00' }}>NGOs</a>
-            <a href="#products" className="block text-sm font-semibold" style={{ color: '#1A8FD1' }}>Products</a>
-            <a href="/login" className="block text-sm text-gray-600">Sign In</a>
-            <a href="/register" className="block text-white text-sm font-semibold px-4 py-2.5 rounded text-center" style={{ backgroundColor: '#1A8FD1' }}>
-              Get Started
-            </a>
-          </div>
-        )}
-      </nav>
-
-      {/* ── Hero ───────────────────────────────────── */}
-      <section className="pt-40 pb-24" style={{ backgroundColor: '#F0F8FF' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="max-w-3xl">
-            {/* Badge */}
-            <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full mb-8 border"
-              style={{ color: '#1A8FD1', borderColor: '#1A8FD1', backgroundColor: '#E8F4FC' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#5BBE00' }}></span>
-              Community Platform
-            </span>
-
-            <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-none tracking-tight mb-8">
-              Where Communities<br />
-              <span style={{ color: '#1A8FD1' }}>Come Together</span>
-            </h1>
-
-            <p className="text-xl text-gray-500 leading-relaxed max-w-xl mb-10">
-              A single platform connecting schools, NGOs, startups, and donors to
-              collaborate, fund, and build a more inclusive India.
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <a
-                href="/register"
-                className="inline-flex items-center gap-2 text-white px-7 py-4 rounded text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#1A8FD1' }}
-              >
-                Start for Free <Icons.Arrow />
-              </a>
-              <a
-                href="#features"
-                className="inline-flex items-center gap-2 px-7 py-4 rounded text-sm font-semibold transition-colors border"
-                style={{ color: '#5BBE00', borderColor: '#5BBE00', backgroundColor: 'transparent' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#F0FBE8' }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
-              >
-                Learn More
-              </a>
-            </div>
-          </div>
-
-          {/* Stats bar */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            {stats.map((s, i) => (
-              <div key={s.label} className={`px-8 py-7 ${i < stats.length - 1 ? 'border-r border-gray-100' : ''}`}>
-                <div className="text-3xl font-black mb-1" style={{ color: i % 2 === 0 ? '#1A8FD1' : '#5BBE00' }}>
-                  {s.value}
-                </div>
-                <div className="text-sm text-gray-400 font-medium">{s.label}</div>
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 pb-10 pt-5 md:grid-cols-12 md:px-6">
+        <aside className="md:col-span-3">
+          <div className="sticky top-20 space-y-4">
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h1 className="text-lg font-extrabold text-slate-900">Community Dashboard</h1>
+              <p className="mt-2 text-sm text-slate-600">Discover verified NGOs, schools, and social products in separate tabs just like a professional network feed.</p>
+              <div className="mt-4 flex gap-2">
+                <a href="/register" className="rounded-lg px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>Join</a>
+                <a href="/dashboard" className="rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Dashboard</a>
               </div>
-            ))}
+            </section>
+
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h2 className="text-sm font-bold text-slate-900">Live Counts</h2>
+              <ul className="mt-3 space-y-2 text-sm text-slate-700">
+                <li>Jobs: <strong>{counts.jobs}</strong></li>
+                <li>Requirements: <strong>{counts.requirements}</strong></li>
+                <li>Products: <strong>{counts.products}</strong></li>
+              </ul>
+            </section>
           </div>
-        </div>
-      </section>
+        </aside>
 
-      {/* ── Divider band ───────────────────────────── */}
-      <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, #1A8FD1 50%, #5BBE00 50%)' }}></div>
-
-      {/* ── Features ───────────────────────────────── */}
-      <section id="features" className="py-28 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: '#1A8FD1' }}>
-              Platform
-            </p>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-5">
-              One platform, four voices.
-            </h2>
-            <p className="text-lg text-gray-500 max-w-lg">
-              Every participant has a dedicated set of tools designed for their specific community role.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((f) => {
-              const color = f.accent === 'blue' ? '#1A8FD1' : '#5BBE00'
-              const bg = f.accent === 'blue' ? '#E8F4FC' : '#EEF8E0'
-              return (
-                <div
-                  key={f.title}
-                  className="group bg-white border border-gray-100 rounded-xl p-8 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  <div
-                    className="w-11 h-11 rounded-lg flex items-center justify-center mb-6"
-                    style={{ backgroundColor: bg, color }}
-                  >
-                    <f.Icon />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">{f.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-5">{f.desc}</p>
-                  <div className="flex items-center gap-2 text-xs font-semibold transition-colors" style={{ color }}>
-                    <span>Learn more</span>
-                    <Icons.Arrow />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── How It Works ───────────────────────────── */}
-      <section id="how-it-works" className="py-28" style={{ backgroundColor: '#F7FAFD' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: '#5BBE00' }}>
-              Process
-            </p>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900">
-              Up and running in three steps.
-            </h2>
+        <section className="md:col-span-6">
+          <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.greenBorder }}>
+            <label className="relative block">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                type="text"
+                placeholder="Search inside current tab"
+                className="h-11 w-full rounded-xl border bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500"
+                style={{ borderColor: COLORS.greenBorder }}
+              />
+            </label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {steps.map((s, i) => (
-              <div key={s.num} className="relative bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
-                {/* Top colored bar */}
-                <div className="h-1 w-12 rounded-full mb-6" style={{ backgroundColor: s.color }}></div>
-                <div className="text-5xl font-black mb-5 leading-none" style={{ color: `${s.color}20` }}>
-                  {s.num}
-                </div>
-                <h3 className="text-base font-bold text-gray-900 mb-3">{s.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
+          <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
 
-                {i < steps.length - 1 && (
-                  <div className="hidden md:flex absolute -right-5 top-10 z-10 w-10 h-10 rounded-full items-center justify-center border border-gray-200 bg-white shadow-sm text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Impact section ─────────────────────────── */}
-      <section id="impact" className="py-28" style={{ backgroundColor: '#0D2B45' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase mb-5" style={{ color: '#5BBE00' }}>
-                Impact
-              </p>
-              <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
-                Real numbers.<br />Real change.
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                Since launch, Inclusive Connect has facilitated thousands of connections
-                between those who give and those who need — all verified and transparent.
-              </p>
+          <div className="space-y-3">
+            {loading && (
               <div className="space-y-3">
-                {[
-                  'Admin-verified organizations only',
-                  'Full donation trail and reporting',
-                  'Direct communication between parties',
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-3 text-sm text-gray-300">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#5BBE00', color: '#fff' }}>
-                      <Icons.Check />
-                    </div>
-                    {item}
-                  </div>
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="h-32 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.greenBorder }} />
                 ))}
               </div>
+            )}
 
-              <a
-                href="/register"
-                className="inline-flex items-center gap-2 mt-10 text-sm font-semibold px-6 py-3.5 rounded text-white hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: '#1A8FD1' }}
+            {!loading && filteredFeedItems.length === 0 && <EmptyFeed activeTab={activeTab} />}
+
+            {!loading && filteredFeedItems.map((item, index) => (
+              <article
+                key={item.id}
+                className="rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: COLORS.greenBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
               >
-                Join the Platform <Icons.Arrow />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((s, i) => (
-                <div
-                  key={s.label}
-                  className="rounded-xl p-7"
-                  style={{ backgroundColor: i % 2 === 0 ? 'rgba(26,143,209,0.12)' : 'rgba(91,190,0,0.12)', border: `1px solid ${i % 2 === 0 ? 'rgba(26,143,209,0.25)' : 'rgba(91,190,0,0.25)'}` }}
-                >
-                  <div className="text-4xl font-black mb-2" style={{ color: i % 2 === 0 ? '#5cb8ff' : '#91e23e' }}>
-                    {s.value}
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase" style={{ backgroundColor: COLORS.greenSoft, color: item.accent }}>
+                      {item.type.slice(0, -1)}
+                    </span>
+                    <h3 className="mt-2 text-lg font-extrabold text-slate-900">{item.title}</h3>
+                    <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
                   </div>
-                  <div className="text-sm text-gray-400">{s.label}</div>
+                  {item.verified && (
+                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>
+                      <Icons.Verified /> Verified
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── Testimonials ───────────────────────────── */}
-      <section className="py-28 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-16">
-            <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: '#1A8FD1' }}>
-              Testimonials
-            </p>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900">
-              Trusted by the community.
-            </h2>
-          </div>
+                <p className="text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <div key={t.author} className="rounded-xl border border-gray-100 p-8 hover:shadow-md transition-shadow">
-                {/* Tag pill */}
-                <span
-                  className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-6"
-                  style={{
-                    backgroundColor: i % 2 === 0 ? '#E8F4FC' : '#EEF8E0',
-                    color: i % 2 === 0 ? '#1A8FD1' : '#5BBE00',
-                  }}
-                >
-                  {t.tag}
-                </span>
-                <p className="text-gray-600 text-sm leading-relaxed mb-8">"{t.quote}"</p>
-                <div>
-                  <div className="text-sm font-bold text-gray-900">{t.author}</div>
-                  <div className="text-xs text-gray-400 mt-1">{t.role}</div>
+                <div className="mt-4 flex items-center gap-2">
+                  <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>
+                    {item.cta}
+                  </a>
+                  <a href="/search" className="rounded-lg border px-3.5 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
+                    Similar Results
+                  </a>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── Schools Section ─────────────────────── */}
-      <section id="schools" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#1A8FD1' }}>Schools</p>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900">Schools seeking support</h2>
-              <p className="text-gray-500 mt-2 max-w-lg">
-                Verified schools posting requirements and connecting with the community.
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
-              {directory.schools.length} registered
-            </span>
-          </div>
+        <aside className="md:col-span-3">
+          <div className="sticky top-20 space-y-4">
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h2 className="text-sm font-bold text-slate-900">Suggested Actions</h2>
+              <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                <li>Create your organization profile</li>
+                <li>Connect with verified NGOs</li>
+                <li>Browse school support needs</li>
+                <li>Check social products in marketplace</li>
+              </ul>
+            </section>
 
-          {dirLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {directory.schools.length === 0 ? (
-                <EmptyState msg="No schools registered yet." />
-              ) : (
-                directory.schools.slice(0, 9).map((s) => (
-                  <div key={s.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
-                    onClick={() => window.location.href = `/schools/${s.id}`}>
-                    <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>School</span>
-                        {s.specialSchool && (
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FCE4EC', color: '#C62828' }}>Special School</span>
-                        )}
-                      </div>
-                      {s.verified && (
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-                          <Icons.Check /> Verified
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{s.name}</h3>
-                    <p className="text-xs text-gray-400 mb-2">{[s.city, s.state].filter(Boolean).join(', ') || s.address}</p>
-                    {s.specialSchool && s.disabilityTypes && (
-                      <p className="text-xs mb-2" style={{ color: '#C62828' }}>Supports: {s.disabilityTypes}</p>
-                    )}
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{s.description || 'A school seeking community support.'}</p>
-                    <div className="mt-4">
-                      <span className="text-xs font-semibold group-hover:opacity-70 transition-opacity" style={{ color: '#1A8FD1' }}>View details →</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── NGOs Section ─────────────────────────── */}
-      <section id="ngos" className="py-20" style={{ backgroundColor: '#F7FAFD' }}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#5BBE00' }}>NGOs</p>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900">NGOs making a difference</h2>
-              <p className="text-gray-500 mt-2 max-w-lg">
-                Verified non-profits running campaigns and mobilizing volunteers.
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-              {directory.ngos.length} registered
-            </span>
-          </div>
-
-          {dirLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {directory.ngos.length === 0 ? (
-                <EmptyState msg="No NGOs registered yet." />
-              ) : (
-                directory.ngos.slice(0, 9).map((n) => (
-                  <div key={n.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group bg-white">
-                    <div className="flex items-start justify-between mb-3">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>NGO</span>
-                      {n.verified && (
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1" style={{ backgroundColor: '#E8F4FC', color: '#1A8FD1' }}>
-                          <Icons.Check /> Verified
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-1.5">{n.name}</h3>
-                    <p className="text-xs text-gray-400 mb-2">{[n.city, n.state].filter(Boolean).join(', ') || n.address}</p>
-                    {n.mission && <p className="text-xs text-gray-400 italic line-clamp-2">"{n.mission}"</p>}
-                    <div className="mt-4">
-                      <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#5BBE00' }}>
-                        Donate or Volunteer →
-                      </a>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Products Section ─────────────────────── */}
-      <section id="products" className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: '#1A8FD1' }}>Products</p>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900">Products from startups</h2>
-              <p className="text-gray-500 mt-2 max-w-lg">
-                Social-impact products from verified startups available to the community.
-              </p>
-            </div>
-            <span className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-              {directory.products.length} listed
-            </span>
-          </div>
-
-          {dirLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[1,2,3].map(i => <div key={i} className="h-44 bg-gray-100 rounded-xl animate-pulse"></div>)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {directory.products.length === 0 ? (
-                <EmptyState msg="No products listed yet. Check back soon." />
-              ) : (
-                directory.products.slice(0, 9).map((p) => (
-                  <div key={p.id} className="border border-gray-100 rounded-xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
-                    <div className="flex items-start justify-between mb-3">
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#EEF8E0', color: '#5BBE00' }}>
-                        {p.category || 'Product'}
-                      </span>
-                      <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>
-                        ₹{Number(p.price).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-gray-700 transition-colors">{p.name}</h3>
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{p.description || 'No description provided.'}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{p.stockQuantity} in stock</span>
-                      <a href="/register" className="text-xs font-semibold hover:opacity-80 transition-opacity" style={{ color: '#1A8FD1' }}>Buy now →</a>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── CTA ────────────────────────────────────── */}
-      <section className="py-28" style={{ backgroundColor: '#F0F8FF' }}>
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <p className="text-xs font-semibold tracking-widest uppercase mb-6" style={{ color: '#1A8FD1' }}>
-            Get Started
-          </p>
-          <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-            Ready to make<br />
-            <span style={{ color: '#5BBE00' }}>a difference?</span>
-          </h2>
-          <p className="text-gray-500 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-            Join thousands of schools, NGOs, startups, and donors already building a 
-            stronger and more inclusive community.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 text-white px-9 py-4 rounded text-sm font-semibold hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: '#1A8FD1' }}
-            >
-              Create Your Account <Icons.Arrow />
-            </a>
-            <a
-              href="/marketplace"
-              className="inline-flex items-center justify-center gap-2 px-9 py-4 rounded text-sm font-semibold border transition-colors"
-              style={{ color: '#5BBE00', borderColor: '#5BBE00' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#EEF8E0' }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
-            >
-              Explore Marketplace
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ─────────────────────────────────── */}
-      <footer style={{ backgroundColor: '#0D2B45' }} className="text-white py-14">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
-            {/* Brand */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="flex items-center">
-                  <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-                  <div className="w-4 h-7 rounded-sm -ml-1" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-                </div>
-                <span className="font-bold text-sm">Inclusive Connect</span>
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h2 className="text-sm font-bold text-slate-900">Quick Links</h2>
+              <div className="mt-3 grid grid-cols-1 gap-2 text-sm font-semibold">
+                <a href="/marketplace" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>Marketplace</a>
+                <a href="/admin/approvals" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>Admin Approvals</a>
+                <a href="/school/profile" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>School Profile</a>
               </div>
-              <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
-                Connecting schools, NGOs, startups, and donors to build a more inclusive India.
-              </p>
-            </div>
-
-            {/* Links */}
-            <div className="flex flex-wrap gap-12 text-sm text-gray-400">
-              <div className="space-y-2.5">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Platform</div>
-                <a href="/register" className="block hover:text-white transition-colors">Register</a>
-                <a href="/login" className="block hover:text-white transition-colors">Sign In</a>
-                <a href="/marketplace" className="block hover:text-white transition-colors">Marketplace</a>
-              </div>
-              <div className="space-y-2.5">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Community</div>
-                <a href="#features" className="block hover:text-white transition-colors">Features</a>
-                <a href="#schools" className="block hover:text-white transition-colors">Schools</a>
-                <a href="#ngos" className="block hover:text-white transition-colors">NGOs</a>
-                <a href="#products" className="block hover:text-white transition-colors">Products</a>
-              </div>
-            </div>
+            </section>
           </div>
-
-          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-gray-600">© 2025 Inclusive Connect. All rights reserved.</p>
-            <div className="h-0.5 w-24 rounded-full" style={{ background: 'linear-gradient(to right, #1A8FD1, #5BBE00)' }}></div>
-            <p className="text-xs text-gray-600">Empowering Change across India.</p>
-          </div>
-        </div>
-      </footer>
+        </aside>
+      </main>
     </div>
   )
 }
