@@ -251,10 +251,14 @@ export default function NgoDetail() {
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-black text-gray-900">Message NGO</h2>
+        <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+          <div className="border-b bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-6 py-4 text-white">
+            <h2 className="text-lg font-black">Chat with {ngo.name}</h2>
+            <p className="text-xs text-slate-200">Real-time replies. No refresh needed.</p>
+          </div>
+
           {!user && (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            <div className="m-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
               Login is required to send messages.
               <button onClick={() => navigate('/login')} className="ml-2 font-semibold underline">Sign In</button>
             </div>
@@ -262,33 +266,35 @@ export default function NgoDetail() {
 
           {user && (
             <>
-              <div className="mt-4 max-h-72 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="max-h-80 space-y-3 overflow-y-auto bg-[#f1f5f9] p-4">
                 {messages.length === 0 && <p className="text-xs text-gray-500">No messages yet. Start the conversation.</p>}
                 {messages.map((m) => {
                   const mine = user.email === m.senderEmail
                   return (
                     <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${mine ? 'text-white' : 'bg-white text-gray-700 border border-gray-200'}`} style={mine ? { backgroundColor: NGO_GREEN } : {}}>
-                        <p className="text-[11px] font-bold opacity-80">{mine ? 'You' : m.senderName}</p>
-                        <p>{m.content}</p>
+                      <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${mine ? 'text-white rounded-br-md' : 'bg-white text-gray-700 border border-gray-200 rounded-bl-md'}`} style={mine ? { backgroundColor: NGO_GREEN } : {}}>
+                        <p className={`text-[11px] font-bold ${mine ? 'text-white/90' : 'text-gray-500'}`}>{mine ? 'You' : m.senderName}</p>
+                        <p className="mt-0.5 whitespace-pre-wrap break-words">{m.content}</p>
                       </div>
                     </div>
                   )
                 })}
               </div>
 
-              {chatError && <p className="mt-2 text-xs text-red-600">{chatError}</p>}
+              {chatError && <p className="px-4 pt-3 text-xs text-red-600">{chatError}</p>}
 
-              <form onSubmit={sendMessage} className="mt-3 flex items-center gap-2">
-                <input
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                  placeholder="Write your message to NGO..."
-                />
-                <button type="submit" disabled={sending} className="rounded-lg px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: NGO_GREEN }}>
-                  {sending ? 'Sending...' : 'Send'}
-                </button>
+              <form onSubmit={sendMessage} className="border-t border-gray-200 bg-white p-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#5BCB2B]"
+                    placeholder="Write your message to NGO..."
+                  />
+                  <button type="submit" disabled={sending} className="rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: NGO_GREEN }}>
+                    {sending ? 'Sending...' : 'Send'}
+                  </button>
+                </div>
               </form>
             </>
           )}

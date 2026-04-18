@@ -43,13 +43,14 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints (no authentication required)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers("/api/schools/**").permitAll()  // For now, make these public
                         .requestMatchers("/api/ngos/**").permitAll()
                         .requestMatchers("/api/startups/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/donations/**").permitAll()
-                        .requestMatchers("/api/messages/**").permitAll()
                         .requestMatchers("/api/messages/stream").permitAll()
+                        .requestMatchers("/api/messages/**").authenticated()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

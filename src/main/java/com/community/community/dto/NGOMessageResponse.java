@@ -15,6 +15,8 @@ public class NGOMessageResponse {
     private Long senderId;
     private String senderName;
     private String senderEmail;
+    private Long recipientId;
+    private String recipientEmail;
     private String senderRole;
     private String content;
     private LocalDateTime createdAt;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
@@ -13,6 +13,27 @@ const blankJob = { title: '', description: '', employmentType: 'FULL_TIME', loca
 const blankProduct = { name: '', description: '', category: '', price: '', stockQuantity: '', available: true }
 const blankService = { title: '', description: '', category: '', contactInfo: '', availability: '', status: 'ACTIVE' }
 const blankAchievement = { title: '', description: '', category: '', achievementDate: '', imageUrl: '' }
+
+const formatMessageTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+const getThreadKey = (message, currentEmail) => {
+  if (!message || !currentEmail) return null
+  if (message.senderEmail === currentEmail) return message.recipientEmail || null
+  return message.senderEmail || null
+}
+
+const getThreadName = (message, currentEmail) => {
+  if (!message || !currentEmail) return 'Unknown user'
+  if (message.senderEmail === currentEmail) {
+    return message.recipientEmail || 'Unknown user'
+  }
+  return message.senderName || message.senderEmail || 'Unknown user'
+}
 
 export default function NgoProfile() {
   const { user, logout } = useAuth()
@@ -31,6 +52,7 @@ export default function NgoProfile() {
   const [services, setServices] = useState([])
   const [achievements, setAchievements] = useState([])
   const [messages, setMessages] = useState([])
+  const [selectedThreadEmail, setSelectedThreadEmail] = useState('')
   const [messageText, setMessageText] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
 
@@ -88,6 +110,63 @@ export default function NgoProfile() {
       stream.close()
     }
   }, [ngo?.id, user])
+
+  const conversationThreads = useMemo(() => {
+    if (!user?.email) return []
+
+    const grouped = new Map()
+
+    for (const message of messages) {
+      const threadEmail = getThreadKey(message, user.email)
+      if (!threadEmail || threadEmail === user.email) continue
+
+      const existing = grouped.get(threadEmail)
+      if (!existing) {
+        grouped.set(threadEmail, {
+          email: threadEmail,
+          name: getThreadName(message, user.email),
+          lastMessage: message,
+        })
+        continue
+      }
+
+      const existingTime = new Date(existing.lastMessage?.createdAt || 0).getTime()
+      const currentTime = new Date(message?.createdAt || 0).getTime()
+      if (currentTime >= existingTime) {
+        existing.lastMessage = message
+      }
+
+      if (!existing.name || existing.name === existing.email) {
+        existing.name = getThreadName(message, user.email)
+      }
+    }
+
+    return Array.from(grouped.values()).sort((a, b) => {
+      const timeA = new Date(a.lastMessage?.createdAt || 0).getTime()
+      const timeB = new Date(b.lastMessage?.createdAt || 0).getTime()
+      return timeB - timeA
+    })
+  }, [messages, user?.email])
+
+  const activeThreadMessages = useMemo(() => {
+    if (!selectedThreadEmail || !user?.email) return []
+
+    return messages
+      .filter((message) => getThreadKey(message, user.email) === selectedThreadEmail)
+      .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime())
+  }, [messages, selectedThreadEmail, user?.email])
+
+  useEffect(() => {
+    if (conversationThreads.length === 0) {
+      setSelectedThreadEmail('')
+      return
+    }
+
+    const exists = conversationThreads.some((thread) => thread.email === selectedThreadEmail)
+    if (!exists) {
+      setSelectedThreadEmail(conversationThreads[0].email)
+    }
+  }, [conversationThreads, selectedThreadEmail])
 
   const loadNgo = async () => {
     setLoading(true)
@@ -250,10 +329,14 @@ export default function NgoProfile() {
 
     const content = messageText.trim()
     if (!content) return
+    if (!selectedThreadEmail) {
+      setError('Choose a user conversation first.')
+      return
+    }
 
     setSendingMessage(true)
     try {
-      await api.post(`/messages/ngo/${ngo.id}`, { content })
+      await api.post(`/messages/ngo/${ngo.id}`, { content, recipientEmail: selectedThreadEmail })
       setMessageText('')
     } catch (err) {
       setError(err.message || 'Failed to send message')
@@ -488,36 +571,93 @@ export default function NgoProfile() {
         )}
 
         {tab === 'messages' && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6">
-            <h2 className="mb-3 text-lg font-black">Message Inbox</h2>
-            <p className="mb-4 text-xs text-gray-500">Messages arrive in real-time. No page refresh needed.</p>
-
-            <div className="max-h-96 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3">
-              {messages.length === 0 && <p className="text-sm text-gray-500">No messages yet.</p>}
-              {messages.map((m) => {
-                const mine = m.senderEmail === user.email
-                return (
-                  <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${mine ? 'text-white' : 'bg-white text-gray-700 border border-gray-200'}`} style={mine ? { backgroundColor: NGO_GREEN } : {}}>
-                      <p className="text-[11px] font-bold opacity-80">{mine ? 'You' : `${m.senderName} (${m.senderRole})`}</p>
-                      <p>{m.content}</p>
-                    </div>
-                  </div>
-                )
-              })}
+          <div className="rounded-2xl border border-gray-200 bg-white p-0 overflow-hidden">
+            <div className="border-b bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-5 py-4 text-white">
+              <h2 className="text-lg font-black">Inbox</h2>
+              <p className="text-xs text-slate-200">Professional real-time chat. Click a user to open the thread.</p>
             </div>
 
-            <form onSubmit={sendMessage} className="mt-4 flex items-center gap-2">
-              <input
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                placeholder="Reply to user..."
-              />
-              <button type="submit" disabled={sendingMessage} className="rounded-lg px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: NGO_GREEN }}>
-                {sendingMessage ? 'Sending...' : 'Send'}
-              </button>
-            </form>
+            <div className="grid grid-cols-1 md:grid-cols-[300px_1fr]">
+              <aside className="border-r border-gray-200 bg-[#f8fafc]">
+                <div className="border-b border-gray-200 px-4 py-3 text-xs font-bold uppercase tracking-wide text-gray-500">Conversations</div>
+                <div className="max-h-[32rem] overflow-y-auto">
+                  {conversationThreads.length === 0 && (
+                    <p className="p-4 text-sm text-gray-500">No user conversations yet.</p>
+                  )}
+
+                  {conversationThreads.map((thread) => {
+                    const active = thread.email === selectedThreadEmail
+                    return (
+                      <button
+                        key={thread.email}
+                        type="button"
+                        onClick={() => setSelectedThreadEmail(thread.email)}
+                        className={`w-full border-b border-gray-100 px-4 py-3 text-left transition ${active ? 'bg-white' : 'hover:bg-white/70'}`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-sm font-bold text-gray-900">{thread.name}</p>
+                          <span className="text-[11px] text-gray-500">{formatMessageTime(thread.lastMessage?.createdAt)}</span>
+                        </div>
+                        <p className="mt-1 truncate text-xs text-gray-500">{thread.lastMessage?.content || 'No messages'}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </aside>
+
+              <section className="flex min-h-[32rem] flex-col bg-white">
+                {selectedThreadEmail ? (
+                  <>
+                    <div className="border-b border-gray-200 px-5 py-3">
+                      <p className="text-sm font-black text-gray-900">
+                        {conversationThreads.find((t) => t.email === selectedThreadEmail)?.name || selectedThreadEmail}
+                      </p>
+                      <p className="text-xs text-gray-500">{selectedThreadEmail}</p>
+                    </div>
+
+                    <div className="flex-1 space-y-3 overflow-y-auto bg-[#f1f5f9] px-5 py-4">
+                      {activeThreadMessages.length === 0 && <p className="text-sm text-gray-500">No messages in this conversation yet.</p>}
+
+                      {activeThreadMessages.map((m) => {
+                        const mine = m.senderEmail === user.email
+                        return (
+                          <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                            <div
+                              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${mine ? 'text-white rounded-br-md' : 'bg-white text-gray-700 border border-gray-200 rounded-bl-md'}`}
+                              style={mine ? { backgroundColor: NGO_GREEN } : {}}
+                            >
+                              <p className={`text-[11px] font-bold ${mine ? 'text-white/90' : 'text-gray-500'}`}>
+                                {mine ? 'You' : m.senderName || m.senderEmail}
+                              </p>
+                              <p className="mt-0.5 whitespace-pre-wrap break-words">{m.content}</p>
+                              <p className={`mt-1 text-[10px] ${mine ? 'text-white/80' : 'text-gray-400'}`}>{formatMessageTime(m.createdAt)}</p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    <form onSubmit={sendMessage} className="border-t border-gray-200 bg-white p-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
+                          className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#5BCB2B]"
+                          placeholder="Type your reply..."
+                        />
+                        <button type="submit" disabled={sendingMessage} className="rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: NGO_GREEN }}>
+                          {sendingMessage ? 'Sending...' : 'Send'}
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                ) : (
+                  <div className="flex flex-1 items-center justify-center px-5 text-center text-sm text-gray-500">
+                    Select a user from the left to start chatting.
+                  </div>
+                )}
+              </section>
+            </div>
           </div>
         )}
       </div>

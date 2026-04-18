@@ -30,6 +30,11 @@ public class NGOMessage {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_id")
+    private User recipient;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 

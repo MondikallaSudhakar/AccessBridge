@@ -26,7 +26,7 @@ public class NGOMessageService {
     private final UserRepository userRepository;
     private final NGOMessageRealtimeService ngoMessageRealtimeService;
 
-    public NGOMessageResponse sendMessageToNGO(Long ngoId, String senderEmail, String content) {
+    public NGOMessageResponse sendMessageToNGO(Long ngoId, String senderEmail, String content, String recipientEmail) {
         if (content == null || content.trim().isEmpty()) {
             throw new RuntimeException("Message content cannot be empty");
         }
@@ -43,12 +43,21 @@ public class NGOMessageService {
         message.setSenderRole(sender.getRole().name());
         message.setContent(content.trim());
 
+        User recipient = resolveRecipientForMessage(ngoId, sender, ngo, recipientEmail);
+        if (recipient != null) {
+            message.setRecipient(recipient);
+        }
+
         NGOMessage saved = ngoMessageRepository.save(message);
         NGOMessageResponse response = toResponse(saved);
 
         Set<String> recipients = new LinkedHashSet<>();
         recipients.add(sender.getEmail());
-        recipients.add(ngo.getEmail());
+        if (recipient != null) {
+            recipients.add(recipient.getEmail());
+        } else {
+            recipients.add(ngo.getEmail());
+        }
         ngoMessageRealtimeService.broadcastToUsers(recipients, response);
 
         return response;
@@ -68,10 +77,33 @@ public class NGOMessageService {
         if (isNgoOwner) {
             messages = ngoMessageRepository.findByNgoIdOrderByCreatedAtAsc(ngoId);
         } else {
-            messages = ngoMessageRepository.findByNgoIdAndSenderIdOrderByCreatedAtAsc(ngoId, requester.getId());
+            messages = ngoMessageRepository.findConversationForUser(ngoId, requester.getId());
         }
 
         return messages.stream().map(this::toResponse).toList();
+    }
+
+    private User resolveRecipientForMessage(Long ngoId, User sender, NGO ngo, String recipientEmail) {
+        boolean senderIsNgoOwner = sender.getRole() == Role.NGO_ADMIN && sender.getEmail().equalsIgnoreCase(ngo.getEmail());
+
+        if (!senderIsNgoOwner) {
+            return userRepository.findByEmail(ngo.getEmail()).orElse(null);
+        }
+
+        if (recipientEmail != null && !recipientEmail.isBlank()) {
+            User recipient = userRepository.findByEmail(recipientEmail)
+                    .orElseThrow(() -> new RuntimeException("Recipient not found"));
+
+            if (recipient.getRole() == Role.NGO_ADMIN && recipient.getEmail().equalsIgnoreCase(ngo.getEmail())) {
+                throw new RuntimeException("Recipient must be a user conversation participant");
+            }
+            return recipient;
+        }
+
+        return ngoMessageRepository
+                .findFirstByNgoIdAndSenderRoleNotOrderByCreatedAtDesc(ngoId, Role.NGO_ADMIN.name())
+                .map(NGOMessage::getSender)
+                .orElse(null);
     }
 
     private NGOMessageResponse toResponse(NGOMessage message) {
@@ -81,6 +113,8 @@ public class NGOMessageService {
                 message.getSender().getId(),
                 message.getSender().getName(),
                 message.getSender().getEmail(),
+                message.getRecipient() != null ? message.getRecipient().getId() : null,
+                message.getRecipient() != null ? message.getRecipient().getEmail() : null,
                 message.getSenderRole(),
                 message.getContent(),
                 message.getCreatedAt()

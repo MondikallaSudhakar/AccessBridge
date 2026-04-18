@@ -2,7 +2,6 @@ package com.community.community.controller;
 
 import com.community.community.dto.NGOMessageRequest;
 import com.community.community.dto.NGOMessageResponse;
-import com.community.community.security.JwtUtil;
 import com.community.community.service.NGOMessageRealtimeService;
 import com.community.community.service.NGOMessageService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -23,7 +23,6 @@ public class NGOMessageController {
 
     private final NGOMessageService ngoMessageService;
     private final NGOMessageRealtimeService ngoMessageRealtimeService;
-    private final JwtUtil jwtUtil;
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@RequestParam String token) {
@@ -31,53 +30,52 @@ public class NGOMessageController {
     }
 
     @PostMapping("/ngo/{ngoId}")
-    public ResponseEntity<NGOMessageResponse> sendMessageToNGO(
+    public ResponseEntity<?> sendMessageToNGO(
             @PathVariable Long ngoId,
             @RequestBody NGOMessageRequest request,
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
             Principal principal) {
-
-        String email = resolveRequesterEmail(principal, authorizationHeader);
-        if (email == null) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        NGOMessageResponse response = ngoMessageService.sendMessageToNGO(ngoId, email, request.getContent());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        try {
+            NGOMessageResponse response = ngoMessageService.sendMessageToNGO(
+                    ngoId,
+                    principal.getName(),
+                    request.getContent(),
+                    request.getRecipientEmail()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException ex) {
+            return mapError(ex);
+        }
     }
 
     @GetMapping("/ngo/{ngoId}")
-    public ResponseEntity<List<NGOMessageResponse>> getMessagesForNGO(
+    public ResponseEntity<?> getMessagesForNGO(
             @PathVariable Long ngoId,
-            @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
             Principal principal) {
-
-        String email = resolveRequesterEmail(principal, authorizationHeader);
-        if (email == null) {
+        if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(ngoMessageService.getMessagesForNGO(ngoId, email));
+        try {
+            return ResponseEntity.ok(ngoMessageService.getMessagesForNGO(ngoId, principal.getName()));
+        } catch (RuntimeException ex) {
+            return mapError(ex);
+        }
     }
 
-    private String resolveRequesterEmail(Principal principal, String authorizationHeader) {
-        if (principal != null) {
-            return principal.getName();
-        }
+    private ResponseEntity<Map<String, String>> mapError(RuntimeException ex) {
+        String message = ex.getMessage() == null ? "Unexpected error" : ex.getMessage();
+        String normalized = message.toLowerCase();
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return null;
+        if (normalized.contains("not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", message));
         }
-
-        String token = authorizationHeader.substring(7);
-        try {
-            String email = jwtUtil.extractUsername(token);
-            if (email == null || !jwtUtil.validateToken(token, email)) {
-                return null;
-            }
-            return email;
-        } catch (Exception ignored) {
-            return null;
+        if (normalized.contains("cannot be empty")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", message));
         }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", message));
     }
 }
