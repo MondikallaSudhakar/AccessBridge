@@ -283,6 +283,7 @@ export default function NgoProfile() {
   const [achievements, setAchievements] = useState([])
   const [messages, setMessages]   = useState([])
   const [selThread, setSelThread] = useState('')
+  const [mobileView, setMobileView] = useState('threads') // 'threads' | 'chat' (mobile WhatsApp nav)
   const [msgText, setMsgText]     = useState('')
   const [sending, setSending]     = useState(false)
 
@@ -464,7 +465,11 @@ export default function NgoProfile() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
         .fade-in{animation:fadeIn .25s ease forwards}
+        .slide-right{animation:slideInRight .22s ease forwards}
+        .slide-left{animation:slideInLeft .22s ease forwards}
         *{box-sizing:border-box}
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-track{background:transparent}
@@ -476,6 +481,10 @@ export default function NgoProfile() {
         .ngo-main       { padding-bottom:0 !important; }
         .ngo-topbar-pill{ display:flex !important; }
         .ngo-topbar-sub { display:block !important; }
+        .ngo-mob-back   { display:none !important; }
+        .ngo-msg-grid   { grid-template-columns:260px 1fr; }
+        .ngo-msg-threads{ display:flex !important; }
+        .ngo-msg-chat   { display:flex !important; }
 
         /* mobile ≤767px */
         @media(max-width:767px){
@@ -489,15 +498,23 @@ export default function NgoProfile() {
           .ngo-topbar-pill{ display:none !important; }
           .ngo-topbar-sub { display:none !important; }
           .ngo-topbar     { padding:0 14px !important; }
+
+          /* WhatsApp-style message panels */
+          .ngo-msg-container { height:calc(100vh - 132px) !important; border-radius:0 !important; }
           .ngo-msg-grid   { grid-template-columns:1fr !important; }
-          .ngo-msg-threads{ display:none; }
-          .ngo-msg-threads.visible{ display:flex !important; flex-direction:column; }
+          .ngo-msg-threads{ flex-direction:column; overflow-y:auto; }
+          .ngo-msg-threads.hidden-panel { display:none !important; }
+          .ngo-msg-chat   { flex-direction:column; }
+          .ngo-msg-chat.hidden-panel { display:none !important; }
+          .ngo-mob-back   { display:flex !important; }
+          .ngo-inbox-header { display:none !important; }
         }
 
         /* tablet 768–1023px */
         @media(min-width:768px) and (max-width:1023px){
           .ngo-stats-grid { grid-template-columns:repeat(3,1fr) !important; }
           .ngo-content    { padding:18px 20px 48px !important; }
+          .ngo-msg-grid   { grid-template-columns:220px 1fr !important; }
         }
       `}</style>
 
@@ -902,9 +919,10 @@ export default function NgoProfile() {
 
           {/* ── MESSAGES ────────────────────────────────────────────── */}
           {tab === 'messages' && (
-            <div className="fade-in" style={{background:'#fff',borderRadius:radius.xl,border:'1px solid #e9ecef',overflow:'hidden',boxShadow:shadow.sm,height:'calc(100vh - 130px)',display:'flex',flexDirection:'column'}}>
-              {/* Inbox header */}
-              <div style={{background:NAVY,padding:'16px 24px',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+            <div className="fade-in ngo-msg-container" style={{background:'#fff',borderRadius:radius.xl,border:'1px solid #e9ecef',overflow:'hidden',boxShadow:shadow.sm,height:'calc(100vh - 130px)',display:'flex',flexDirection:'column'}}>
+
+              {/* Desktop inbox header (hidden on mobile via CSS) */}
+              <div className="ngo-inbox-header" style={{background:NAVY,padding:'14px 22px',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
                 <div style={{width:36,height:36,borderRadius:9,background:'rgba(255,255,255,.08)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <Ic n="inbox" s={18} c="#fff"/>
                 </div>
@@ -917,37 +935,106 @@ export default function NgoProfile() {
               </div>
 
               <div className="ngo-msg-grid" style={{display:'grid',flex:1,minHeight:0}}>
-                {/* Thread sidebar */}
-                <aside className="ngo-msg-threads" style={{borderRight:'1px solid #e9ecef',background:'#f8fafc',display:'flex',flexDirection:'column'}}>
-                  <div style={{padding:'10px 14px',borderBottom:'1px solid #e9ecef',fontSize:10.5,fontWeight:700,color:'#94a3b8',letterSpacing:'0.08em',textTransform:'uppercase'}}>
-                    Conversations
+
+                {/* ── THREAD LIST (WhatsApp-style) ── */}
+                <aside className={`ngo-msg-threads${mobileView === 'chat' ? ' hidden-panel' : ''}`}
+                  style={{borderRight:'1px solid #e9ecef',background:'#fff',display:'flex',flexDirection:'column'}}>
+
+                  {/* Mobile: green WhatsApp-like header */}
+                  <div style={{padding:'14px 16px',background:NAVY,display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
+                    <div style={{flex:1}}>
+                      <p style={{margin:0,fontSize:16,fontWeight:800,color:'#fff'}}>Messages</p>
+                      <p style={{margin:0,fontSize:10.5,color:'rgba(255,255,255,.45)'}}>
+                        {totalUnread > 0 ? `${totalUnread} unread` : 'All caught up'}
+                      </p>
+                    </div>
+                    <div style={{width:32,height:32,borderRadius:8,background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <Ic n="chat" s={16} c="#fff"/>
+                    </div>
                   </div>
+
+                  {/* Search bar */}
+                  <div style={{padding:'9px 12px',background:'#f8fafc',borderBottom:'1px solid #f1f5f9',flexShrink:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,background:'#fff',borderRadius:22,padding:'7px 14px',border:'1px solid #e9ecef'}}>
+                      <svg width={13} height={13} fill="none" stroke="#94a3b8" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                      <span style={{fontSize:12.5,color:'#94a3b8'}}>Search conversations…</span>
+                    </div>
+                  </div>
+
                   <div style={{flex:1,overflowY:'auto'}}>
-                    {threads.length===0
-                      ? <EmptyPane iconName="chat" title="No messages yet" body="Conversations will appear here."/>
-                      : threads.map(t=>{
-                          const active = t.email===selThread
-                          const mine   = t.last?.senderEmail===user?.email
+                    {threads.length === 0
+                      ? <div style={{textAlign:'center',padding:'44px 20px'}}>
+                          <div style={{width:56,height:56,borderRadius:'50%',background:'#f1f5f9',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
+                            <Ic n="chat" s={26} c="#cbd5e1"/>
+                          </div>
+                          <p style={{fontSize:13,color:'#64748b',fontWeight:600,margin:'0 0 4px'}}>No messages yet</p>
+                          <p style={{fontSize:11.5,color:'#94a3b8',margin:0}}>User conversations appear here</p>
+                        </div>
+                      : threads.map(t => {
+                          const active   = t.email === selThread
+                          const mine     = t.last?.senderEmail === user?.email
+                          const initials = (t.name || t.email || '?').slice(0,2).toUpperCase()
+                          const unread   = t.unreadCount || 0
                           return (
                             <button
                               key={t.email}
-                              onClick={()=>setSelThread(t.email)}
-                              style={{width:'100%',textAlign:'left',padding:'12px 14px',border:'none',borderBottom:'1px solid #f1f5f9',cursor:'pointer',background:active?'#fff':'transparent',borderLeft:`3px solid ${active?G:'transparent'}`,transition:'all .15s'}}
-                              onMouseEnter={e=>{if(!active)e.currentTarget.style.background='rgba(255,255,255,.7)'}}
-                              onMouseLeave={e=>{if(!active)e.currentTarget.style.background='transparent'}}
+                              onClick={() => {
+                                setSelThread(t.email)
+                                setMobileView('chat')  // ← WhatsApp: open chat on mobile
+                              }}
+                              style={{
+                                width:'100%', textAlign:'left',
+                                padding:'12px 16px',
+                                border:'none', borderBottom:'1px solid #f4f6f8',
+                                cursor:'pointer',
+                                background: active ? '#f0fdf9' : '#fff',
+                                borderLeft: `3px solid ${active ? TEAL : 'transparent'}`,
+                                transition:'background .12s',
+                                display:'flex', alignItems:'center', gap:12,
+                              }}
+                              onMouseEnter={e => { if(!active) e.currentTarget.style.background = '#f8fafc' }}
+                              onMouseLeave={e => { if(!active) e.currentTarget.style.background = '#fff' }}
                             >
-                              <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-                                <p style={{margin:0,fontSize:13,fontWeight:700,color:NAVY,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:155}}>{t.name}</p>
-                                <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-                                  {(t.unreadCount || 0) > 0 && (
-                                    <span style={{fontSize:10,fontWeight:700,color:'#166534',background:'#dcfce7',padding:'1px 6px',borderRadius:10,minWidth:18,textAlign:'center'}}>
-                                      {t.unreadCount}
-                                    </span>
-                                  )}
-                                  <span style={{fontSize:10.5,color:'#94a3b8'}}>{fmt(t.last?.createdAt)}</span>
-                                </div>
+                              {/* Avatar */}
+                              <div style={{
+                                width:44, height:44, borderRadius:'50%', flexShrink:0,
+                                background: active ? `${TEAL}20` : '#e9ecef',
+                                display:'flex', alignItems:'center', justifyContent:'center',
+                                fontSize:15, fontWeight:800,
+                                color: active ? TEAL : '#64748b',
+                                border: `2px solid ${active ? TEAL + '40' : 'transparent'}`,
+                                position:'relative',
+                              }}>
+                                {initials}
+                                {unread > 0 && (
+                                  <span style={{
+                                    position:'absolute', top:-3, right:-3,
+                                    width:18, height:18, borderRadius:'50%',
+                                    background: TEAL, color:'#fff',
+                                    fontSize:9, fontWeight:800,
+                                    display:'flex', alignItems:'center', justifyContent:'center',
+                                    border:'2px solid #fff',
+                                  }}>{unread > 9 ? '9+' : unread}</span>
+                                )}
                               </div>
-                              <p style={{margin:0,fontSize:12,color:'#64748b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{mine?'You: ':''}{t.last?.content||'—'}</p>
+                              <div style={{flex:1, minWidth:0}}>
+                                <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:6}}>
+                                  <p style={{margin:0, fontSize:14, fontWeight: unread > 0 ? 800 : 600, color:NAVY, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                                    {t.name}
+                                  </p>
+                                  <span style={{fontSize:11, color:'#94a3b8', flexShrink:0, marginTop:1}}>
+                                    {fmt(t.last?.createdAt)}
+                                  </span>
+                                </div>
+                                <p style={{
+                                  margin:'2px 0 0', fontSize:12.5,
+                                  color: unread > 0 ? '#374151' : '#94a3b8',
+                                  overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
+                                  fontWeight: unread > 0 ? 600 : 400,
+                                }}>
+                                  {mine ? '✓ ' : ''}{t.last?.content || '—'}
+                                </p>
+                              </div>
                             </button>
                           )
                         })
@@ -955,38 +1042,93 @@ export default function NgoProfile() {
                   </div>
                 </aside>
 
-                {/* Chat window */}
-                <section style={{display:'flex',flexDirection:'column',minHeight:0}}>
+                {/* ── CHAT WINDOW (WhatsApp-style) ── */}
+                <section className={`ngo-msg-chat${mobileView === 'threads' ? ' hidden-panel' : ''}`}
+                  style={{display:'flex', flexDirection:'column', minHeight:0}}>
                   {selThread ? (
                     <>
-                      {/* Thread header */}
-                      <div style={{padding:'12px 20px',borderBottom:'1px solid #e9ecef',background:'#fff',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
-                        <div style={{width:36,height:36,borderRadius:'50%',background:`${G}18`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,border:`1.5px solid ${G}30`}}>
-                          <Ic n="chat" s={18} c={G}/>
+                      {/* Chat header with back button */}
+                      <div style={{
+                        padding:'10px 16px', display:'flex', alignItems:'center', gap:10,
+                        background: NAVY, flexShrink:0,
+                      }}>
+                        {/* Mobile back arrow */}
+                        <button
+                          className="ngo-mob-back"
+                          onClick={() => setMobileView('threads')}
+                          style={{
+                            alignItems:'center', padding:'4px 0',
+                            border:'none', background:'transparent', cursor:'pointer',
+                          }}
+                        >
+                          <svg width={22} height={22} fill="none" stroke="#fff" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+                          </svg>
+                        </button>
+
+                        {/* Avatar */}
+                        <div style={{
+                          width:38, height:38, borderRadius:'50%', flexShrink:0,
+                          background:'rgba(255,255,255,.15)',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          fontSize:13, fontWeight:800, color:'#fff',
+                        }}>
+                          {(threads.find(t=>t.email===selThread)?.name || selThread).slice(0,2).toUpperCase()}
                         </div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <p style={{margin:0,fontWeight:800,fontSize:14,color:NAVY,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{threads.find(t=>t.email===selThread)?.name||selThread}</p>
-                          <p style={{margin:0,fontSize:11.5,color:'#94a3b8',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selThread}</p>
+                        <div style={{flex:1, minWidth:0}}>
+                          <p style={{margin:0, fontWeight:800, fontSize:14, color:'#fff', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            {threads.find(t=>t.email===selThread)?.name || selThread}
+                          </p>
+                          <p style={{margin:0, fontSize:10.5, color:'rgba(255,255,255,.5)'}}>tap for info</p>
+                        </div>
+                        <div style={{display:'flex',gap:8}}>
+                          <div style={{width:34,height:34,borderRadius:'50%',background:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+                            <Ic n="send" s={14} c="#fff"/>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Messages list */}
-                      <div style={{flex:1,overflowY:'auto',background:'#f4f6f8',padding:'16px',display:'flex',flexDirection:'column',gap:10}}>
-                        {threadMsgs.length===0
-                          ? <div style={{textAlign:'center',marginTop:60,color:'#94a3b8'}}>
-                              <Ic n="chat" s={36} c="#cbd5e1" st={{margin:'0 auto 10px'}}/>
-                              <p style={{fontSize:13,margin:0}}>No messages in this thread yet.</p>
+                      {/* WhatsApp-style chat wallpaper background */}
+                      <div style={{
+                        flex:1, overflowY:'auto',
+                        background:'#e5ddd5',
+                        backgroundImage:'radial-gradient(circle at 1px 1px, rgba(0,0,0,.04) 1px, transparent 0)',
+                        backgroundSize:'20px 20px',
+                        padding:'12px',
+                        display:'flex', flexDirection:'column', gap:6,
+                      }}>
+                        {/* Date separator */}
+                        {threadMsgs.length > 0 && (
+                          <div style={{textAlign:'center',marginBottom:4}}>
+                            <span style={{fontSize:11,color:'#667781',background:'rgba(255,255,255,.75)',padding:'3px 10px',borderRadius:10,boxShadow:'0 1px 2px rgba(0,0,0,.1)'}}>
+                              Today
+                            </span>
+                          </div>
+                        )}
+                        {threadMsgs.length === 0
+                          ? <div style={{textAlign:'center',marginTop:60}}>
+                              <div style={{background:'rgba(255,255,255,.85)',padding:'12px 20px',borderRadius:12,display:'inline-block',boxShadow:'0 1px 4px rgba(0,0,0,.1)'}}>
+                                <p style={{fontSize:13,color:'#667781',margin:0}}>No messages in this conversation yet</p>
+                              </div>
                             </div>
-                          : threadMsgs.map(m=>{
-                              const mine = m.senderEmail===user.email
+                          : threadMsgs.map(m => {
+                              const mine = m.senderEmail === user.email
                               return (
-                                <div key={m.id} style={{display:'flex',justifyContent:mine?'flex-end':'flex-start'}}>
-                                  <div style={{maxWidth:'80%',borderRadius:14,borderBottomRightRadius:mine?3:14,borderBottomLeftRadius:mine?14:3,padding:'10px 14px',background:mine?G:'#fff',color:mine?'#fff':NAVY,border:mine?'none':'1px solid #e2e8f0',boxShadow:shadow.xs}}>
-                                    <p style={{margin:'0 0 3px',fontSize:10.5,fontWeight:700,color:mine?'rgba(255,255,255,.7)':'#94a3b8'}}>{mine?'You':m.senderName||m.senderEmail}</p>
-                                    <p style={{margin:'0 0 5px',fontSize:13.5,lineHeight:1.5,whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{m.content}</p>
-                                    <div style={{margin:0,fontSize:10,color:mine?'rgba(255,255,255,.55)':'#cbd5e1',textAlign:'right',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:4}}>
-                                      <span>{fmt(m.createdAt)}</span>
-                                      {mine && <span style={{color:m.seen ? '#bae6fd' : 'rgba(255,255,255,.7)'}}>{m.seen ? '✓✓' : '✓'}</span>}
+                                <div key={m.id} style={{display:'flex', justifyContent: mine ? 'flex-end' : 'flex-start'}}>
+                                  <div style={{
+                                    maxWidth:'78%', position:'relative',
+                                    borderRadius: mine ? '12px 12px 3px 12px' : '12px 12px 12px 3px',
+                                    padding:'7px 10px 4px',
+                                    background: mine ? '#dcf8c6' : '#fff',  // WhatsApp green/white
+                                    boxShadow:'0 1px 2px rgba(0,0,0,.15)',
+                                  }}>
+                                    {!mine && (
+                                      <p style={{margin:'0 0 2px',fontSize:11,fontWeight:700,color: TEAL}}>{m.senderName||m.senderEmail}</p>
+                                    )}
+                                    <p style={{margin:'0 0 14px',fontSize:14,lineHeight:1.45,whiteSpace:'pre-wrap',wordBreak:'break-word',color:'#111b21'}}>{m.content}</p>
+                                    <div style={{position:'absolute',bottom:5,right:8,display:'flex',alignItems:'center',gap:3}}>
+                                      <span style={{fontSize:10,color:'#667781'}}>{fmt(m.createdAt)}</span>
+                                      {mine && <span style={{fontSize:12,color: m.seen ? '#53bdeb' : '#667781'}}>{m.seen ? '✓✓' : '✓'}</span>}
                                     </div>
                                   </div>
                                 </div>
@@ -996,28 +1138,48 @@ export default function NgoProfile() {
                         <div ref={chatEndRef}/>
                       </div>
 
-                      {/* Reply box */}
-                      <form onSubmit={sendMsg} style={{borderTop:'1px solid #e9ecef',background:'#fff',padding:'10px 14px',flexShrink:0}}>
+                      {/* WhatsApp-style reply bar */}
+                      <form onSubmit={sendMsg} style={{background:'#f0f2f5',padding:'8px 12px',flexShrink:0,borderTop:'1px solid #e9ecef'}}>
                         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                          <TextInput
-                            value={msgText}
-                            onChange={e=>setMsgText(e.target.value)}
-                            placeholder="Type a message…"
-                            style={{flex:1,borderRadius:24,padding:'10px 14px'}}
-                          />
-                          <PrimaryBtn type="submit" iconName="send" loading={sending} style={{borderRadius:24,padding:'10px 18px'}}>
-                            {sending?'…':'Send'}
-                          </PrimaryBtn>
+                          <div style={{flex:1,display:'flex',alignItems:'center',background:'#fff',borderRadius:24,padding:'8px 16px',boxShadow:'0 1px 2px rgba(0,0,0,.08)',border:'1px solid #e9ecef'}}>
+                            <input
+                              value={msgText}
+                              onChange={e => setMsgText(e.target.value)}
+                              placeholder="Type a message"
+                              style={{flex:1,border:'none',outline:'none',fontSize:14,color:'#111b21',background:'transparent'}}
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={sending || !msgText.trim()}
+                            style={{
+                              width:44, height:44, borderRadius:'50%', flexShrink:0,
+                              border:'none', cursor: sending || !msgText.trim() ? 'not-allowed' : 'pointer',
+                              background: sending || !msgText.trim() ? '#e9ecef' : TEAL,
+                              display:'flex', alignItems:'center', justifyContent:'center',
+                              transition:'background .15s',
+                              boxShadow:'0 2px 6px rgba(0,0,0,.15)',
+                            }}
+                          >
+                            <Ic n="send" s={18} c={sending || !msgText.trim() ? '#94a3b8' : '#fff'} sw={2}/>
+                          </button>
                         </div>
                       </form>
                     </>
                   ) : (
-                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12,color:'#94a3b8',background:'#f8fafc'}}>
-                      <Ic n="inbox" s={44} c="#e2e8f0"/>
-                      <p style={{fontSize:14,margin:0,fontWeight:500}}>Select a conversation to start chatting</p>
+                    /* Desktop: no thread selected placeholder */
+                    <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:14,background:'#f0f2f5'}}>
+                      <div style={{textAlign:'center',padding:'0 32px'}}>
+                        <div style={{width:80,height:80,borderRadius:'50%',background:'#e2e8f0',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}>
+                          <Ic n="inbox" s={36} c="#94a3b8"/>
+                        </div>
+                        <p style={{fontSize:16,margin:'0 0 6px',fontWeight:700,color:'#374151'}}>Inclusive Connect</p>
+                        <p style={{fontSize:13,margin:0,color:'#94a3b8',lineHeight:1.6}}>Select a conversation from the left<br/>to start reading messages</p>
+                      </div>
                     </div>
                   )}
                 </section>
+
               </div>
             </div>
           )}
