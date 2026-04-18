@@ -461,6 +461,7 @@ export default function NgoProfile() {
   return (
     <div style={{display:'flex',minHeight:'100vh',background:'#f4f6f8',fontFamily:"'Inter',sans-serif"}}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         .fade-in{animation:fadeIn .25s ease forwards}
@@ -468,15 +469,44 @@ export default function NgoProfile() {
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-track{background:transparent}
         ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}
+
+        /* desktop defaults */
+        .ngo-sidebar    { display:flex !important; }
+        .ngo-bottom-nav { display:none !important; }
+        .ngo-main       { padding-bottom:0 !important; }
+        .ngo-topbar-pill{ display:flex !important; }
+        .ngo-topbar-sub { display:block !important; }
+
+        /* mobile ≤767px */
+        @media(max-width:767px){
+          .ngo-sidebar    { display:none !important; }
+          .ngo-bottom-nav { display:flex !important; }
+          .ngo-main       { padding-bottom:68px !important; }
+          .ngo-content    { padding:12px 12px 28px !important; }
+          .ngo-stats-grid { grid-template-columns:repeat(3,1fr) !important; gap:10px !important; }
+          .ngo-two-col    { grid-template-columns:1fr !important; }
+          .ngo-form-2col  { grid-template-columns:1fr !important; }
+          .ngo-topbar-pill{ display:none !important; }
+          .ngo-topbar-sub { display:none !important; }
+          .ngo-topbar     { padding:0 14px !important; }
+          .ngo-msg-grid   { grid-template-columns:1fr !important; }
+          .ngo-msg-threads{ display:none; }
+          .ngo-msg-threads.visible{ display:flex !important; flex-direction:column; }
+        }
+
+        /* tablet 768–1023px */
+        @media(min-width:768px) and (max-width:1023px){
+          .ngo-stats-grid { grid-template-columns:repeat(3,1fr) !important; }
+          .ngo-content    { padding:18px 20px 48px !important; }
+        }
       `}</style>
 
       {/* ══════════════════ SIDEBAR ══════════════════ */}
-      <aside style={{
+      <aside className="ngo-sidebar" style={{
         width: SIDEBAR_W,
         minWidth: SIDEBAR_W,
         background: '#ffffff',
         borderRight: '1px solid #e9ecef',
-        display:'flex',
         flexDirection:'column',
         position:'sticky',
         top:0,
@@ -547,13 +577,13 @@ export default function NgoProfile() {
       </aside>
 
       {/* ══════════════════ MAIN AREA ══════════════════ */}
-      <main style={{flex:1,minWidth:0,display:'flex',flexDirection:'column'}}>
+      <main className="ngo-main" style={{flex:1,minWidth:0,display:'flex',flexDirection:'column'}}>
 
         {/* Topbar */}
-        <header style={{background:'#fff',borderBottom:'1px solid #e9ecef',padding:'0 32px',height:58,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:40,boxShadow:shadow.xs}}>
+        <header className="ngo-topbar" style={{background:'#fff',borderBottom:'1px solid #e9ecef',padding:'0 32px',height:58,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:40,boxShadow:shadow.xs}}>
           <div>
             <h1 style={{margin:0,fontSize:16,fontWeight:800,color:NAVY,letterSpacing:'-0.02em'}}>{TABS.find(t=>t.id===tab)?.label}</h1>
-            <p style={{margin:0,fontSize:11.5,color:'#94a3b8'}}>{
+            <p className="ngo-topbar-sub" style={{margin:0,fontSize:11.5,color:'#94a3b8'}}>{
               tab==='overview'       ? 'Manage your NGO information' :
               tab==='requirements'   ? 'Post and manage requirements' :
               tab==='jobs'           ? 'Manage job listings' :
@@ -564,7 +594,7 @@ export default function NgoProfile() {
             }</p>
           </div>
           {/* Breadcrumb pill */}
-          <div style={{display:'flex',alignItems:'center',gap:6,padding:'5px 12px',background:'#f8fafc',borderRadius:20,border:'1px solid #e9ecef'}}>
+          <div className="ngo-topbar-pill" style={{alignItems:'center',gap:6,padding:'5px 12px',background:'#f8fafc',borderRadius:20,border:'1px solid #e9ecef'}}>
             <Ic n={TABS.find(t=>t.id===tab)?.icon||'home'} s={13} c={G}/>
             <span style={{fontSize:12,fontWeight:600,color:'#475569'}}>{TABS.find(t=>t.id===tab)?.label}</span>
           </div>
@@ -573,14 +603,14 @@ export default function NgoProfile() {
         {/* Toasts */}
         <div style={{position:'fixed',top:70,right:24,zIndex:999,display:'flex',flexDirection:'column',gap:8}}>
           {error && (
-            <div className="fade-in" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:'1px solid #fecaca',borderLeft:`4px solid #ef4444`,borderRadius:10,padding:'12px 16px',boxShadow:shadow.md,maxWidth:360}}>
+            <div className="fade-in" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:'1px solid #fecaca',borderLeft:`4px solid #ef4444`,borderRadius:10,padding:'12px 16px',boxShadow:shadow.md,maxWidth:340}}>
               <Ic n="warning" s={16} c="#ef4444"/>
               <span style={{fontSize:13,color:'#dc2626',fontWeight:500,flex:1}}>{error}</span>
               <button onClick={()=>setError('')} style={{background:'none',border:'none',cursor:'pointer',padding:0,display:'flex'}}><Ic n="x" s={14} c="#94a3b8"/></button>
             </div>
           )}
           {success && (
-            <div className="fade-in" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:'1px solid #bbf7d0',borderLeft:`4px solid ${G}`,borderRadius:10,padding:'12px 16px',boxShadow:shadow.md,maxWidth:360}}>
+            <div className="fade-in" style={{display:'flex',alignItems:'center',gap:10,background:'#fff',border:'1px solid #bbf7d0',borderLeft:`4px solid ${G}`,borderRadius:10,padding:'12px 16px',boxShadow:shadow.md,maxWidth:340}}>
               <Ic n="check" s={16} c={G}/>
               <span style={{fontSize:13,color:'#166534',fontWeight:500}}>{success}</span>
             </div>
@@ -588,14 +618,14 @@ export default function NgoProfile() {
         </div>
 
         {/* Scrollable content */}
-        <div style={{flex:1,overflowY:'auto',padding:'28px 32px 60px'}}>
+        <div className="ngo-content" style={{flex:1,overflowY:'auto',padding:'28px 32px 60px'}}>
 
           {/* ── OVERVIEW ────────────────────────────────────────────── */}
           {tab === 'overview' && (
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
               {/* Stats row */}
               {ngo && (
-                <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:14}}>
+                <div className="ngo-stats-grid" style={{display:'grid',gap:14}}>
                   {[
                     {label:'Requirements', value:needs.length,       icon:'clipboard', color:'#6366f1'},
                     {label:'Jobs',         value:jobs.length,        icon:'briefcase', color:B},
@@ -619,7 +649,7 @@ export default function NgoProfile() {
               <Panel>
                 <PanelHeader title="NGO Profile" subtitle="This information appears on your public profile and the community directory." />
                 <form onSubmit={saveProfile}>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
+                  <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
                     {[
                       {name:'name',               label:'NGO Name',            req:true},
                       {name:'email',              label:'Email Address',        req:true},
@@ -650,7 +680,7 @@ export default function NgoProfile() {
 
           {/* ── REQUIREMENTS ────────────────────────────────────────── */}
           {tab === 'requirements' && (
-            <div className="fade-in" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24,alignItems:'start'}}>
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Requirement" subtitle="Describe what your NGO needs from the community."/>
                 <form onSubmit={createNeed} style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -699,7 +729,7 @@ export default function NgoProfile() {
 
           {/* ── JOBS ────────────────────────────────────────────────── */}
           {tab === 'jobs' && (
-            <div className="fade-in" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24,alignItems:'start'}}>
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Job" subtitle="Recruit for your NGO's team."/>
                 <form onSubmit={createJob} style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -790,7 +820,7 @@ export default function NgoProfile() {
 
           {/* ── SERVICES ────────────────────────────────────────────── */}
           {tab === 'services' && (
-            <div className="fade-in" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24,alignItems:'start'}}>
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Service" subtitle="Services appear on your public NGO profile."/>
                 <form onSubmit={createService} style={{display:'flex',flexDirection:'column',gap:14}}>
@@ -886,9 +916,9 @@ export default function NgoProfile() {
                 </div>
               </div>
 
-              <div style={{display:'grid',gridTemplateColumns:'260px 1fr',flex:1,minHeight:0}}>
+              <div className="ngo-msg-grid" style={{display:'grid',flex:1,minHeight:0}}>
                 {/* Thread sidebar */}
-                <aside style={{borderRight:'1px solid #e9ecef',background:'#f8fafc',display:'flex',flexDirection:'column'}}>
+                <aside className="ngo-msg-threads" style={{borderRight:'1px solid #e9ecef',background:'#f8fafc',display:'flex',flexDirection:'column'}}>
                   <div style={{padding:'10px 14px',borderBottom:'1px solid #e9ecef',fontSize:10.5,fontWeight:700,color:'#94a3b8',letterSpacing:'0.08em',textTransform:'uppercase'}}>
                     Conversations
                   </div>
@@ -934,14 +964,14 @@ export default function NgoProfile() {
                         <div style={{width:36,height:36,borderRadius:'50%',background:`${G}18`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,border:`1.5px solid ${G}30`}}>
                           <Ic n="chat" s={18} c={G}/>
                         </div>
-                        <div>
-                          <p style={{margin:0,fontWeight:800,fontSize:14,color:NAVY}}>{threads.find(t=>t.email===selThread)?.name||selThread}</p>
-                          <p style={{margin:0,fontSize:11.5,color:'#94a3b8'}}>{selThread}</p>
+                        <div style={{flex:1,minWidth:0}}>
+                          <p style={{margin:0,fontWeight:800,fontSize:14,color:NAVY,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{threads.find(t=>t.email===selThread)?.name||selThread}</p>
+                          <p style={{margin:0,fontSize:11.5,color:'#94a3b8',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{selThread}</p>
                         </div>
                       </div>
 
                       {/* Messages list */}
-                      <div style={{flex:1,overflowY:'auto',background:'#f4f6f8',padding:'20px',display:'flex',flexDirection:'column',gap:12}}>
+                      <div style={{flex:1,overflowY:'auto',background:'#f4f6f8',padding:'16px',display:'flex',flexDirection:'column',gap:10}}>
                         {threadMsgs.length===0
                           ? <div style={{textAlign:'center',marginTop:60,color:'#94a3b8'}}>
                               <Ic n="chat" s={36} c="#cbd5e1" st={{margin:'0 auto 10px'}}/>
@@ -951,7 +981,7 @@ export default function NgoProfile() {
                               const mine = m.senderEmail===user.email
                               return (
                                 <div key={m.id} style={{display:'flex',justifyContent:mine?'flex-end':'flex-start'}}>
-                                  <div style={{maxWidth:'72%',borderRadius:14,borderBottomRightRadius:mine?3:14,borderBottomLeftRadius:mine?14:3,padding:'10px 14px',background:mine?G:'#fff',color:mine?'#fff':NAVY,border:mine?'none':'1px solid #e2e8f0',boxShadow:shadow.xs}}>
+                                  <div style={{maxWidth:'80%',borderRadius:14,borderBottomRightRadius:mine?3:14,borderBottomLeftRadius:mine?14:3,padding:'10px 14px',background:mine?G:'#fff',color:mine?'#fff':NAVY,border:mine?'none':'1px solid #e2e8f0',boxShadow:shadow.xs}}>
                                     <p style={{margin:'0 0 3px',fontSize:10.5,fontWeight:700,color:mine?'rgba(255,255,255,.7)':'#94a3b8'}}>{mine?'You':m.senderName||m.senderEmail}</p>
                                     <p style={{margin:'0 0 5px',fontSize:13.5,lineHeight:1.5,whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{m.content}</p>
                                     <div style={{margin:0,fontSize:10,color:mine?'rgba(255,255,255,.55)':'#cbd5e1',textAlign:'right',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:4}}>
@@ -967,15 +997,15 @@ export default function NgoProfile() {
                       </div>
 
                       {/* Reply box */}
-                      <form onSubmit={sendMsg} style={{borderTop:'1px solid #e9ecef',background:'#fff',padding:'12px 16px',flexShrink:0}}>
-                        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <form onSubmit={sendMsg} style={{borderTop:'1px solid #e9ecef',background:'#fff',padding:'10px 14px',flexShrink:0}}>
+                        <div style={{display:'flex',gap:8,alignItems:'center'}}>
                           <TextInput
                             value={msgText}
                             onChange={e=>setMsgText(e.target.value)}
                             placeholder="Type a message…"
-                            style={{flex:1,borderRadius:24,padding:'10px 16px'}}
+                            style={{flex:1,borderRadius:24,padding:'10px 14px'}}
                           />
-                          <PrimaryBtn type="submit" iconName="send" loading={sending} style={{borderRadius:24,padding:'10px 20px'}}>
+                          <PrimaryBtn type="submit" iconName="send" loading={sending} style={{borderRadius:24,padding:'10px 18px'}}>
                             {sending?'…':'Send'}
                           </PrimaryBtn>
                         </div>
@@ -994,6 +1024,48 @@ export default function NgoProfile() {
 
         </div>{/* /scrollable */}
       </main>
+
+      {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
+      <nav className="ngo-bottom-nav" style={{
+        position:'fixed', bottom:0, left:0, right:0, zIndex:60,
+        background:'#fff', borderTop:'1px solid #e9ecef',
+        boxShadow:'0 -2px 12px rgba(0,0,0,.08)',
+        height:64, alignItems:'stretch',
+        justifyContent:'space-around',
+      }}>
+        {TABS.map(t => {
+          const active = tab === t.id
+          const count  = counts[t.id]
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                flex:1, display:'flex', flexDirection:'column', alignItems:'center',
+                justifyContent:'center', gap:2, border:'none', background:'transparent',
+                cursor:'pointer', padding:'6px 2px', position:'relative',
+                borderTop: active ? `3px solid ${TEAL}` : '3px solid transparent',
+                transition:'border-color .15s',
+              }}
+            >
+              {count > 0 && (
+                <span style={{
+                  position:'absolute', top:4, right:'50%', marginRight:-14,
+                  fontSize:9, fontWeight:800, color:'#fff',
+                  background: active ? TEAL : G,
+                  padding:'1px 5px', borderRadius:8, minWidth:16, textAlign:'center',
+                  lineHeight:'14px',
+                }}>{count}</span>
+              )}
+              <Ic n={t.icon} s={19} c={active ? TEAL : '#94a3b8'} sw={active ? 2.2 : 1.7}/>
+              <span style={{fontSize:9.5, fontWeight: active ? 700 : 500, color: active ? TEAL : '#94a3b8'}}>
+                {t.label}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+
     </div>
   )
 }
