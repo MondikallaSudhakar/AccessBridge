@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import authService from '../../services/authService'
+import api from '../../services/api'
 
 const STORAGE_KEY = 'guardian_bookmarks'
 
@@ -76,6 +77,9 @@ export default function GuardianProfile() {
   const [saving, setSaving] = useState(false)
   const [selectedOpportunity, setSelectedOpportunity] = useState(null)
   const [applicationNote, setApplicationNote] = useState('')
+  const [ngos, setNgos] = useState([])
+  const [submittingHelp, setSubmittingHelp] = useState(false)
+  const [helpForm, setHelpForm] = useState({ ngoId: '', requestType: 'DEPENDENT_SUPPORT', title: '', description: '', preferredCity: '' })
 
   useEffect(() => {
     const load = async () => {
@@ -97,6 +101,22 @@ export default function GuardianProfile() {
     }
     load()
   }, [user])
+
+  useEffect(() => {
+    const loadNgos = async () => {
+      try {
+        const list = await api.get('/ngos')
+        const normalized = Array.isArray(list) ? list : []
+        setNgos(normalized)
+        if (normalized.length > 0) {
+          setHelpForm((current) => ({ ...current, ngoId: current.ngoId || String(normalized[0].id) }))
+        }
+      } catch {
+        setNgos([])
+      }
+    }
+    loadNgos()
+  }, [])
 
   const savedSet = useMemo(() => new Set(bookmarks), [bookmarks])
 
@@ -140,6 +160,33 @@ export default function GuardianProfile() {
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const submitHelpRequest = async (event) => {
+    event.preventDefault()
+    if (!helpForm.ngoId) {
+      setError('Please select an NGO before requesting help.')
+      return
+    }
+    setSubmittingHelp(true)
+    setError('')
+    try {
+      await api.post(`/ngos/${helpForm.ngoId}/support-requests`, {
+        requesterName: (user?.name || profile.name || '').trim() || 'Guardian User',
+        requesterEmail: (user?.email || '').trim(),
+        requesterPhone: (profile.phone || '').trim(),
+        requestType: helpForm.requestType,
+        title: helpForm.title,
+        description: helpForm.description,
+        preferredCity: helpForm.preferredCity,
+      })
+      setHelpForm((current) => ({ ...current, title: '', description: '', preferredCity: '' }))
+      setMessage('Help request submitted to the selected NGO.')
+    } catch (err) {
+      setError(err.message || 'Failed to submit help request')
+    } finally {
+      setSubmittingHelp(false)
+    }
   }
 
   const sections = [
@@ -208,6 +255,23 @@ export default function GuardianProfile() {
             </div>
 
             <button type="submit" disabled={saving} className="mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? 'Saving...' : 'Save Dependent Profile'}</button>
+          </form>
+
+          <form onSubmit={submitHelpRequest} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-lg font-extrabold text-slate-900">Request Help</h3>
+            <p className="text-sm text-slate-500">Ask an NGO for dependent support and follow-up services.</p>
+            <div className="mt-4 space-y-3">
+              <select value={helpForm.ngoId} onChange={(e) => setHelpForm({ ...helpForm, ngoId: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500" required>
+                <option value="">Select NGO</option>
+                {ngos.map((ngo) => <option key={ngo.id} value={String(ngo.id)}>{ngo.name}</option>)}
+              </select>
+              <input value={helpForm.title} onChange={(e) => setHelpForm({ ...helpForm, title: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Help request title" required />
+              <textarea value={helpForm.description} onChange={(e) => setHelpForm({ ...helpForm, description: e.target.value })} rows={3} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Describe the support needed for the dependent" required />
+              <input value={helpForm.preferredCity} onChange={(e) => setHelpForm({ ...helpForm, preferredCity: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500" placeholder="Preferred city (optional)" />
+            </div>
+            <button type="submit" disabled={submittingHelp || !user?.email} className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">
+              {submittingHelp ? 'Submitting...' : 'Submit Help Request'}
+            </button>
           </form>
 
           <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">

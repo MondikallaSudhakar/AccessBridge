@@ -17,6 +17,8 @@ const blankJob         = { title:'', description:'', employmentType:'FULL_TIME',
 const blankProduct     = { name:'', description:'', category:'', price:'', stockQuantity:'', available:true }
 const blankService     = { title:'', description:'', category:'', contactInfo:'', availability:'', status:'ACTIVE' }
 const blankAchievement = { title:'', description:'', category:'', achievementDate:'', imageUrl:'' }
+const blankVolunteer   = { fullName:'', email:'', phone:'', skills:'', availability:'', preferredCity:'', status:'PENDING', note:'' }
+const blankCampaign    = { title:'', objective:'', startDate:'', endDate:'', targetBeneficiaries:'', volunteerTarget:'', spentAmount:'', status:'PLANNED', impactSummary:'' }
 
 /* ─────────────────────────── helpers ────────────────────────────────── */
 const fmt = v => { if(!v) return ''; const d=new Date(v); return isNaN(d)?'':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }
@@ -90,6 +92,8 @@ const TABS = [
   { id:'overview',      label:'Overview',     icon:'home'      },
   { id:'requirements',  label:'Requirements', icon:'clipboard' },
   { id:'supportRequests', label:'Support Requests', icon:'chat' },
+  { id:'volunteers',    label:'Volunteers',   icon:'users'     },
+  { id:'campaigns',     label:'Campaigns',    icon:'calendar'  },
   { id:'jobs',          label:'Jobs',         icon:'briefcase' },
   { id:'products',      label:'Products',     icon:'box'       },
   { id:'services',      label:'Services',     icon:'users'     },
@@ -283,6 +287,8 @@ export default function NgoProfile() {
   const [services, setServices]   = useState([])
   const [achievements, setAchievements] = useState([])
   const [supportRequests, setSupportRequests] = useState([])
+  const [volunteers, setVolunteers] = useState([])
+  const [campaigns, setCampaigns] = useState([])
   const [messages, setMessages]   = useState([])
   const [selThread, setSelThread] = useState('')
   const [mobileView, setMobileView] = useState('threads') // 'threads' | 'chat' (mobile WhatsApp nav)
@@ -294,6 +300,9 @@ export default function NgoProfile() {
   const [productForm, setProductForm]         = useState(blankProduct)
   const [serviceForm, setServiceForm]         = useState(blankService)
   const [achievementForm, setAchievementForm] = useState(blankAchievement)
+  const [volunteerForm, setVolunteerForm] = useState(blankVolunteer)
+  const [campaignForm, setCampaignForm] = useState(blankCampaign)
+  const [supportRequestFilter, setSupportRequestFilter] = useState('PENDING')
 
   /* effects */
   useEffect(() => {
@@ -394,18 +403,22 @@ export default function NgoProfile() {
   }
 
   const loadData = async id => {
-    const [n,j,p,s,a,sr] = await Promise.all([
+    const [n,j,p,s,a,sr,v,c] = await Promise.all([
       api.get(`/ngos/${id}/needs`).catch(()=>[]),
       api.get(`/ngos/${id}/jobs`).catch(()=>[]),
       api.get(`/ngos/${id}/products`).catch(()=>[]),
       api.get(`/ngos/${id}/services`).catch(()=>[]),
       api.get(`/ngos/${id}/achievements`).catch(()=>[]),
       api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
+      api.get(`/ngos/${id}/volunteers`).catch(()=>[]),
+      api.get(`/ngos/${id}/campaigns`).catch(()=>[]),
     ])
     setNeeds(Array.isArray(n)?n:[]); setJobs(Array.isArray(j)?j:[])
     setProducts(Array.isArray(p)?p:[]); setServices(Array.isArray(s)?s:[])
     setAchievements(Array.isArray(a)?a:[])
     setSupportRequests(Array.isArray(sr)?sr:[])
+    setVolunteers(Array.isArray(v)?v:[])
+    setCampaigns(Array.isArray(c)?c:[])
   }
 
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
@@ -434,6 +447,8 @@ export default function NgoProfile() {
   const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
   const createService = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
   const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
+  const createVolunteer = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/volunteers`, volunteerForm); setVolunteerForm(blankVolunteer); loadData(ngo.id); flash('Volunteer profile added!')}catch(err){setError(err.message||'Error')} }
+  const createCampaign = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/campaigns`, {...campaignForm, targetBeneficiaries: campaignForm.targetBeneficiaries ? Number(campaignForm.targetBeneficiaries) : null, volunteerTarget: campaignForm.volunteerTarget ? Number(campaignForm.volunteerTarget) : null, spentAmount: campaignForm.spentAmount ? Number(campaignForm.spentAmount) : null}); setCampaignForm(blankCampaign); loadData(ngo.id); flash('Campaign added!')}catch(err){setError(err.message||'Error')} }
   const updateSupportRequestStatus = async (requestId, status) => {
     if (!ngo?.id) return
     try {
@@ -446,6 +461,11 @@ export default function NgoProfile() {
   }
   const closeNeed = async id => { if(!ngo?.id)return; await fetch(`${BASE}/ngos/needs/${id}/close`,{method:'PATCH',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}}); loadData(ngo.id) }
   const del = async ep => { if(!ngo?.id)return; await api.delete(ep); loadData(ngo.id) }
+
+  const filteredSupportRequests = useMemo(() => {
+    if (supportRequestFilter === 'ALL') return supportRequests
+    return supportRequests.filter((request) => request.status === supportRequestFilter)
+  }, [supportRequests, supportRequestFilter])
 
   const sendMsg = async e => {
     e.preventDefault(); if(!ngo?.id)return
@@ -462,6 +482,8 @@ export default function NgoProfile() {
   const counts = {
     requirements:needs.length,
     supportRequests:supportRequests.filter(r => r.status === 'PENDING').length,
+    volunteers:volunteers.length,
+    campaigns:campaigns.length,
     jobs:jobs.length,
     products:products.length,
     services:services.length,
@@ -626,6 +648,8 @@ export default function NgoProfile() {
               tab==='overview'       ? 'Manage your NGO information' :
               tab==='requirements'   ? 'Post and manage requirements' :
               tab==='supportRequests'? 'Review and respond to user help requests' :
+              tab==='volunteers'     ? 'Track volunteer profiles and readiness' :
+              tab==='campaigns'      ? 'Plan and track campaign outcomes' :
               tab==='jobs'           ? 'Manage job listings' :
               tab==='products'       ? 'List products for the community' :
               tab==='services'       ? 'Services visible on public profile' :
@@ -729,11 +753,32 @@ export default function NgoProfile() {
                   title="User Support Requests"
                   subtitle="Accept or decline beneficiary requests and coordinate your response plan."
                 />
-                {supportRequests.length===0 ? (
+                <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
+                  {['PENDING','ACCEPTED','DECLINED','ALL'].map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setSupportRequestFilter(status)}
+                      style={{
+                        border:'1px solid #e2e8f0',
+                        borderRadius:999,
+                        padding:'6px 12px',
+                        background: supportRequestFilter === status ? '#dcfce7' : '#fff',
+                        color: supportRequestFilter === status ? '#166534' : '#475569',
+                        fontSize:12,
+                        fontWeight:700,
+                        cursor:'pointer',
+                      }}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+                {filteredSupportRequests.length===0 ? (
                   <EmptyPane iconName="chat" title="No support requests yet" body="When users ask for help from your NGO, requests will appear here."/>
                 ) : (
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                    {supportRequests.map((req)=>(
+                    {filteredSupportRequests.map((req)=>(
                       <ListItem key={req.id}>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
                           <div style={{flex:1,minWidth:0}}>
@@ -754,6 +799,102 @@ export default function NgoProfile() {
                             <GhostBtn onClick={() => updateSupportRequestStatus(req.id, 'ACCEPTED')} color={G} iconName="check">Accept</GhostBtn>
                             <GhostBtn onClick={() => updateSupportRequestStatus(req.id, 'DECLINED')} color="#ef4444" iconName="x">Decline</GhostBtn>
                           </div>
+                        </div>
+                      </ListItem>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+            </div>
+          )}
+
+          {/* ── VOLUNTEERS ─────────────────────────────────────────── */}
+          {tab === 'volunteers' && (
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
+              <Panel>
+                <PanelHeader title="Add Volunteer Profile" subtitle="Dedicated volunteer records for CSR reporting."/>
+                <form onSubmit={createVolunteer} style={{display:'flex',flexDirection:'column',gap:14}}>
+                  <div><FieldLabel required>Full Name</FieldLabel><TextInput required value={volunteerForm.fullName} onChange={e=>setVolunteerForm(p=>({...p,fullName:e.target.value}))} /></div>
+                  <div><FieldLabel required>Email</FieldLabel><TextInput required type="email" value={volunteerForm.email} onChange={e=>setVolunteerForm(p=>({...p,email:e.target.value}))} /></div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div><FieldLabel>Phone</FieldLabel><TextInput value={volunteerForm.phone} onChange={e=>setVolunteerForm(p=>({...p,phone:e.target.value}))} /></div>
+                    <div><FieldLabel>Preferred City</FieldLabel><TextInput value={volunteerForm.preferredCity} onChange={e=>setVolunteerForm(p=>({...p,preferredCity:e.target.value}))} /></div>
+                  </div>
+                  <div><FieldLabel>Availability</FieldLabel><TextInput value={volunteerForm.availability} onChange={e=>setVolunteerForm(p=>({...p,availability:e.target.value}))} placeholder="Weekends / evenings"/></div>
+                  <div><FieldLabel>Skills</FieldLabel><TextArea rows={3} value={volunteerForm.skills} onChange={e=>setVolunteerForm(p=>({...p,skills:e.target.value}))} /></div>
+                  <PrimaryBtn type="submit" iconName="plus">Add Volunteer</PrimaryBtn>
+                </form>
+              </Panel>
+              <Panel>
+                <PanelHeader title="Volunteer Profiles" subtitle={`${volunteers.length} records`} />
+                {volunteers.length === 0 ? <EmptyPane iconName="users" title="No volunteers yet" body="Add volunteer profiles to track CSR participation."/> : (
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {volunteers.map((volunteer) => (
+                      <ListItem key={volunteer.id}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:6}}>
+                              <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{volunteer.fullName}</p>
+                              <Chip color={volunteer.status === 'APPROVED' ? G : volunteer.status === 'REJECTED' ? '#ef4444' : '#f59e0b'}>{volunteer.status}</Chip>
+                            </div>
+                            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                              <MetaItem iconName="mail">{volunteer.email}</MetaItem>
+                              {volunteer.phone && <MetaItem iconName="chat">{volunteer.phone}</MetaItem>}
+                              {volunteer.preferredCity && <MetaItem iconName="location">{volunteer.preferredCity}</MetaItem>}
+                            </div>
+                            {volunteer.skills && <p style={{margin:'8px 0 0',fontSize:13,color:'#64748b'}}>{volunteer.skills}</p>}
+                          </div>
+                          <GhostBtn onClick={() => del(`/ngos/volunteers/${volunteer.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
+                        </div>
+                      </ListItem>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+            </div>
+          )}
+
+          {/* ── CAMPAIGNS ──────────────────────────────────────────── */}
+          {tab === 'campaigns' && (
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
+              <Panel>
+                <PanelHeader title="Add Campaign" subtitle="Track campaign outcomes separate from needs and achievements."/>
+                <form onSubmit={createCampaign} style={{display:'flex',flexDirection:'column',gap:14}}>
+                  <div><FieldLabel required>Campaign Title</FieldLabel><TextInput required value={campaignForm.title} onChange={e=>setCampaignForm(p=>({...p,title:e.target.value}))} /></div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div><FieldLabel>Start Date</FieldLabel><TextInput type="date" value={campaignForm.startDate} onChange={e=>setCampaignForm(p=>({...p,startDate:e.target.value}))} /></div>
+                    <div><FieldLabel>End Date</FieldLabel><TextInput type="date" value={campaignForm.endDate} onChange={e=>setCampaignForm(p=>({...p,endDate:e.target.value}))} /></div>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                    <div><FieldLabel>Target Beneficiaries</FieldLabel><TextInput type="number" value={campaignForm.targetBeneficiaries} onChange={e=>setCampaignForm(p=>({...p,targetBeneficiaries:e.target.value}))} /></div>
+                    <div><FieldLabel>Volunteer Target</FieldLabel><TextInput type="number" value={campaignForm.volunteerTarget} onChange={e=>setCampaignForm(p=>({...p,volunteerTarget:e.target.value}))} /></div>
+                  </div>
+                  <div><FieldLabel>Spent Amount (INR)</FieldLabel><TextInput type="number" value={campaignForm.spentAmount} onChange={e=>setCampaignForm(p=>({...p,spentAmount:e.target.value}))} /></div>
+                  <div><FieldLabel>Objective</FieldLabel><TextArea rows={3} value={campaignForm.objective} onChange={e=>setCampaignForm(p=>({...p,objective:e.target.value}))} /></div>
+                  <div><FieldLabel>Impact Summary</FieldLabel><TextArea rows={3} value={campaignForm.impactSummary} onChange={e=>setCampaignForm(p=>({...p,impactSummary:e.target.value}))} /></div>
+                  <PrimaryBtn type="submit" iconName="plus">Add Campaign</PrimaryBtn>
+                </form>
+              </Panel>
+              <Panel>
+                <PanelHeader title="Campaigns" subtitle={`${campaigns.length} campaigns`} />
+                {campaigns.length === 0 ? <EmptyPane iconName="calendar" title="No campaigns yet" body="Create campaign records for detailed CSR reporting."/> : (
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {campaigns.map((campaign) => (
+                      <ListItem key={campaign.id}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:6}}>
+                              <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{campaign.title}</p>
+                              <Chip color={B}>{campaign.status}</Chip>
+                            </div>
+                            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                              {campaign.startDate && <MetaItem iconName="calendar">{campaign.startDate}</MetaItem>}
+                              {campaign.targetBeneficiaries && <MetaItem iconName="users">Beneficiaries: {campaign.targetBeneficiaries}</MetaItem>}
+                              {campaign.spentAmount && <MetaItem iconName="currency">INR {Number(campaign.spentAmount).toLocaleString('en-IN')}</MetaItem>}
+                            </div>
+                            {campaign.objective && <p style={{margin:'8px 0 0',fontSize:13,color:'#64748b'}}>{campaign.objective}</p>}
+                          </div>
+                          <GhostBtn onClick={() => del(`/ngos/campaigns/${campaign.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
                         </div>
                       </ListItem>
                     ))}

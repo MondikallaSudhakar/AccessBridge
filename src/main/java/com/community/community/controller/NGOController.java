@@ -2,16 +2,20 @@ package com.community.community.controller;
 
 import com.community.community.model.NGO;
 import com.community.community.model.NGOAchievement;
+import com.community.community.model.NGOCampaign;
 import com.community.community.model.NGOJob;
 import com.community.community.model.NGOProduct;
 import com.community.community.model.NGOServiceItem;
 import com.community.community.model.NGOSupportRequest;
+import com.community.community.model.NGOVolunteerProfile;
 import com.community.community.model.Need;
 import com.community.community.repository.NGOAchievementRepository;
+import com.community.community.repository.NGOCampaignRepository;
 import com.community.community.repository.NGOJobRepository;
 import com.community.community.repository.NGOProductRepository;
 import com.community.community.repository.NGOServiceItemRepository;
 import com.community.community.repository.NGOSupportRequestRepository;
+import com.community.community.repository.NGOVolunteerProfileRepository;
 import com.community.community.repository.NeedRepository;
 import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +40,8 @@ public class NGOController {
     private final NGOServiceItemRepository ngoServiceItemRepository;
     private final NGOAchievementRepository ngoAchievementRepository;
     private final NGOSupportRequestRepository ngoSupportRequestRepository;
+    private final NGOVolunteerProfileRepository ngoVolunteerProfileRepository;
+    private final NGOCampaignRepository ngoCampaignRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -147,6 +153,104 @@ public class NGOController {
         request.setStatus(normalizedStatus);
         request.setNgoResponseNote(ngoResponseNote);
         return ResponseEntity.ok(ngoSupportRequestRepository.save(request));
+    }
+
+    // ── Volunteer Profiles Endpoints ───────────────────────────────────────
+
+    @GetMapping("/{id}/volunteers")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<NGOVolunteerProfile>> getVolunteerProfiles(@PathVariable Long id) {
+        return ResponseEntity.ok(ngoVolunteerProfileRepository.findByNgoIdOrderByCreatedAtDesc(id));
+    }
+
+    @PostMapping("/{id}/volunteers")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<NGOVolunteerProfile> createVolunteerProfile(@PathVariable Long id, @RequestBody NGOVolunteerProfile req) {
+        NGO ngo = ngoService.getNGOById(id);
+        NGOVolunteerProfile profile = new NGOVolunteerProfile();
+        profile.setNgo(ngo);
+        profile.setFullName(req.getFullName());
+        profile.setEmail(req.getEmail());
+        profile.setPhone(req.getPhone());
+        profile.setSkills(req.getSkills());
+        profile.setAvailability(req.getAvailability());
+        profile.setPreferredCity(req.getPreferredCity());
+        profile.setStatus(req.getStatus() == null || req.getStatus().isBlank() ? "PENDING" : req.getStatus());
+        profile.setNote(req.getNote());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ngoVolunteerProfileRepository.save(profile));
+    }
+
+    @PutMapping("/volunteers/{volunteerId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<NGOVolunteerProfile> updateVolunteerProfile(@PathVariable Long volunteerId, @RequestBody NGOVolunteerProfile req) {
+        NGOVolunteerProfile profile = ngoVolunteerProfileRepository.findById(volunteerId)
+                .orElseThrow(() -> new RuntimeException("Volunteer profile not found"));
+        profile.setFullName(req.getFullName());
+        profile.setEmail(req.getEmail());
+        profile.setPhone(req.getPhone());
+        profile.setSkills(req.getSkills());
+        profile.setAvailability(req.getAvailability());
+        profile.setPreferredCity(req.getPreferredCity());
+        profile.setStatus(req.getStatus() == null || req.getStatus().isBlank() ? profile.getStatus() : req.getStatus());
+        profile.setNote(req.getNote());
+        return ResponseEntity.ok(ngoVolunteerProfileRepository.save(profile));
+    }
+
+    @DeleteMapping("/volunteers/{volunteerId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteVolunteerProfile(@PathVariable Long volunteerId) {
+        ngoVolunteerProfileRepository.deleteById(volunteerId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Campaigns Endpoints ────────────────────────────────────────────────
+
+    @GetMapping("/{id}/campaigns")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<NGOCampaign>> getCampaigns(@PathVariable Long id) {
+        return ResponseEntity.ok(ngoCampaignRepository.findByNgoIdOrderByCreatedAtDesc(id));
+    }
+
+    @PostMapping("/{id}/campaigns")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<NGOCampaign> createCampaign(@PathVariable Long id, @RequestBody NGOCampaign req) {
+        NGO ngo = ngoService.getNGOById(id);
+        NGOCampaign campaign = new NGOCampaign();
+        campaign.setNgo(ngo);
+        campaign.setTitle(req.getTitle());
+        campaign.setObjective(req.getObjective());
+        campaign.setStartDate(req.getStartDate());
+        campaign.setEndDate(req.getEndDate());
+        campaign.setTargetBeneficiaries(req.getTargetBeneficiaries());
+        campaign.setVolunteerTarget(req.getVolunteerTarget());
+        campaign.setSpentAmount(req.getSpentAmount());
+        campaign.setStatus(req.getStatus() == null || req.getStatus().isBlank() ? "PLANNED" : req.getStatus());
+        campaign.setImpactSummary(req.getImpactSummary());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ngoCampaignRepository.save(campaign));
+    }
+
+    @PutMapping("/campaigns/{campaignId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<NGOCampaign> updateCampaign(@PathVariable Long campaignId, @RequestBody NGOCampaign req) {
+        NGOCampaign campaign = ngoCampaignRepository.findById(campaignId)
+                .orElseThrow(() -> new RuntimeException("Campaign not found"));
+        campaign.setTitle(req.getTitle());
+        campaign.setObjective(req.getObjective());
+        campaign.setStartDate(req.getStartDate());
+        campaign.setEndDate(req.getEndDate());
+        campaign.setTargetBeneficiaries(req.getTargetBeneficiaries());
+        campaign.setVolunteerTarget(req.getVolunteerTarget());
+        campaign.setSpentAmount(req.getSpentAmount());
+        campaign.setStatus(req.getStatus() == null || req.getStatus().isBlank() ? campaign.getStatus() : req.getStatus());
+        campaign.setImpactSummary(req.getImpactSummary());
+        return ResponseEntity.ok(ngoCampaignRepository.save(campaign));
+    }
+
+    @DeleteMapping("/campaigns/{campaignId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteCampaign(@PathVariable Long campaignId) {
+        ngoCampaignRepository.deleteById(campaignId);
+        return ResponseEntity.noContent().build();
     }
 
     // ── Requirements (Needs) Endpoints ──────────────────────────────────────

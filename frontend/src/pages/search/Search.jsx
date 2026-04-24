@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 
 const BASE = 'http://localhost:8081/api'
 const NGO_GREEN = '#5BCB2B'
 
 // Search Page
 export default function Search() {
+  const { user } = useAuth()
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [ngos, setNgos] = useState([])
   const [jobCountByNgo, setJobCountByNgo] = useState({})
+  const [helpMessage, setHelpMessage] = useState('')
+  const [helpError, setHelpError] = useState('')
+  const [submittingHelp, setSubmittingHelp] = useState(false)
+  const [helpForm, setHelpForm] = useState({ ngoId: '', requestType: 'GENERAL_SUPPORT', title: '', description: '', preferredCity: '' })
 
   useEffect(() => {
     async function load() {
@@ -18,6 +25,9 @@ export default function Search() {
         const ngoData = ngoRes.ok ? await ngoRes.json() : []
         const ngoList = Array.isArray(ngoData) ? ngoData : []
         setNgos(ngoList)
+        if (ngoList.length > 0) {
+          setHelpForm((current) => ({ ...current, ngoId: current.ngoId || String(ngoList[0].id) }))
+        }
 
         const counts = {}
         await Promise.all(
@@ -50,6 +60,38 @@ export default function Search() {
     })
   }, [ngos, query])
 
+  const submitHelpRequest = async (event) => {
+    event.preventDefault()
+    if (!user?.email) {
+      setHelpError('Please login to submit a help request.')
+      return
+    }
+    if (!helpForm.ngoId) {
+      setHelpError('Please choose an NGO first.')
+      return
+    }
+    setSubmittingHelp(true)
+    setHelpError('')
+    setHelpMessage('')
+    try {
+      await api.post(`/ngos/${helpForm.ngoId}/support-requests`, {
+        requesterName: (user.name || 'Community User').trim(),
+        requesterEmail: user.email.trim(),
+        requesterPhone: '',
+        requestType: helpForm.requestType,
+        title: helpForm.title,
+        description: helpForm.description,
+        preferredCity: helpForm.preferredCity,
+      })
+      setHelpForm((current) => ({ ...current, title: '', description: '', preferredCity: '' }))
+      setHelpMessage('Help request submitted successfully.')
+    } catch (err) {
+      setHelpError(err.message || 'Failed to submit help request')
+    } finally {
+      setSubmittingHelp(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -65,6 +107,26 @@ export default function Search() {
             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-emerald-500"
           />
         </div>
+
+        <form onSubmit={submitHelpRequest} className="mb-8 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="text-lg font-bold text-gray-900">Request Help</h2>
+          <p className="mt-1 text-sm text-gray-600">Send a support request directly to an NGO.</p>
+          {helpMessage && <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{helpMessage}</p>}
+          {helpError && <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{helpError}</p>}
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <select value={helpForm.ngoId} onChange={(e) => setHelpForm({ ...helpForm, ngoId: e.target.value })} className="rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500" required>
+              <option value="">Select NGO</option>
+              {ngos.map((ngo) => <option key={ngo.id} value={String(ngo.id)}>{ngo.name}</option>)}
+            </select>
+            <input value={helpForm.preferredCity} onChange={(e) => setHelpForm({ ...helpForm, preferredCity: e.target.value })} className="rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500" placeholder="Preferred city (optional)" />
+            <input value={helpForm.title} onChange={(e) => setHelpForm({ ...helpForm, title: e.target.value })} className="md:col-span-2 rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500" placeholder="Help request title" required />
+            <textarea value={helpForm.description} onChange={(e) => setHelpForm({ ...helpForm, description: e.target.value })} rows={3} className="md:col-span-2 rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500" placeholder="Describe what help you need" required />
+          </div>
+          <button type="submit" disabled={submittingHelp || !user?.email} className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-60">
+            {submittingHelp ? 'Submitting...' : 'Submit Help Request'}
+          </button>
+          {!user?.email && <p className="mt-2 text-xs text-amber-700">Login is required to send help requests.</p>}
+        </form>
 
         <div className="rounded-lg bg-white p-6 shadow-md">
           {loading && <p className="text-gray-600">Loading NGO directory...</p>}

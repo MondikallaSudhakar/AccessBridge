@@ -84,4 +84,12 @@ public class NGO {
     @JsonIgnore
     @OneToMany(mappedBy = "ngo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NGOSupportRequest> supportRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "ngo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NGOVolunteerProfile> volunteerProfiles = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "ngo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NGOCampaign> campaigns = new ArrayList<>();
 }
