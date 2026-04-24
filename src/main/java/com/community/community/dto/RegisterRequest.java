@@ -16,6 +16,9 @@ public class RegisterRequest {
     private String phone;
     private Role role;
     private String bio;
+    private String disabilityType;
+    private String skills;
+    private String supportNeeds;
 
     // Organization fields (shared by School, NGO, Startup)
     private String orgName;        // Organization name

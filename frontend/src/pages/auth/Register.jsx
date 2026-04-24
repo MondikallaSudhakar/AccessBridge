@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getRoleLandingPath } from '../../data/userTypes'
 import { USER_TYPE_GUIDES, getUserTypeGuide } from '../../data/userTypes'
 
 const ROLES = USER_TYPE_GUIDES.filter((item) => item.role !== 'SUPER_ADMIN')
+
+const SPECIAL_FIELDS = [
+  { name: 'disabilityType', label: 'Disability Type', placeholder: 'e.g. Visual, Hearing, Physical, Intellectual', required: true },
+  { name: 'skills', label: 'Skills', placeholder: 'e.g. computer basics, teaching, tailoring, coding', required: true, textarea: true },
+  { name: 'supportNeeds', label: 'Support Needs', placeholder: 'e.g. transport support, assistive tech, flexible timings', required: false, textarea: true },
+]
 
 const ORG_FIELDS = {
   SCHOOL_ADMIN: [
@@ -41,6 +48,7 @@ export default function Register() {
   const [step, setStep] = useState(1) // 1 = role select, 2 = basic info, 3 = org info
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '', phone: '' })
   const [orgData, setOrgData] = useState({})
+  const [specialData, setSpecialData] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -48,11 +56,15 @@ export default function Register() {
   const navigate = useNavigate()
 
   const selectedRole = ROLES.find(r => r.value === formData.role)
+  const isSpecial = formData.role === 'SPECIAL_ABLED_PERSON'
   const isOrg = ['SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN'].includes(formData.role)
+  const requiresExtraStep = isOrg || isSpecial
   const orgFields = ORG_FIELDS[formData.role] || []
+  const extraFields = isSpecial ? SPECIAL_FIELDS : orgFields
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
   const handleOrgChange = (e) => setOrgData({ ...orgData, [e.target.name]: e.target.value })
+  const handleSpecialChange = (e) => setSpecialData({ ...specialData, [e.target.name]: e.target.value })
 
   const handleRoleSelect = (role) => {
     setFormData({ ...formData, role })
@@ -62,7 +74,7 @@ export default function Register() {
   const handleBasicSubmit = (e) => {
     e.preventDefault()
     setError('')
-    if (isOrg) {
+    if (requiresExtraStep) {
       setStep(3)
     } else {
       handleFinalSubmit()
@@ -74,10 +86,10 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      const payload = { ...formData, ...orgData }
+      const payload = { ...formData, ...(isOrg ? orgData : specialData) }
       const result = await register(payload)
       if (result.token) {
-        navigate('/dashboard')
+        navigate(getRoleLandingPath(result.role || formData.role))
       } else {
         navigate('/login', { state: { pendingMessage: result.message || 'Registration submitted. Please wait for admin approval.' } })
       }
@@ -88,7 +100,7 @@ export default function Register() {
     }
   }
 
-  const totalSteps = isOrg ? 3 : 2
+  const totalSteps = requiresExtraStep ? 3 : 2
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -131,8 +143,8 @@ export default function Register() {
               <div className="grid grid-cols-1 gap-3">
                 {ROLES.map((role) => (
                   <button
-                    key={role.value}
-                    onClick={() => handleRoleSelect(role.value)}
+                    key={role.role}
+                    onClick={() => handleRoleSelect(role.role)}
                     className="w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 group"
                     style={{ borderColor: '#e5e7eb' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A8FD1'; e.currentTarget.style.backgroundColor = '#F0F8FF' }}
@@ -226,7 +238,7 @@ export default function Register() {
                   className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#1A8FD1' }}
                 >
-                  {isOrg ? 'Continue to Organization Details →' : 'Create Account'}
+                  {isSpecial ? 'Continue to Profile Details →' : isOrg ? 'Continue to Organization Details →' : 'Create Account'}
                 </button>
               </div>
             </form>
@@ -244,7 +256,7 @@ export default function Register() {
                   </button>
                   <div>
                     <h2 className="text-xl font-black text-gray-900">{selectedRole?.label} details</h2>
-                    <p className="text-xs text-gray-400">This information will appear in the public directory after approval</p>
+                    <p className="text-xs text-gray-400">This information helps tailor the right experience for your role</p>
                   </div>
                 </div>
               </div>
@@ -254,18 +266,18 @@ export default function Register() {
                   <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-4 rounded-lg">{error}</div>
                 )}
 
-                {orgFields.map((field) => (
+                {extraFields.map((field) => (
                   <div key={field.name}>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
                       {field.label} {field.required && <span className="text-red-400">*</span>}
                     </label>
                     {field.textarea ? (
-                      <textarea name={field.name} value={orgData[field.name] || ''} onChange={handleOrgChange}
+                      <textarea name={field.name} value={(isSpecial ? specialData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : handleOrgChange}
                         placeholder={field.placeholder} rows={3}
                         className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 resize-none"
                       />
                     ) : (
-                      <input type="text" name={field.name} value={orgData[field.name] || ''} onChange={handleOrgChange}
+                      <input type="text" name={field.name} value={(isSpecial ? specialData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : handleOrgChange}
                         required={field.required} placeholder={field.placeholder}
                         className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
                       />
@@ -273,10 +285,15 @@ export default function Register() {
                   </div>
                 ))}
 
-                {/* City/State row */}
-                <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-                  After submitting, your account will be reviewed by a Super Admin. You will be able to log in once approved.
-                </p>
+                {isSpecial ? (
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+                    Your account will be approved automatically so you can start exploring jobs, training, support, and opportunities right away.
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+                    After submitting, your account will be reviewed by a Super Admin. You will be able to log in once approved.
+                  </p>
+                )}
               </div>
 
               <div className="px-8 pb-8">
@@ -284,7 +301,7 @@ export default function Register() {
                   className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
                   style={{ backgroundColor: '#5BBE00' }}
                 >
-                  {loading ? 'Submitting...' : 'Submit for Approval'}
+                  {loading ? 'Submitting...' : isSpecial ? 'Create Specially Abled Profile' : 'Submit for Approval'}
                 </button>
               </div>
             </form>

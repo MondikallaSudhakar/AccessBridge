@@ -33,6 +33,23 @@ public class UserTypeGuideController {
                         )
                 ),
                 new UserTypeGuideDto(
+                        "SPECIAL_ABLED_PERSON",
+                        "Specially Abled Person",
+                        "Join to gain independence through jobs, learning, income, support, and community access.",
+                        "/special/profile",
+                        List.of(
+                                "Disability-friendly job listings and text/audio application support",
+                                "Marketplace products and nearby NGO services",
+                                "Special schools, training programs, events, campaigns, and govt schemes"
+                        ),
+                        List.of(
+                                "Create a profile with skills, disability type, and support needs",
+                                "Apply for jobs with text or audio support",
+                                "Request NGO help and enroll in training",
+                                "Register for events and save opportunities"
+                        )
+                ),
+                new UserTypeGuideDto(
                         "SCHOOL_ADMIN",
                         "School Admin",
                         "Join to publish school needs, show achievements, and attract supporters for your institution.",

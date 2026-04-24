@@ -23,13 +23,16 @@ public class UserService {
 
     public User updateUser(Long id, User userDetails) {
         User user = getUserById(id);
-        user.setName(userDetails.getName());
-        user.setEmail(userDetails.getEmail());
-        user.setPhone(userDetails.getPhone());
-        user.setBio(userDetails.getBio());
-        user.setProfileImage(userDetails.getProfileImage());
-        user.setRole(userDetails.getRole());
-        user.setActive(userDetails.getActive());
+        if (userDetails.getName() != null) user.setName(userDetails.getName());
+        if (userDetails.getEmail() != null) user.setEmail(userDetails.getEmail());
+        if (userDetails.getPhone() != null) user.setPhone(userDetails.getPhone());
+        if (userDetails.getBio() != null) user.setBio(userDetails.getBio());
+        if (userDetails.getDisabilityType() != null) user.setDisabilityType(userDetails.getDisabilityType());
+        if (userDetails.getSkills() != null) user.setSkills(userDetails.getSkills());
+        if (userDetails.getSupportNeeds() != null) user.setSupportNeeds(userDetails.getSupportNeeds());
+        if (userDetails.getProfileImage() != null) user.setProfileImage(userDetails.getProfileImage());
+        if (userDetails.getRole() != null) user.setRole(userDetails.getRole());
+        if (userDetails.getActive() != null) user.setActive(userDetails.getActive());
         return userRepository.save(user);
     }
 

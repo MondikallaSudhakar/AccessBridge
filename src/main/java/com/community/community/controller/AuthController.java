@@ -56,10 +56,13 @@ public class AuthController {
             user.setPhone(request.getPhone());
             user.setRole(request.getRole());
             user.setBio(request.getBio());
+            user.setDisabilityType(request.getDisabilityType());
+            user.setSkills(request.getSkills());
+            user.setSupportNeeds(request.getSupportNeeds());
             user.setActive(true);
             
-            // Auto-approve regular users, organizations need manual approval
-            if (request.getRole() == com.community.community.model.Role.USER) {
+            // Auto-approve individuals, organizations need manual approval
+            if (request.getRole() == Role.USER || request.getRole() == Role.SPECIAL_ABLED_PERSON) {
                 user.setStatus("APPROVED");
             } else {
                 user.setStatus("PENDING");

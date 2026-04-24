@@ -44,6 +44,7 @@ public class SecurityConfig {
                         // Public endpoints (no authentication required)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/meta/**").permitAll()
+                        .requestMatchers("/api/users/profile/**").authenticated()
                         .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers("/api/schools/**").permitAll()  // For now, make these public
                         .requestMatchers("/api/ngos/**").permitAll()

@@ -19,6 +19,20 @@ const authService = {
         return response;
     },
 
+    async getProfile(userId) {
+        return api.get(`/users/profile/${userId}`);
+    },
+
+    async updateProfile(userId, profileData) {
+        const response = await api.put(`/users/profile/${userId}`, profileData);
+        const currentUser = this.getCurrentUser();
+        if (currentUser && String(currentUser.userId ?? currentUser.id) === String(userId)) {
+            const merged = { ...currentUser, ...response, userId: response.id ?? currentUser.userId ?? currentUser.id };
+            localStorage.setItem('user', JSON.stringify(merged));
+        }
+        return response;
+    },
+
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');

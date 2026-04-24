@@ -17,6 +17,23 @@ export const USER_TYPE_GUIDES = [
     ],
   },
   {
+    role: 'SPECIAL_ABLED_PERSON',
+    label: 'Specially Abled Person',
+    loginPurpose: 'Join to gain independence through jobs, learning, income, support, and community access.',
+    dashboardPath: '/special/profile',
+    canView: [
+      'Disability-friendly job listings and text/audio job application support',
+      'Marketplace products and nearby NGO services',
+      'Special schools, training programs, events, campaigns, and government schemes',
+    ],
+    canDo: [
+      'Create a profile with skills, disability type, and support needs',
+      'Apply for jobs with text or audio support',
+      'Request NGO help and enroll in training',
+      'Register for events and save opportunities',
+    ],
+  },
+  {
     role: 'SCHOOL_ADMIN',
     label: 'School Admin',
     loginPurpose: 'Join to publish school needs, show achievements, and attract supporters for your institution.',

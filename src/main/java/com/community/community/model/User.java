@@ -35,11 +35,20 @@ public class User {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private Role role;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    @Column(length = 120)
+    private String disabilityType;
+
+    @Column(columnDefinition = "TEXT")
+    private String skills;
+
+    @Column(columnDefinition = "TEXT")
+    private String supportNeeds;
 
     private String profileImage;
 

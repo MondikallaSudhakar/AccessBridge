@@ -43,6 +43,7 @@ function Ic({ n, s = 16, c = 'currentColor', sw = 1.8, st = {} }) {
 /* ── role config ──────────────────────────────────────────────────────── */
 const ROLE_MAP = {
   USER:          { label: 'Member',       icon: 'user',   color: '#8b5cf6' },
+  SPECIAL_ABLED_PERSON: { label: 'Specially Abled', icon: 'info', color: '#0ea5e9' },
   SCHOOL_ADMIN:  { label: 'School Admin', icon: 'school', color: G         },
   NGO_ADMIN:     { label: 'NGO Admin',    icon: 'ngo',    color: TEAL      },
   STARTUP_ADMIN: { label: 'Startup Admin',icon: 'startup',color: '#f59e0b' },
@@ -61,6 +62,7 @@ const NAV_GROUPS = [
     label: 'Workspace',
     items: [
       { id: 'school',     label: 'School Dashboard',  icon: 'school',  role: 'SCHOOL_ADMIN',  path: '/school/profile'  },
+      { id: 'special',    label: 'Special Profile',   icon: 'info',    role: 'SPECIAL_ABLED_PERSON', path: '/special/profile' },
       { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo/profile'     },
       { id: 'startup',    label: 'Startup Dashboard', icon: 'startup', role: 'STARTUP_ADMIN', path: '/startup/profile' },
       { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/admin/approvals' },
@@ -86,6 +88,16 @@ const CARDS = [
     bg: '#f0fdf4',
     path: '/school/profile',
     cta: 'Open Dashboard',
+  },
+  {
+    role: 'SPECIAL_ABLED_PERSON',
+    title: 'Specially Abled Workspace',
+    desc: 'Manage your accessibility profile, discover jobs, schemes, training, campaigns, and nearby support.',
+    icon: 'info',
+    color: '#0ea5e9',
+    bg: '#ecfeff',
+    path: '/special/profile',
+    cta: 'Open Workspace',
   },
   {
     role: 'NGO_ADMIN',
@@ -237,6 +249,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
+    if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special/profile', { replace: true })
   }, [navigate, user])
 
   const handleLogout = () => { logout(); navigate('/login') }
@@ -257,6 +270,7 @@ export default function Dashboard() {
     { id: 'browse', label: 'Browse', icon: 'globe' },
     { id: 'marketplace', label: 'Market', icon: 'shop' },
     ...(user?.role === 'SCHOOL_ADMIN' ? [{ id: 'school', label: 'School', icon: 'school', path: '/school/profile' }] : []),
+    ...(user?.role === 'SPECIAL_ABLED_PERSON' ? [{ id: 'special', label: 'Special', icon: 'info', path: '/special/profile' }] : []),
     ...(user?.role === 'STARTUP_ADMIN' ? [{ id: 'startup', label: 'Startup', icon: 'startup', path: '/startup/profile' }] : []),
     ...(user?.role === 'SUPER_ADMIN' ? [{ id: 'approvals', label: 'Approvals', icon: 'check', path: '/admin/approvals' }] : []),
     { id: 'profile', label: 'Profile', icon: 'user' },
@@ -436,6 +450,7 @@ export default function Dashboard() {
 
             {/* Role CTA button */}
             {user?.role === 'SCHOOL_ADMIN' && <HeroCta label="Go to School Dashboard" onClick={() => navigate('/school/profile')} />}
+            {user?.role === 'SPECIAL_ABLED_PERSON' && <HeroCta label="Open Specially Abled Workspace" onClick={() => navigate('/special/profile')} />}
             {user?.role === 'STARTUP_ADMIN' && <HeroCta label="Go to Startup Dashboard" onClick={() => navigate('/startup/profile')} />}
             {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => navigate('/admin/approvals')} />}
           </div>

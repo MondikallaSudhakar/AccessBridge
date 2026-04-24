@@ -16,6 +16,7 @@ import StartupProfile from './pages/startup/StartupProfile'
 import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
+import SpecialAbledProfile from './pages/special/SpecialAbledProfile'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
         <Route path="/messages" element={<RoleRoute allowedRoles={['USER']}><UserMessages /></RoleRoute>} />
+        <Route path="/special/profile" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialAbledProfile /></RoleRoute>} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />
