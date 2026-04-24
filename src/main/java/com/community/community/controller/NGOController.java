@@ -5,11 +5,13 @@ import com.community.community.model.NGOAchievement;
 import com.community.community.model.NGOJob;
 import com.community.community.model.NGOProduct;
 import com.community.community.model.NGOServiceItem;
+import com.community.community.model.NGOSupportRequest;
 import com.community.community.model.Need;
 import com.community.community.repository.NGOAchievementRepository;
 import com.community.community.repository.NGOJobRepository;
 import com.community.community.repository.NGOProductRepository;
 import com.community.community.repository.NGOServiceItemRepository;
+import com.community.community.repository.NGOSupportRequestRepository;
 import com.community.community.repository.NeedRepository;
 import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/ngos")
@@ -32,6 +35,7 @@ public class NGOController {
     private final NGOProductRepository ngoProductRepository;
     private final NGOServiceItemRepository ngoServiceItemRepository;
     private final NGOAchievementRepository ngoAchievementRepository;
+    private final NGOSupportRequestRepository ngoSupportRequestRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -97,6 +101,52 @@ public class NGOController {
     public ResponseEntity<Void> deleteNGO(@PathVariable Long id) {
         ngoService.deleteNGO(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── NGO Support Requests (user help requests) ──────────────────────────
+
+    @GetMapping("/{id}/support-requests")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<NGOSupportRequest>> getSupportRequests(@PathVariable Long id) {
+        return ResponseEntity.ok(ngoSupportRequestRepository.findByNgoIdOrderByCreatedAtDesc(id));
+    }
+
+    @PostMapping("/{id}/support-requests")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NGOSupportRequest> createSupportRequest(@PathVariable Long id, @RequestBody NGOSupportRequest req) {
+        NGO ngo = ngoService.getNGOById(id);
+
+        NGOSupportRequest request = new NGOSupportRequest();
+        request.setNgo(ngo);
+        request.setRequesterName(req.getRequesterName());
+        request.setRequesterEmail(req.getRequesterEmail());
+        request.setRequesterPhone(req.getRequesterPhone());
+        request.setRequestType(req.getRequestType() == null || req.getRequestType().isBlank() ? "GENERAL_SUPPORT" : req.getRequestType());
+        request.setTitle(req.getTitle());
+        request.setDescription(req.getDescription());
+        request.setPreferredCity(req.getPreferredCity());
+        request.setStatus("PENDING");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ngoSupportRequestRepository.save(request));
+    }
+
+    @PatchMapping("/support-requests/{requestId}/status")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<NGOSupportRequest> updateSupportRequestStatus(
+            @PathVariable Long requestId,
+            @RequestParam String status,
+            @RequestParam(required = false) String ngoResponseNote) {
+        NGOSupportRequest request = ngoSupportRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Support request not found"));
+
+        String normalizedStatus = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+        if (!normalizedStatus.equals("ACCEPTED") && !normalizedStatus.equals("DECLINED") && !normalizedStatus.equals("PENDING")) {
+            throw new RuntimeException("Invalid status. Allowed values: PENDING, ACCEPTED, DECLINED");
+        }
+
+        request.setStatus(normalizedStatus);
+        request.setNgoResponseNote(ngoResponseNote);
+        return ResponseEntity.ok(ngoSupportRequestRepository.save(request));
     }
 
     // ── Requirements (Needs) Endpoints ──────────────────────────────────────

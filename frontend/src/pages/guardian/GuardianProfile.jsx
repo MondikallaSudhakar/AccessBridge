@@ -67,7 +67,7 @@ function Card({ item, onPrimary, onBookmark, saved, primaryLabel, secondaryLabel
 }
 
 export default function GuardianProfile() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState({ name: '', phone: '', bio: '', dependentName: '', dependentRelation: '', dependentAge: '', dependentNeeds: '' })
   const [bookmarks, setBookmarks] = useState(readBookmarks())
@@ -137,6 +137,11 @@ export default function GuardianProfile() {
     setApplicationNote(`Please consider this dependent for: ${item.title}. I am applying on behalf of them.`)
   }
 
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   const sections = [
     { title: 'Suitable jobs for dependent person', items: OPPORTUNITIES.jobs, primaryLabel: 'Apply on behalf', secondaryLabel: 'Bookmark job', onPrimary: startApplication },
     { title: 'Special schools & therapy centers', items: OPPORTUNITIES.schools, primaryLabel: 'Enroll', secondaryLabel: 'Save school', onPrimary: () => navigate('/search') },
@@ -154,7 +159,10 @@ export default function GuardianProfile() {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">Guardian / Caregiver Workspace</p>
             <h1 className="text-xl font-black text-slate-900 sm:text-2xl">Support and manage opportunities for a dependent person</h1>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">Open Dashboard</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">Open Dashboard</button>
+            <button onClick={handleLogout} className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700">Logout</button>
+          </div>
         </div>
       </div>
 

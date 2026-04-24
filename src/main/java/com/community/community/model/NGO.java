@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +54,15 @@ public class NGO {
 
     private String registrationNumber;
 
+    @Column(columnDefinition = "TEXT")
+    private String campaignHistory;
+
+    @Column(columnDefinition = "TEXT")
+    private String supportProvidedSummary;
+
+    @Column(precision = 14, scale = 2)
+    private BigDecimal totalSpend;
+
     @Column(nullable = false)
     private Boolean verified = false;
 
@@ -70,4 +80,8 @@ public class NGO {
     @JsonIgnore
     @OneToMany(mappedBy = "ngo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Event> events = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "ngo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NGOSupportRequest> supportRequests = new ArrayList<>();
 }

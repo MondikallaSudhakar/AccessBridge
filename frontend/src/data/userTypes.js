@@ -70,18 +70,18 @@ export const USER_TYPE_GUIDES = [
   {
     role: 'NGO_ADMIN',
     label: 'NGO Admin',
-    loginPurpose: 'Join to run campaigns, recruit support, publish services, and coordinate community response.',
+    loginPurpose: 'Join to provide support, expand impact, connect with beneficiaries, and collaborate with schools and CSR partners.',
     dashboardPath: '/ngo/profile',
     canView: [
-      'NGO profile, NGO directory, and public directory search',
-      'Needs, jobs, products, services, and achievements linked to the NGO',
-      'Incoming messages from donors and community members',
+      'User support requests (help needed), volunteer interest, and partner leads',
+      'Special schools, partner organizations, events, campaigns, and NGO requirements',
+      'Job opportunities from companies and impact profile details (past campaigns, support provided, total spend)',
     ],
     canDo: [
       'Create and update the NGO profile',
-      'Post needs, jobs, products, services, and achievements',
-      'Close or update open community requests',
-      'Reply to messages and manage community engagement',
+      'Accept or decline support requests and coordinate follow-up',
+      'Post events, awareness campaigns, training programs, jobs, and resources (devices/services)',
+      'Collaborate with schools/companies and connect users to jobs',
     ],
   },
   {

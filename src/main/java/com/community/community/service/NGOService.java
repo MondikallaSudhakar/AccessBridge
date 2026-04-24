@@ -33,6 +33,9 @@ public class NGOService {
         ngo.setWebsiteUrl(ngoDetails.getWebsiteUrl());
         ngo.setLogoUrl(ngoDetails.getLogoUrl());
         ngo.setRegistrationNumber(ngoDetails.getRegistrationNumber());
+        ngo.setCampaignHistory(ngoDetails.getCampaignHistory());
+        ngo.setSupportProvidedSummary(ngoDetails.getSupportProvidedSummary());
+        ngo.setTotalSpend(ngoDetails.getTotalSpend());
         return ngoRepository.save(ngo);
     }
 

@@ -89,6 +89,7 @@ const Ic = ({ n, s=16, c='currentColor', sw=1.8, st={} }) => {
 const TABS = [
   { id:'overview',      label:'Overview',     icon:'home'      },
   { id:'requirements',  label:'Requirements', icon:'clipboard' },
+  { id:'supportRequests', label:'Support Requests', icon:'chat' },
   { id:'jobs',          label:'Jobs',         icon:'briefcase' },
   { id:'products',      label:'Products',     icon:'box'       },
   { id:'services',      label:'Services',     icon:'users'     },
@@ -281,6 +282,7 @@ export default function NgoProfile() {
   const [products, setProducts]   = useState([])
   const [services, setServices]   = useState([])
   const [achievements, setAchievements] = useState([])
+  const [supportRequests, setSupportRequests] = useState([])
   const [messages, setMessages]   = useState([])
   const [selThread, setSelThread] = useState('')
   const [mobileView, setMobileView] = useState('threads') // 'threads' | 'chat' (mobile WhatsApp nav)
@@ -392,16 +394,18 @@ export default function NgoProfile() {
   }
 
   const loadData = async id => {
-    const [n,j,p,s,a] = await Promise.all([
+    const [n,j,p,s,a,sr] = await Promise.all([
       api.get(`/ngos/${id}/needs`).catch(()=>[]),
       api.get(`/ngos/${id}/jobs`).catch(()=>[]),
       api.get(`/ngos/${id}/products`).catch(()=>[]),
       api.get(`/ngos/${id}/services`).catch(()=>[]),
       api.get(`/ngos/${id}/achievements`).catch(()=>[]),
+      api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
     ])
     setNeeds(Array.isArray(n)?n:[]); setJobs(Array.isArray(j)?j:[])
     setProducts(Array.isArray(p)?p:[]); setServices(Array.isArray(s)?s:[])
     setAchievements(Array.isArray(a)?a:[])
+    setSupportRequests(Array.isArray(sr)?sr:[])
   }
 
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
@@ -430,6 +434,16 @@ export default function NgoProfile() {
   const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
   const createService = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
   const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
+  const updateSupportRequestStatus = async (requestId, status) => {
+    if (!ngo?.id) return
+    try {
+      await api.patch(`/ngos/support-requests/${requestId}/status?status=${encodeURIComponent(status)}`, {})
+      await loadData(ngo.id)
+      flash(`Support request marked as ${status}.`)
+    } catch (err) {
+      setError(err.message || 'Failed to update support request status')
+    }
+  }
   const closeNeed = async id => { if(!ngo?.id)return; await fetch(`${BASE}/ngos/needs/${id}/close`,{method:'PATCH',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}}); loadData(ngo.id) }
   const del = async ep => { if(!ngo?.id)return; await api.delete(ep); loadData(ngo.id) }
 
@@ -445,7 +459,15 @@ export default function NgoProfile() {
 
   /* counts for sidebar badges */
   const totalUnread = threads.reduce((sum, t) => sum + (t.unreadCount || 0), 0)
-  const counts = { requirements:needs.length, jobs:jobs.length, products:products.length, services:services.length, achievements:achievements.length, messages:totalUnread }
+  const counts = {
+    requirements:needs.length,
+    supportRequests:supportRequests.filter(r => r.status === 'PENDING').length,
+    jobs:jobs.length,
+    products:products.length,
+    services:services.length,
+    achievements:achievements.length,
+    messages:totalUnread,
+  }
 
   /* ── loading ── */
   if (loading) return (
@@ -603,6 +625,7 @@ export default function NgoProfile() {
             <p className="ngo-topbar-sub" style={{margin:0,fontSize:11.5,color:'#94a3b8'}}>{
               tab==='overview'       ? 'Manage your NGO information' :
               tab==='requirements'   ? 'Post and manage requirements' :
+              tab==='supportRequests'? 'Review and respond to user help requests' :
               tab==='jobs'           ? 'Manage job listings' :
               tab==='products'       ? 'List products for the community' :
               tab==='services'       ? 'Services visible on public profile' :
@@ -686,11 +709,56 @@ export default function NgoProfile() {
                     <div style={{gridColumn:'1/-1'}}><FieldLabel required>Address</FieldLabel><TextArea name="address" value={form.address||''} onChange={pi} placeholder="Full postal address" rows={2} required/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel>Mission Statement</FieldLabel><TextArea name="mission" value={form.mission||''} onChange={pi} placeholder="What drives your organisation?" rows={2}/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea name="description" value={form.description||''} onChange={pi} placeholder="Tell the community about your work and impact…" rows={3}/></div>
+                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Past Campaign Highlights</FieldLabel><TextArea name="campaignHistory" value={form.campaignHistory||''} onChange={pi} placeholder="Share previously run campaigns and outcomes." rows={3}/></div>
+                    <div style={{gridColumn:'1/-1'}}><FieldLabel>What You Provided</FieldLabel><TextArea name="supportProvidedSummary" value={form.supportProvidedSummary||''} onChange={pi} placeholder="Mention devices/services/support provided to beneficiaries." rows={3}/></div>
+                    <div><FieldLabel>Total Spend (INR)</FieldLabel><TextInput name="totalSpend" type="number" value={form.totalSpend||''} onChange={pi} placeholder="e.g. 2500000"/></div>
                   </div>
                   <div style={{marginTop:22,paddingTop:18,borderTop:'1px solid #f1f5f9'}}>
                     <PrimaryBtn type="submit" iconName="save" loading={saving}>{saving?'Saving…':'Save Profile'}</PrimaryBtn>
                   </div>
                 </form>
+              </Panel>
+            </div>
+          )}
+
+          {/* ── SUPPORT REQUESTS ───────────────────────────────────── */}
+          {tab === 'supportRequests' && (
+            <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
+              <Panel>
+                <PanelHeader
+                  title="User Support Requests"
+                  subtitle="Accept or decline beneficiary requests and coordinate your response plan."
+                />
+                {supportRequests.length===0 ? (
+                  <EmptyPane iconName="chat" title="No support requests yet" body="When users ask for help from your NGO, requests will appear here."/>
+                ) : (
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {supportRequests.map((req)=>(
+                      <ListItem key={req.id}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:6}}>
+                              <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{req.title}</p>
+                              <Chip color={req.status === 'ACCEPTED' ? G : req.status === 'DECLINED' ? '#ef4444' : '#f59e0b'}>{req.status}</Chip>
+                              {req.requestType && <Chip color={B}>{req.requestType}</Chip>}
+                            </div>
+                            <p style={{margin:'0 0 8px',fontSize:13,color:'#64748b',lineHeight:1.5}}>{req.description}</p>
+                            <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+                              <MetaItem iconName="users">{req.requesterName}</MetaItem>
+                              <MetaItem iconName="mail">{req.requesterEmail}</MetaItem>
+                              {req.requesterPhone && <MetaItem iconName="chat">{req.requesterPhone}</MetaItem>}
+                              {req.preferredCity && <MetaItem iconName="location">{req.preferredCity}</MetaItem>}
+                            </div>
+                          </div>
+                          <div style={{display:'flex',gap:6,flexShrink:0}}>
+                            <GhostBtn onClick={() => updateSupportRequestStatus(req.id, 'ACCEPTED')} color={G} iconName="check">Accept</GhostBtn>
+                            <GhostBtn onClick={() => updateSupportRequestStatus(req.id, 'DECLINED')} color="#ef4444" iconName="x">Decline</GhostBtn>
+                          </div>
+                        </div>
+                      </ListItem>
+                    ))}
+                  </div>
+                )}
               </Panel>
             </div>
           )}
