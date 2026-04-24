@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { USER_TYPE_GUIDES, getUserTypeGuide } from '../../data/userTypes'
 
-const ROLES = [
-  { value: 'USER', label: 'Donor / Member', desc: 'Search, donate, and support communities.' },
-  { value: 'SCHOOL_ADMIN', label: 'School', desc: 'Post needs, share achievements, connect with donors.' },
-  { value: 'NGO_ADMIN', label: 'NGO', desc: 'Organize campaigns, run events, mobilize support.' },
-  { value: 'STARTUP_ADMIN', label: 'Startup', desc: 'Showcase products and grow your social-impact business.' },
-]
+const ROLES = USER_TYPE_GUIDES.filter((item) => item.role !== 'SUPER_ADMIN')
 
 const ORG_FIELDS = {
   SCHOOL_ADMIN: [
@@ -129,7 +125,8 @@ export default function Register() {
           {step === 1 && (
             <div className="p-8">
               <h2 className="text-2xl font-black text-gray-900 mb-1">Create an account</h2>
-              <p className="text-gray-400 text-sm mb-8">Who are you joining as?</p>
+              <p className="text-gray-400 text-sm mb-2">Who are you joining as?</p>
+              <p className="text-gray-500 text-xs mb-8">Pick the role that matches why you are joining. The next screens will follow that path.</p>
 
               <div className="grid grid-cols-1 gap-3">
                 {ROLES.map((role) => (
@@ -141,8 +138,15 @@ export default function Register() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A8FD1'; e.currentTarget.style.backgroundColor = '#F0F8FF' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.backgroundColor = '' }}
                   >
-                    <div className="font-semibold text-gray-900 text-sm">{role.label}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{role.desc}</div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-gray-900 text-sm">{role.label}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{role.loginPurpose}</div>
+                      </div>
+                      <div className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                        {getUserTypeGuide(role.role)?.dashboardPath.replace('/', '')}
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -208,6 +212,13 @@ export default function Register() {
                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
                   />
                 </div>
+
+                {selectedRole && (
+                  <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-4 text-sm text-gray-700">
+                    <p className="font-semibold text-gray-900">Why this role exists</p>
+                    <p className="mt-1 text-xs text-gray-600">{selectedRole.loginPurpose}</p>
+                  </div>
+                )}
               </div>
 
               <div className="px-8 pb-8">

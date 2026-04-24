@@ -5,6 +5,7 @@ import com.community.community.service.StartupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class StartupController {
     private final StartupService startupService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Startup> createStartup(@RequestBody Startup startup) {
         Startup createdStartup = startupService.createStartup(startup);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStartup);
@@ -59,6 +61,7 @@ public class StartupController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Startup> updateStartup(
             @PathVariable Long id,
             @RequestBody Startup startup) {
@@ -67,12 +70,14 @@ public class StartupController {
     }
 
     @PatchMapping("/{id}/verify")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Startup> verifyStartup(@PathVariable Long id) {
         Startup verifiedStartup = startupService.verifyStartup(id);
         return ResponseEntity.ok(verifiedStartup);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteStartup(@PathVariable Long id) {
         startupService.deleteStartup(id);
         return ResponseEntity.noContent().build();

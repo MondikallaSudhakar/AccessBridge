@@ -5,6 +5,7 @@ import com.community.community.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/startup/{startupId}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> createProductWithStartup(@PathVariable Long startupId, @RequestBody Product product) {
         Product createdProduct = productService.createProductForStartup(startupId, product);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
@@ -54,6 +56,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id,
             @RequestBody Product product) {
@@ -62,6 +65,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}/stock")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> updateStock(
             @PathVariable Long id,
             @RequestBody Map<String, Integer> stockUpdate) {
@@ -71,12 +75,14 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}/toggle-availability")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> toggleAvailability(@PathVariable Long id) {
         Product updatedProduct = productService.toggleAvailability(id);
         return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();

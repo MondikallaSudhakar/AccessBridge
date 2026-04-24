@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchUserTypeGuides } from '../services/userTypeService'
 
 const API = 'http://localhost:8081/api'
 
@@ -176,13 +177,15 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('all')
   const [loading, setLoading] = useState(true)
   const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [] })
+  const [userTypes, setUserTypes] = useState([])
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
-      const [schools, ngos] = await Promise.all([
+      const [schools, ngos, guideData] = await Promise.all([
         fetchPublic('/schools'),
         fetchPublic('/ngos'),
+        fetchUserTypeGuides(),
       ])
 
       const ngoNeedsGroups = await Promise.all(
@@ -267,6 +270,7 @@ export default function Home() {
       )
 
       setDirectory({ schools, ngos, requirements, jobs, products })
+      setUserTypes(Array.isArray(guideData) ? guideData : [])
       setLoading(false)
     }
 
@@ -311,6 +315,34 @@ export default function Home() {
               <div className="mt-4 flex gap-2">
                 <a href="/register" className="rounded-lg px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>Join</a>
                 <a href="/dashboard" className="rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Dashboard</a>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h2 className="text-sm font-bold text-slate-900">User Types</h2>
+              <p className="mt-1 text-xs text-slate-500">Each role has a different reason to join, a different view, and different actions.</p>
+              <div className="mt-3 space-y-3">
+                {userTypes.map((type) => (
+                  <div key={type.role} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{type.label}</p>
+                        <p className="mt-1 text-xs text-slate-600">{type.loginPurpose}</p>
+                      </div>
+                      <a href={type.dashboardPath} className="text-xs font-bold" style={{ color: COLORS.green }}>Open</a>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                      <div className="rounded-lg bg-white px-2 py-2">
+                        <p className="font-semibold text-slate-800">View</p>
+                        <p className="mt-1 line-clamp-3">{type.canView?.[0]}</p>
+                      </div>
+                      <div className="rounded-lg bg-white px-2 py-2">
+                        <p className="font-semibold text-slate-800">Do</p>
+                        <p className="mt-1 line-clamp-3">{type.canDo?.[0]}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 

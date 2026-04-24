@@ -9,6 +9,7 @@ import com.community.community.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ public class SchoolController {
     // ── School CRUD ──────────────────────────────────────────────────────────
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<School> createSchool(@RequestBody School school) {
         return ResponseEntity.status(HttpStatus.CREATED).body(schoolService.createSchool(school));
     }
@@ -61,16 +63,19 @@ public class SchoolController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<School> updateSchool(@PathVariable Long id, @RequestBody School school) {
         return ResponseEntity.ok(schoolService.updateSchool(id, school));
     }
 
     @PatchMapping("/{id}/verify")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<School> verifySchool(@PathVariable Long id) {
         return ResponseEntity.ok(schoolService.verifySchool(id));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteSchool(@PathVariable Long id) {
         schoolService.deleteSchool(id);
         return ResponseEntity.noContent().build();
@@ -84,6 +89,7 @@ public class SchoolController {
     }
 
     @PostMapping("/{id}/needs")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> postSchoolNeed(@PathVariable Long id, @RequestBody Need req) {
         School school = schoolService.getSchoolById(id);
         Need need = new Need();
@@ -99,6 +105,7 @@ public class SchoolController {
     }
 
     @PatchMapping("/needs/{needId}/close")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> closeNeed(@PathVariable Long needId) {
         Need need = needRepository.findById(needId)
                 .orElseThrow(() -> new RuntimeException("Need not found"));
@@ -107,6 +114,7 @@ public class SchoolController {
     }
 
     @DeleteMapping("/needs/{needId}")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNeed(@PathVariable Long needId) {
         needRepository.deleteById(needId);
         return ResponseEntity.noContent().build();
@@ -122,6 +130,7 @@ public class SchoolController {
 
     /** Protected – create a new achievement */
     @PostMapping("/{id}/achievements")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<SchoolAchievement> postAchievement(
             @PathVariable Long id,
             @RequestBody SchoolAchievement req) {
@@ -138,6 +147,7 @@ public class SchoolController {
 
     /** Protected – update an existing achievement */
     @PutMapping("/achievements/{achievementId}")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<SchoolAchievement> updateAchievement(
             @PathVariable Long achievementId,
             @RequestBody SchoolAchievement req) {
@@ -153,6 +163,7 @@ public class SchoolController {
 
     /** Protected – delete an achievement */
     @DeleteMapping("/achievements/{achievementId}")
+    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteAchievement(@PathVariable Long achievementId) {
         achievementRepository.deleteById(achievementId);
         return ResponseEntity.noContent().build();

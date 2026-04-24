@@ -5,6 +5,7 @@ import com.community.community.service.DonationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class DonationController {
     private final DonationService donationService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'SUPER_ADMIN')")
     public ResponseEntity<Donation> createDonation(@RequestBody Donation donation) {
         Donation createdDonation = donationService.createDonation(donation);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDonation);
@@ -72,6 +74,7 @@ public class DonationController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Donation> updateDonationStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate) {
@@ -81,6 +84,7 @@ public class DonationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteDonation(@PathVariable Long id) {
         donationService.deleteDonation(id);
         return ResponseEntity.noContent().build();

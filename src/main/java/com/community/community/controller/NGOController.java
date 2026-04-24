@@ -15,6 +15,7 @@ import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -33,6 +34,7 @@ public class NGOController {
     private final NGOAchievementRepository ngoAchievementRepository;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGO> createNGO(@RequestBody NGO ngo) {
         NGO createdNGO = ngoService.createNGO(ngo);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdNGO);
@@ -75,6 +77,7 @@ public class NGOController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGO> updateNGO(
             @PathVariable Long id,
             @RequestBody NGO ngo) {
@@ -83,12 +86,14 @@ public class NGOController {
     }
 
     @PatchMapping("/{id}/verify")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<NGO> verifyNGO(@PathVariable Long id) {
         NGO verifiedNGO = ngoService.verifyNGO(id);
         return ResponseEntity.ok(verifiedNGO);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNGO(@PathVariable Long id) {
         ngoService.deleteNGO(id);
         return ResponseEntity.noContent().build();
@@ -102,6 +107,7 @@ public class NGOController {
     }
 
     @PostMapping("/{id}/needs")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> postNGONeed(@PathVariable Long id, @RequestBody Need req) {
         NGO ngo = ngoService.getNGOById(id);
         Need need = new Need();
@@ -117,6 +123,7 @@ public class NGOController {
     }
 
     @PatchMapping("/needs/{needId}/close")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> closeNeed(@PathVariable Long needId) {
         Need need = needRepository.findById(needId)
                 .orElseThrow(() -> new RuntimeException("Need not found"));
@@ -125,6 +132,7 @@ public class NGOController {
     }
 
     @DeleteMapping("/needs/{needId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNeed(@PathVariable Long needId) {
         needRepository.deleteById(needId);
         return ResponseEntity.noContent().build();
@@ -138,6 +146,7 @@ public class NGOController {
     }
 
     @PostMapping("/{id}/jobs")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOJob> postNGOJob(@PathVariable Long id, @RequestBody NGOJob req) {
         NGO ngo = ngoService.getNGOById(id);
         NGOJob job = new NGOJob();
@@ -154,6 +163,7 @@ public class NGOController {
     }
 
     @PutMapping("/jobs/{jobId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOJob> updateNGOJob(@PathVariable Long jobId, @RequestBody NGOJob req) {
         NGOJob job = ngoJobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
@@ -169,6 +179,7 @@ public class NGOController {
     }
 
     @DeleteMapping("/jobs/{jobId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNGOJob(@PathVariable Long jobId) {
         ngoJobRepository.deleteById(jobId);
         return ResponseEntity.noContent().build();
@@ -182,6 +193,7 @@ public class NGOController {
     }
 
     @PostMapping("/{id}/products")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOProduct> postNGOProduct(@PathVariable Long id, @RequestBody NGOProduct req) {
         NGO ngo = ngoService.getNGOById(id);
         NGOProduct product = new NGOProduct();
@@ -197,6 +209,7 @@ public class NGOController {
     }
 
     @PutMapping("/products/{productId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOProduct> updateNGOProduct(@PathVariable Long productId, @RequestBody NGOProduct req) {
         NGOProduct product = ngoProductRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("NGO product not found"));
@@ -211,6 +224,7 @@ public class NGOController {
     }
 
     @DeleteMapping("/products/{productId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNGOProduct(@PathVariable Long productId) {
         ngoProductRepository.deleteById(productId);
         return ResponseEntity.noContent().build();
@@ -224,6 +238,7 @@ public class NGOController {
     }
 
     @PostMapping("/{id}/services")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOServiceItem> postNGOService(@PathVariable Long id, @RequestBody NGOServiceItem req) {
         NGO ngo = ngoService.getNGOById(id);
         NGOServiceItem item = new NGOServiceItem();
@@ -238,6 +253,7 @@ public class NGOController {
     }
 
     @PutMapping("/services/{serviceId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOServiceItem> updateNGOService(@PathVariable Long serviceId, @RequestBody NGOServiceItem req) {
         NGOServiceItem item = ngoServiceItemRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
@@ -251,6 +267,7 @@ public class NGOController {
     }
 
     @DeleteMapping("/services/{serviceId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNGOService(@PathVariable Long serviceId) {
         ngoServiceItemRepository.deleteById(serviceId);
         return ResponseEntity.noContent().build();
@@ -264,6 +281,7 @@ public class NGOController {
     }
 
     @PostMapping("/{id}/achievements")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOAchievement> postNGOAchievement(@PathVariable Long id, @RequestBody NGOAchievement req) {
         NGO ngo = ngoService.getNGOById(id);
         NGOAchievement item = new NGOAchievement();
@@ -277,6 +295,7 @@ public class NGOController {
     }
 
     @PutMapping("/achievements/{achievementId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOAchievement> updateNGOAchievement(@PathVariable Long achievementId, @RequestBody NGOAchievement req) {
         NGOAchievement item = ngoAchievementRepository.findById(achievementId)
                 .orElseThrow(() -> new RuntimeException("Achievement not found"));
@@ -289,6 +308,7 @@ public class NGOController {
     }
 
     @DeleteMapping("/achievements/{achievementId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteNGOAchievement(@PathVariable Long achievementId) {
         ngoAchievementRepository.deleteById(achievementId);
         return ResponseEntity.noContent().build();

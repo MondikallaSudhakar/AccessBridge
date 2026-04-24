@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getRoleLandingPath, getUserTypeGuide } from '../../data/userTypes'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -18,8 +19,8 @@ export default function Login() {
     setLoading(true)
     
     try {
-      await login(email, password)
-      navigate('/dashboard')
+      const userData = await login(email, password)
+      navigate(getRoleLandingPath(userData.role))
     } catch (err) {
       setError(err.message || 'Failed to login')
     } finally {
@@ -32,7 +33,7 @@ export default function Login() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
-          <p className="text-gray-600 mt-2">Login to your account</p>
+          <p className="text-gray-600 mt-2">Login to your account and continue to your role-specific workspace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,6 +86,21 @@ export default function Login() {
             Sign up
           </a>
         </p>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          {['USER', 'SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SUPER_ADMIN'].map((role) => {
+            const guide = getUserTypeGuide(role)
+            if (!guide) return null
+
+            return (
+              <div key={role} className="rounded-xl border border-gray-200 p-4 bg-gray-50">
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-400">{guide.label}</p>
+                <p className="mt-2 text-sm font-semibold text-gray-900">{guide.loginPurpose}</p>
+                <p className="mt-2 text-xs text-gray-500">Route: {guide.dashboardPath}</p>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

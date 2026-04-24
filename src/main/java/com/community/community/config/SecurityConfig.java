@@ -43,6 +43,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints (no authentication required)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/meta/**").permitAll()
                         .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers("/api/schools/**").permitAll()  // For now, make these public
                         .requestMatchers("/api/ngos/**").permitAll()
