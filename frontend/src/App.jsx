@@ -17,6 +17,7 @@ import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
 import SpecialAbledProfile from './pages/special/SpecialAbledProfile'
+import GuardianProfile from './pages/guardian/GuardianProfile'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/ngos/:id" element={<NgoDetail />} />
         <Route path="/messages" element={<RoleRoute allowedRoles={['USER']}><UserMessages /></RoleRoute>} />
         <Route path="/special/profile" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialAbledProfile /></RoleRoute>} />
+        <Route path="/guardian/profile" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianProfile /></RoleRoute>} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />

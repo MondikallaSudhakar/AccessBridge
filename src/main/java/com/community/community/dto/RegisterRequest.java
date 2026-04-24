@@ -19,6 +19,10 @@ public class RegisterRequest {
     private String disabilityType;
     private String skills;
     private String supportNeeds;
+    private String dependentName;
+    private String dependentRelation;
+    private String dependentAge;
+    private String dependentNeeds;
 
     // Organization fields (shared by School, NGO, Startup)
     private String orgName;        // Organization name

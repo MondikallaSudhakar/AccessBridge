@@ -59,10 +59,14 @@ public class AuthController {
             user.setDisabilityType(request.getDisabilityType());
             user.setSkills(request.getSkills());
             user.setSupportNeeds(request.getSupportNeeds());
+            user.setDependentName(request.getDependentName());
+            user.setDependentRelation(request.getDependentRelation());
+            user.setDependentAge(request.getDependentAge());
+            user.setDependentNeeds(request.getDependentNeeds());
             user.setActive(true);
             
             // Auto-approve individuals, organizations need manual approval
-            if (request.getRole() == Role.USER || request.getRole() == Role.SPECIAL_ABLED_PERSON) {
+            if (request.getRole() == Role.USER || request.getRole() == Role.SPECIAL_ABLED_PERSON || request.getRole() == Role.GUARDIAN_CAREGIVER) {
                 user.setStatus("APPROVED");
             } else {
                 user.setStatus("PENDING");

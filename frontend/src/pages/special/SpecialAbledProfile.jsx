@@ -184,7 +184,7 @@ function OpportunityCard({ item, bookmarked, onBookmark, onPrimary, primaryLabel
 }
 
 export default function SpecialAbledProfile() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState({ name: '', phone: '', bio: '', disabilityType: '', skills: '', supportNeeds: '' })
   const [saving, setSaving] = useState(false)
@@ -269,6 +269,11 @@ export default function SpecialAbledProfile() {
     setMessage('Application draft saved. You can copy it into messages or share it with the NGO later.')
   }
 
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   const statCards = [
     { label: 'Jobs', count: OPPORTUNITIES.jobs.length },
     { label: 'Marketplace', count: OPPORTUNITIES.marketplace.length },
@@ -284,9 +289,14 @@ export default function SpecialAbledProfile() {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">Specially Abled Person Workspace</p>
             <h1 className="text-xl font-black text-slate-900 sm:text-2xl">Independence through jobs, learning, and support</h1>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
-            Open Dashboard
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/dashboard')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+              Open Dashboard
+            </button>
+            <button onClick={handleLogout} className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700">
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 

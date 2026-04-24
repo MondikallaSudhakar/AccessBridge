@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { getRoleLandingPath, getUserTypeGuide } from '../../data/userTypes'
+import { USER_TYPE_GUIDES, getRoleLandingPath, getUserTypeGuide } from '../../data/userTypes'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -88,12 +88,11 @@ export default function Login() {
         </p>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          {['USER', 'SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SUPER_ADMIN'].map((role) => {
-            const guide = getUserTypeGuide(role)
+          {USER_TYPE_GUIDES.map((guide) => {
             if (!guide) return null
 
             return (
-              <div key={role} className="rounded-xl border border-gray-200 p-4 bg-gray-50">
+              <div key={guide.role} className="rounded-xl border border-gray-200 p-4 bg-gray-50">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-400">{guide.label}</p>
                 <p className="mt-2 text-sm font-semibold text-gray-900">{guide.loginPurpose}</p>
                 <p className="mt-2 text-xs text-gray-500">Route: {guide.dashboardPath}</p>

@@ -50,6 +50,23 @@ public class UserTypeGuideController {
                         )
                 ),
                 new UserTypeGuideDto(
+                        "GUARDIAN_CAREGIVER",
+                        "Guardian / Caregiver",
+                        "Join to support and manage opportunities for a dependent person through jobs, care, learning, and support services.",
+                        "/guardian/profile",
+                        List.of(
+                                "Suitable jobs for dependent persons, special schools, therapy centers, NGOs, and support services",
+                                "Learning resources, events, awareness programs, and future progress tracking",
+                                "Dependent profile details used to personalize support opportunities"
+                        ),
+                        List.of(
+                                "Create and manage a dependent profile",
+                                "Apply for jobs on behalf of the dependent",
+                                "Enroll in schools or training, request NGO support, and book therapy or training",
+                                "Save and track opportunities for later follow-up"
+                        )
+                ),
+                new UserTypeGuideDto(
                         "SCHOOL_ADMIN",
                         "School Admin",
                         "Join to publish school needs, show achievements, and attract supporters for your institution.",

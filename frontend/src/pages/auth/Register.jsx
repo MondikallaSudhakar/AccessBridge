@@ -12,6 +12,13 @@ const SPECIAL_FIELDS = [
   { name: 'supportNeeds', label: 'Support Needs', placeholder: 'e.g. transport support, assistive tech, flexible timings', required: false, textarea: true },
 ]
 
+const GUARDIAN_FIELDS = [
+  { name: 'dependentName', label: 'Dependent Name', placeholder: 'Name of the person you support', required: true },
+  { name: 'dependentRelation', label: 'Relationship', placeholder: 'e.g. Parent, Sibling, Spouse, Legal Guardian', required: true },
+  { name: 'dependentAge', label: 'Dependent Age', placeholder: 'e.g. 12, 24, 68', required: false },
+  { name: 'dependentNeeds', label: 'Dependent Needs', placeholder: 'e.g. therapy, school, transport, job support, care help', required: true, textarea: true },
+]
+
 const ORG_FIELDS = {
   SCHOOL_ADMIN: [
     { name: 'orgName', label: 'School Name', placeholder: 'e.g. Delhi Public School', required: true },
@@ -49,6 +56,7 @@ export default function Register() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '', phone: '' })
   const [orgData, setOrgData] = useState({})
   const [specialData, setSpecialData] = useState({})
+  const [guardianData, setGuardianData] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -57,14 +65,16 @@ export default function Register() {
 
   const selectedRole = ROLES.find(r => r.value === formData.role)
   const isSpecial = formData.role === 'SPECIAL_ABLED_PERSON'
+  const isGuardian = formData.role === 'GUARDIAN_CAREGIVER'
   const isOrg = ['SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN'].includes(formData.role)
-  const requiresExtraStep = isOrg || isSpecial
+  const requiresExtraStep = isOrg || isSpecial || isGuardian
   const orgFields = ORG_FIELDS[formData.role] || []
-  const extraFields = isSpecial ? SPECIAL_FIELDS : orgFields
+  const extraFields = isSpecial ? SPECIAL_FIELDS : isGuardian ? GUARDIAN_FIELDS : orgFields
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
   const handleOrgChange = (e) => setOrgData({ ...orgData, [e.target.name]: e.target.value })
   const handleSpecialChange = (e) => setSpecialData({ ...specialData, [e.target.name]: e.target.value })
+  const handleGuardianChange = (e) => setGuardianData({ ...guardianData, [e.target.name]: e.target.value })
 
   const handleRoleSelect = (role) => {
     setFormData({ ...formData, role })
@@ -86,7 +96,8 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      const payload = { ...formData, ...(isOrg ? orgData : specialData) }
+      const extraPayload = isOrg ? orgData : isSpecial ? specialData : guardianData
+      const payload = { ...formData, ...extraPayload }
       const result = await register(payload)
       if (result.token) {
         navigate(getRoleLandingPath(result.role || formData.role))
@@ -238,7 +249,7 @@ export default function Register() {
                   className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#1A8FD1' }}
                 >
-                  {isSpecial ? 'Continue to Profile Details →' : isOrg ? 'Continue to Organization Details →' : 'Create Account'}
+                  {isSpecial || isGuardian ? 'Continue to Profile Details →' : isOrg ? 'Continue to Organization Details →' : 'Create Account'}
                 </button>
               </div>
             </form>
@@ -272,12 +283,12 @@ export default function Register() {
                       {field.label} {field.required && <span className="text-red-400">*</span>}
                     </label>
                     {field.textarea ? (
-                      <textarea name={field.name} value={(isSpecial ? specialData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : handleOrgChange}
+                      <textarea name={field.name} value={(isSpecial ? specialData[field.name] : isGuardian ? guardianData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : isGuardian ? handleGuardianChange : handleOrgChange}
                         placeholder={field.placeholder} rows={3}
                         className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 resize-none"
                       />
                     ) : (
-                      <input type="text" name={field.name} value={(isSpecial ? specialData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : handleOrgChange}
+                      <input type="text" name={field.name} value={(isSpecial ? specialData[field.name] : isGuardian ? guardianData[field.name] : orgData[field.name]) || ''} onChange={isSpecial ? handleSpecialChange : isGuardian ? handleGuardianChange : handleOrgChange}
                         required={field.required} placeholder={field.placeholder}
                         className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
                       />
@@ -288,6 +299,10 @@ export default function Register() {
                 {isSpecial ? (
                   <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
                     Your account will be approved automatically so you can start exploring jobs, training, support, and opportunities right away.
+                  </p>
+                ) : isGuardian ? (
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
+                    Your guardian account will be approved automatically so you can start managing dependent opportunities immediately.
                   </p>
                 ) : (
                   <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
@@ -301,7 +316,7 @@ export default function Register() {
                   className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
                   style={{ backgroundColor: '#5BBE00' }}
                 >
-                  {loading ? 'Submitting...' : isSpecial ? 'Create Specially Abled Profile' : 'Submit for Approval'}
+                  {loading ? 'Submitting...' : isSpecial ? 'Create Specially Abled Profile' : isGuardian ? 'Create Guardian Profile' : 'Submit for Approval'}
                 </button>
               </div>
             </form>

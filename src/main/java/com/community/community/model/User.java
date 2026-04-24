@@ -50,6 +50,18 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String supportNeeds;
 
+    @Column(length = 120)
+    private String dependentName;
+
+    @Column(length = 80)
+    private String dependentRelation;
+
+    @Column(length = 20)
+    private String dependentAge;
+
+    @Column(columnDefinition = "TEXT")
+    private String dependentNeeds;
+
     private String profileImage;
 
     @Column(nullable = false)

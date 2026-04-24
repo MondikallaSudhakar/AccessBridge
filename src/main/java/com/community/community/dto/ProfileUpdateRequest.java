@@ -14,5 +14,9 @@ public class ProfileUpdateRequest {
     private String disabilityType;
     private String skills;
     private String supportNeeds;
+    private String dependentName;
+    private String dependentRelation;
+    private String dependentAge;
+    private String dependentNeeds;
     private String profileImage;
 }

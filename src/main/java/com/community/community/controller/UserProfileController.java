@@ -26,6 +26,10 @@ public class UserProfileController {
         user.setDisabilityType(request.getDisabilityType());
         user.setSkills(request.getSkills());
         user.setSupportNeeds(request.getSupportNeeds());
+        user.setDependentName(request.getDependentName());
+        user.setDependentRelation(request.getDependentRelation());
+        user.setDependentAge(request.getDependentAge());
+        user.setDependentNeeds(request.getDependentNeeds());
         user.setProfileImage(request.getProfileImage());
         return ResponseEntity.ok(userService.updateUser(id, user));
     }

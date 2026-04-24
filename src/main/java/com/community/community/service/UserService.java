@@ -30,6 +30,10 @@ public class UserService {
         if (userDetails.getDisabilityType() != null) user.setDisabilityType(userDetails.getDisabilityType());
         if (userDetails.getSkills() != null) user.setSkills(userDetails.getSkills());
         if (userDetails.getSupportNeeds() != null) user.setSupportNeeds(userDetails.getSupportNeeds());
+        if (userDetails.getDependentName() != null) user.setDependentName(userDetails.getDependentName());
+        if (userDetails.getDependentRelation() != null) user.setDependentRelation(userDetails.getDependentRelation());
+        if (userDetails.getDependentAge() != null) user.setDependentAge(userDetails.getDependentAge());
+        if (userDetails.getDependentNeeds() != null) user.setDependentNeeds(userDetails.getDependentNeeds());
         if (userDetails.getProfileImage() != null) user.setProfileImage(userDetails.getProfileImage());
         if (userDetails.getRole() != null) user.setRole(userDetails.getRole());
         if (userDetails.getActive() != null) user.setActive(userDetails.getActive());
