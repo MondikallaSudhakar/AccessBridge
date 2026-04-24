@@ -1,0 +1,585 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import './SchoolProfile.css';
+
+const SchoolProfile = () => {
+  const { user, logout } = useAuth();
+  const [currentTab, setCurrentTab] = useState('overview');
+  const [schoolData, setSchoolData] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
+  const [certifications, setCertifications] = useState([]);
+  const [partnerships, setPartnerships] = useState([]);
+  const [volunteers, setVolunteers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [formType, setFormType] = useState(null);
+
+  // Form states
+  const [studentForm, setStudentForm] = useState({
+    name: '', email: '', phone: '', skills: '', disabilityType: '', bio: '', profileImageUrl: ''
+  });
+  const [courseForm, setCourseForm] = useState({
+    courseTitle: '', description: '', category: '', startDate: '', endDate: '', 
+    capacity: 30, syllabus: '', instructorName: '', instructorEmail: ''
+  });
+  const [enrollmentForm, setEnrollmentForm] = useState({
+    studentId: '', courseId: '', status: 'ACTIVE', grade: '', attendancePercentage: ''
+  });
+  const [certForm, setCertForm] = useState({
+    studentId: '', courseTitle: '', description: '', expiryDate: '', certificateImageUrl: ''
+  });
+  const [partnershipForm, setPartnershipForm] = useState({
+    partnerName: '', partnerEmail: '', partnerPhone: '', partnershipType: '', 
+    partnershipDetails: '', startDate: '', status: 'PENDING'
+  });
+  const [volunteerForm, setVolunteerForm] = useState({
+    volunteerName: '', volunteerEmail: '', volunteerPhone: '', skills: '', role: 'MENTOR',
+    availability: '', bio: '', profileImageUrl: ''
+  });
+
+  // Fetch school data
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchSchoolData = async () => {
+      try {
+        const schoolResponse = await fetch(`/api/schools/email/${user.email}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!schoolResponse.ok) throw new Error('Failed to load school data');
+        const school = await schoolResponse.json();
+        setSchoolData(school);
+
+        // Fetch related data
+        const [studentsRes, coursesRes, enrollmentsRes, certsRes, partnershipsRes, volunteersRes] = await Promise.all([
+          fetch(`/api/schools/${school.id}/students`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`/api/schools/${school.id}/courses`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`/api/schools/${school.id}/enrollments`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`/api/schools/${school.id}/certifications`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`/api/schools/${school.id}/partnerships`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`/api/schools/${school.id}/volunteers`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+        ]);
+
+        if (studentsRes.ok) setStudents(await studentsRes.json());
+        if (coursesRes.ok) setCourses(await coursesRes.json());
+        if (enrollmentsRes.ok) setEnrollments(await enrollmentsRes.json());
+        if (certsRes.ok) setCertifications(await certsRes.json());
+        if (partnershipsRes.ok) setPartnerships(await partnershipsRes.json());
+        if (volunteersRes.ok) setVolunteers(await volunteersRes.json());
+
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchSchoolData();
+  }, [user]);
+
+  const handleSubmitStudent = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/students`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(studentForm)
+      });
+      if (!response.ok) throw new Error('Failed to create student');
+      const newStudent = await response.json();
+      setStudents([...students, newStudent]);
+      setStudentForm({ name: '', email: '', phone: '', skills: '', disabilityType: '', bio: '', profileImageUrl: '' });
+      setShowForm(false);
+      setSuccessMessage('Student profile created successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmitCourse = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/courses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(courseForm)
+      });
+      if (!response.ok) throw new Error('Failed to create course');
+      const newCourse = await response.json();
+      setCourses([...courses, newCourse]);
+      setCourseForm({ courseTitle: '', description: '', category: '', startDate: '', endDate: '', 
+        capacity: 30, syllabus: '', instructorName: '', instructorEmail: '' });
+      setShowForm(false);
+      setSuccessMessage('Course created successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmitEnrollment = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/enrollments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          student: { id: parseInt(enrollmentForm.studentId) },
+          course: { id: parseInt(enrollmentForm.courseId) },
+          status: enrollmentForm.status,
+          grade: enrollmentForm.grade,
+          attendancePercentage: enrollmentForm.attendancePercentage
+        })
+      });
+      if (!response.ok) throw new Error('Failed to create enrollment');
+      const newEnrollment = await response.json();
+      setEnrollments([...enrollments, newEnrollment]);
+      setEnrollmentForm({ studentId: '', courseId: '', status: 'ACTIVE', grade: '', attendancePercentage: '' });
+      setShowForm(false);
+      setSuccessMessage('Student enrolled successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmitCertificate = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/certifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          student: { id: parseInt(certForm.studentId) },
+          courseTitle: certForm.courseTitle,
+          description: certForm.description,
+          expiryDate: certForm.expiryDate,
+          certificateImageUrl: certForm.certificateImageUrl
+        })
+      });
+      if (!response.ok) throw new Error('Failed to issue certificate');
+      const newCert = await response.json();
+      setCertifications([...certifications, newCert]);
+      setCertForm({ studentId: '', courseTitle: '', description: '', expiryDate: '', certificateImageUrl: '' });
+      setShowForm(false);
+      setSuccessMessage('Certificate issued successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmitPartnership = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/partnerships`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(partnershipForm)
+      });
+      if (!response.ok) throw new Error('Failed to create partnership');
+      const newPartnership = await response.json();
+      setPartnerships([...partnerships, newPartnership]);
+      setPartnershipForm({ partnerName: '', partnerEmail: '', partnerPhone: '', partnershipType: '', 
+        partnershipDetails: '', startDate: '', status: 'PENDING' });
+      setShowForm(false);
+      setSuccessMessage('Partnership request created successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmitVolunteer = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/schools/${schoolData.id}/volunteers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(volunteerForm)
+      });
+      if (!response.ok) throw new Error('Failed to add volunteer');
+      const newVolunteer = await response.json();
+      setVolunteers([...volunteers, newVolunteer]);
+      setVolunteerForm({ volunteerName: '', volunteerEmail: '', volunteerPhone: '', skills: '', role: 'MENTOR',
+        availability: '', bio: '', profileImageUrl: '' });
+      setShowForm(false);
+      setSuccessMessage('Volunteer added successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const deleteStudent = async (studentId) => {
+    if (window.confirm('Are you sure you want to delete this student?')) {
+      try {
+        await fetch(`/api/schools/students/${studentId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setStudents(students.filter(s => s.id !== studentId));
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const deleteCourse = async (courseId) => {
+    if (window.confirm('Are you sure you want to delete this course?')) {
+      try {
+        await fetch(`/api/schools/courses/${courseId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setCourses(courses.filter(c => c.id !== courseId));
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const deletePartnership = async (partnershipId) => {
+    if (window.confirm('Are you sure you want to delete this partnership?')) {
+      try {
+        await fetch(`/api/schools/partnerships/${partnershipId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setPartnerships(partnerships.filter(p => p.id !== partnershipId));
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const deleteVolunteer = async (volunteerId) => {
+    if (window.confirm('Are you sure you want to delete this volunteer?')) {
+      try {
+        await fetch(`/api/schools/volunteers/${volunteerId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setVolunteers(volunteers.filter(v => v.id !== volunteerId));
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
+
+  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Loading school data...</div>;
+
+  if (!schoolData) return <div style={{ padding: '20px' }}>School not found</div>;
+
+  return (
+    <div className="school-profile-container">
+      {/* Sidebar */}
+      <div className="school-sidebar">
+        <div className="school-brand">
+          {schoolData.logoUrl && <img src={schoolData.logoUrl} alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '50%' }} />}
+          <h2>{schoolData.name}</h2>
+        </div>
+        <div className="school-role-badge">School Admin</div>
+        
+        <nav className="school-nav-tabs">
+          {['overview', 'students', 'courses', 'enrollments', 'certifications', 'partnerships', 'volunteers'].map(tab => (
+            <button
+              key={tab}
+              className={`nav-tab ${currentTab === tab ? 'active' : ''}`}
+              onClick={() => { setCurrentTab(tab); setShowForm(false); }}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </nav>
+
+        <button className="logout-btn" onClick={logout}>
+          Logout
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="school-main-content">
+        <div className="school-topbar">
+          <h3>{currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}</h3>
+          {error && <div className="error-toast">{error}</div>}
+          {successMessage && <div className="success-toast">{successMessage}</div>}
+        </div>
+
+        <div className="school-tab-content">
+          {/* Overview Tab */}
+          {currentTab === 'overview' && (
+            <div className="overview-section">
+              <h4>School Profile</h4>
+              <div className="profile-grid">
+                <div><label>Name:</label> <p>{schoolData.name}</p></div>
+                <div><label>Email:</label> <p>{schoolData.email}</p></div>
+                <div><label>Phone:</label> <p>{schoolData.phone}</p></div>
+                <div><label>City:</label> <p>{schoolData.city}</p></div>
+                <div><label>State:</label> <p>{schoolData.state}</p></div>
+                <div><label>Country:</label> <p>{schoolData.country}</p></div>
+                <div><label>Website:</label> <p><a href={schoolData.websiteUrl} target="_blank">{schoolData.websiteUrl}</a></p></div>
+                <div><label>Special School:</label> <p>{schoolData.specialSchool ? 'Yes' : 'No'}</p></div>
+              </div>
+              <div><label>Description:</label> <p>{schoolData.description}</p></div>
+            </div>
+          )}
+
+          {/* Students Tab */}
+          {currentTab === 'students' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('student'); setShowForm(true); }}>
+                + Add Student
+              </button>
+              {showForm && formType === 'student' && (
+                <form className="form-container" onSubmit={handleSubmitStudent}>
+                  <input placeholder="Name" value={studentForm.name} onChange={(e) => setStudentForm({...studentForm, name: e.target.value})} required />
+                  <input placeholder="Email" type="email" value={studentForm.email} onChange={(e) => setStudentForm({...studentForm, email: e.target.value})} required />
+                  <input placeholder="Phone" value={studentForm.phone} onChange={(e) => setStudentForm({...studentForm, phone: e.target.value})} />
+                  <input placeholder="Skills (comma-separated)" value={studentForm.skills} onChange={(e) => setStudentForm({...studentForm, skills: e.target.value})} />
+                  <input placeholder="Disability Type (if applicable)" value={studentForm.disabilityType} onChange={(e) => setStudentForm({...studentForm, disabilityType: e.target.value})} />
+                  <textarea placeholder="Bio" value={studentForm.bio} onChange={(e) => setStudentForm({...studentForm, bio: e.target.value})} />
+                  <input placeholder="Profile Image URL" value={studentForm.profileImageUrl} onChange={(e) => setStudentForm({...studentForm, profileImageUrl: e.target.value})} />
+                  <button type="submit">Create Student</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="students-grid">
+                {students.map(student => (
+                  <div key={student.id} className="student-card">
+                    <h5>{student.name}</h5>
+                    <p><strong>Email:</strong> {student.email}</p>
+                    <p><strong>Phone:</strong> {student.phone}</p>
+                    <p><strong>Skills:</strong> {student.skills}</p>
+                    <p><strong>Status:</strong> {student.status}</p>
+                    <button onClick={() => deleteStudent(student.id)} className="delete-btn">Delete</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Courses Tab */}
+          {currentTab === 'courses' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('course'); setShowForm(true); }}>
+                + Post Course
+              </button>
+              {showForm && formType === 'course' && (
+                <form className="form-container" onSubmit={handleSubmitCourse}>
+                  <input placeholder="Course Title" value={courseForm.courseTitle} onChange={(e) => setCourseForm({...courseForm, courseTitle: e.target.value})} required />
+                  <textarea placeholder="Description" value={courseForm.description} onChange={(e) => setCourseForm({...courseForm, description: e.target.value})} />
+                  <input placeholder="Category" value={courseForm.category} onChange={(e) => setCourseForm({...courseForm, category: e.target.value})} />
+                  <input placeholder="Start Date" type="date" value={courseForm.startDate} onChange={(e) => setCourseForm({...courseForm, startDate: e.target.value})} required />
+                  <input placeholder="End Date" type="date" value={courseForm.endDate} onChange={(e) => setCourseForm({...courseForm, endDate: e.target.value})} required />
+                  <input placeholder="Capacity" type="number" value={courseForm.capacity} onChange={(e) => setCourseForm({...courseForm, capacity: parseInt(e.target.value)})} />
+                  <textarea placeholder="Syllabus" value={courseForm.syllabus} onChange={(e) => setCourseForm({...courseForm, syllabus: e.target.value})} />
+                  <input placeholder="Instructor Name" value={courseForm.instructorName} onChange={(e) => setCourseForm({...courseForm, instructorName: e.target.value})} />
+                  <input placeholder="Instructor Email" type="email" value={courseForm.instructorEmail} onChange={(e) => setCourseForm({...courseForm, instructorEmail: e.target.value})} />
+                  <button type="submit">Create Course</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="courses-grid">
+                {courses.map(course => (
+                  <div key={course.id} className="course-card">
+                    <h5>{course.courseTitle}</h5>
+                    <p><strong>Category:</strong> {course.category}</p>
+                    <p><strong>Capacity:</strong> {course.capacity} | <strong>Enrolled:</strong> {course.enrolled}</p>
+                    <p><strong>Status:</strong> {course.status}</p>
+                    <p><strong>Dates:</strong> {course.startDate} to {course.endDate}</p>
+                    <button onClick={() => deleteCourse(course.id)} className="delete-btn">Delete</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Enrollments Tab */}
+          {currentTab === 'enrollments' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('enrollment'); setShowForm(true); }}>
+                + Enroll Student
+              </button>
+              {showForm && formType === 'enrollment' && (
+                <form className="form-container" onSubmit={handleSubmitEnrollment}>
+                  <select value={enrollmentForm.studentId} onChange={(e) => setEnrollmentForm({...enrollmentForm, studentId: e.target.value})} required>
+                    <option value="">Select Student</option>
+                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  <select value={enrollmentForm.courseId} onChange={(e) => setEnrollmentForm({...enrollmentForm, courseId: e.target.value})} required>
+                    <option value="">Select Course</option>
+                    {courses.map(c => <option key={c.id} value={c.id}>{c.courseTitle}</option>)}
+                  </select>
+                  <select value={enrollmentForm.status} onChange={(e) => setEnrollmentForm({...enrollmentForm, status: e.target.value})}>
+                    <option value="ACTIVE">Active</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="DROPPED">Dropped</option>
+                  </select>
+                  <input placeholder="Grade (A, B, C, etc.)" value={enrollmentForm.grade} onChange={(e) => setEnrollmentForm({...enrollmentForm, grade: e.target.value})} />
+                  <input placeholder="Attendance %" type="number" value={enrollmentForm.attendancePercentage} onChange={(e) => setEnrollmentForm({...enrollmentForm, attendancePercentage: parseInt(e.target.value)})} />
+                  <button type="submit">Enroll</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="enrollments-list">
+                {enrollments.map(enrollment => (
+                  <div key={enrollment.id} className="enrollment-card">
+                    <p><strong>Student ID:</strong> {enrollment.student.id}</p>
+                    <p><strong>Course:</strong> {enrollment.course.courseTitle}</p>
+                    <p><strong>Status:</strong> {enrollment.status}</p>
+                    <p><strong>Grade:</strong> {enrollment.grade || 'N/A'} | <strong>Attendance:</strong> {enrollment.attendancePercentage || 'N/A'}%</p>
+                    <p><strong>Enrollment Date:</strong> {enrollment.enrollmentDate}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications Tab */}
+          {currentTab === 'certifications' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('certificate'); setShowForm(true); }}>
+                + Issue Certificate
+              </button>
+              {showForm && formType === 'certificate' && (
+                <form className="form-container" onSubmit={handleSubmitCertificate}>
+                  <select value={certForm.studentId} onChange={(e) => setCertForm({...certForm, studentId: e.target.value})} required>
+                    <option value="">Select Student</option>
+                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  <input placeholder="Course Title" value={certForm.courseTitle} onChange={(e) => setCertForm({...certForm, courseTitle: e.target.value})} required />
+                  <textarea placeholder="Description" value={certForm.description} onChange={(e) => setCertForm({...certForm, description: e.target.value})} />
+                  <input placeholder="Expiry Date" type="date" value={certForm.expiryDate} onChange={(e) => setCertForm({...certForm, expiryDate: e.target.value})} />
+                  <input placeholder="Certificate Image URL" value={certForm.certificateImageUrl} onChange={(e) => setCertForm({...certForm, certificateImageUrl: e.target.value})} />
+                  <button type="submit">Issue Certificate</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="certifications-grid">
+                {certifications.map(cert => (
+                  <div key={cert.id} className="cert-card">
+                    <h5>{cert.courseTitle}</h5>
+                    <p><strong>Student:</strong> {cert.student.name}</p>
+                    <p><strong>Certificate ID:</strong> {cert.certificateId}</p>
+                    <p><strong>Issue Date:</strong> {cert.issueDate}</p>
+                    <p><strong>Expiry Date:</strong> {cert.expiryDate || 'No expiry'}</p>
+                    {cert.certificateImageUrl && <img src={cert.certificateImageUrl} alt="Certificate" style={{ maxWidth: '100%', marginTop: '10px' }} />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Partnerships Tab */}
+          {currentTab === 'partnerships' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('partnership'); setShowForm(true); }}>
+                + Create Partnership
+              </button>
+              {showForm && formType === 'partnership' && (
+                <form className="form-container" onSubmit={handleSubmitPartnership}>
+                  <input placeholder="Partner Name (NGO/Company)" value={partnershipForm.partnerName} onChange={(e) => setPartnershipForm({...partnershipForm, partnerName: e.target.value})} required />
+                  <input placeholder="Partner Email" type="email" value={partnershipForm.partnerEmail} onChange={(e) => setPartnershipForm({...partnershipForm, partnerEmail: e.target.value})} required />
+                  <input placeholder="Partner Phone" value={partnershipForm.partnerPhone} onChange={(e) => setPartnershipForm({...partnershipForm, partnerPhone: e.target.value})} />
+                  <select value={partnershipForm.partnershipType} onChange={(e) => setPartnershipForm({...partnershipForm, partnershipType: e.target.value})} required>
+                    <option value="">Select Partnership Type</option>
+                    <option value="JOB_PLACEMENT">Job Placement</option>
+                    <option value="TRAINING_SUPPORT">Training Support</option>
+                    <option value="MENTORSHIP">Mentorship</option>
+                    <option value="DONATION">Donation</option>
+                    <option value="SKILL_DEVELOPMENT">Skill Development</option>
+                  </select>
+                  <textarea placeholder="Partnership Details" value={partnershipForm.partnershipDetails} onChange={(e) => setPartnershipForm({...partnershipForm, partnershipDetails: e.target.value})} />
+                  <input placeholder="Start Date" type="date" value={partnershipForm.startDate} onChange={(e) => setPartnershipForm({...partnershipForm, startDate: e.target.value})} required />
+                  <button type="submit">Send Partnership Request</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="partnerships-list">
+                {partnerships.map(partnership => (
+                  <div key={partnership.id} className="partnership-card">
+                    <h5>{partnership.partnerName}</h5>
+                    <p><strong>Type:</strong> {partnership.partnershipType}</p>
+                    <p><strong>Email:</strong> {partnership.partnerEmail}</p>
+                    <p><strong>Status:</strong> <span className={`status-badge ${partnership.status.toLowerCase()}`}>{partnership.status}</span></p>
+                    <p><strong>Start Date:</strong> {partnership.startDate}</p>
+                    <button onClick={() => deletePartnership(partnership.id)} className="delete-btn">Delete</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Volunteers Tab */}
+          {currentTab === 'volunteers' && (
+            <div>
+              <button className="add-btn" onClick={() => { setFormType('volunteer'); setShowForm(true); }}>
+                + Add Volunteer/Mentor
+              </button>
+              {showForm && formType === 'volunteer' && (
+                <form className="form-container" onSubmit={handleSubmitVolunteer}>
+                  <input placeholder="Volunteer Name" value={volunteerForm.volunteerName} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerName: e.target.value})} required />
+                  <input placeholder="Volunteer Email" type="email" value={volunteerForm.volunteerEmail} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerEmail: e.target.value})} required />
+                  <input placeholder="Volunteer Phone" value={volunteerForm.volunteerPhone} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerPhone: e.target.value})} />
+                  <input placeholder="Skills (comma-separated)" value={volunteerForm.skills} onChange={(e) => setVolunteerForm({...volunteerForm, skills: e.target.value})} />
+                  <select value={volunteerForm.role} onChange={(e) => setVolunteerForm({...volunteerForm, role: e.target.value})}>
+                    <option value="MENTOR">Mentor</option>
+                    <option value="INSTRUCTOR">Instructor</option>
+                    <option value="COUNSELOR">Counselor</option>
+                    <option value="THERAPIST">Therapist</option>
+                    <option value="COORDINATOR">Coordinator</option>
+                  </select>
+                  <input placeholder="Availability (e.g., Mon-Fri 2-4 PM)" value={volunteerForm.availability} onChange={(e) => setVolunteerForm({...volunteerForm, availability: e.target.value})} />
+                  <textarea placeholder="Bio" value={volunteerForm.bio} onChange={(e) => setVolunteerForm({...volunteerForm, bio: e.target.value})} />
+                  <input placeholder="Profile Image URL" value={volunteerForm.profileImageUrl} onChange={(e) => setVolunteerForm({...volunteerForm, profileImageUrl: e.target.value})} />
+                  <button type="submit">Add Volunteer</button>
+                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                </form>
+              )}
+              <div className="volunteers-grid">
+                {volunteers.map(volunteer => (
+                  <div key={volunteer.id} className="volunteer-card">
+                    {volunteer.profileImageUrl && <img src={volunteer.profileImageUrl} alt={volunteer.volunteerName} className="volunteer-img" />}
+                    <h5>{volunteer.volunteerName}</h5>
+                    <p><strong>Role:</strong> {volunteer.role}</p>
+                    <p><strong>Email:</strong> {volunteer.volunteerEmail}</p>
+                    <p><strong>Skills:</strong> {volunteer.skills}</p>
+                    <p><strong>Available:</strong> {volunteer.availability}</p>
+                    <p><strong>Status:</strong> {volunteer.status}</p>
+                    <button onClick={() => deleteVolunteer(volunteer.id)} className="delete-btn">Remove</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SchoolProfile;

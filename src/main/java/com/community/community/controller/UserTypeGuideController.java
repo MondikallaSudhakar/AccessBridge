@@ -68,19 +68,25 @@ public class UserTypeGuideController {
                 ),
                 new UserTypeGuideDto(
                         "SCHOOL_ADMIN",
-                        "School Admin",
-                        "Join to publish school needs, show achievements, and attract supporters for your institution.",
+                        "Special Schools / Training Centers",
+                        "To provide education, training, and student placement opportunities.",
                         "/school/profile",
                         List.of(
-                                "School profile and public school directory",
-                                "Needs, achievements, and support requests for schools",
-                                "Messages and engagement related to the school profile"
+                                "Student profiles and skill tracking",
+                                "NGO partnerships and collaboration opportunities",
+                                "Job opportunities and student placement prospects",
+                                "Events, workshops, and announcements",
+                                "Volunteer and mentor availability"
                         ),
                         List.of(
-                                "Create and update the school profile",
-                                "Post needs and close completed requests",
-                                "Publish achievements and media",
-                                "Review donor interest and incoming messages"
+                                "Create and manage student profiles with skills and status",
+                                "Post courses and training programs with detailed curriculum",
+                                "Enroll students and track their progress",
+                                "Upload and manage student skill profiles",
+                                "Issue certificates and track certifications",
+                                "Announce admissions, workshops, and events",
+                                "Partner with NGOs and companies for job placement and training support",
+                                "Manage volunteers, mentors, and staff availability"
                         )
                 ),
                 new UserTypeGuideDto(
