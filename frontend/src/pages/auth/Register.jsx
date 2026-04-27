@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { getRoleLandingPath } from '../../data/userTypes'
-import { USER_TYPE_GUIDES, getUserTypeGuide } from '../../data/userTypes'
+import { USER_TYPE_GUIDES } from '../../data/userTypes'
 
 const ROLES = USER_TYPE_GUIDES.filter((item) => item.role !== 'SUPER_ADMIN')
 
@@ -62,7 +62,7 @@ const COLORS = {
 }
 
 export default function Register() {
-  const [step, setStep] = useState(1) // 1 = role select, 2 = basic info, 3 = org info
+  const [step, setStep] = useState(1) // 1 = basic info, 2 = role-specific info
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '', phone: '' })
   const [orgData, setOrgData] = useState({})
   const [specialData, setSpecialData] = useState({})
@@ -73,7 +73,7 @@ export default function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
 
-  const selectedRole = ROLES.find(r => r.value === formData.role)
+  const selectedRole = ROLES.find(r => r.role === formData.role)
   const isSpecial = formData.role === 'SPECIAL_ABLED_PERSON'
   const isGuardian = formData.role === 'GUARDIAN_CAREGIVER'
   const isOrg = ['SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN'].includes(formData.role)
@@ -86,16 +86,15 @@ export default function Register() {
   const handleSpecialChange = (e) => setSpecialData({ ...specialData, [e.target.name]: e.target.value })
   const handleGuardianChange = (e) => setGuardianData({ ...guardianData, [e.target.name]: e.target.value })
 
-  const handleRoleSelect = (role) => {
-    setFormData({ ...formData, role })
-    setStep(2)
-  }
-
   const handleBasicSubmit = (e) => {
     e.preventDefault()
     setError('')
+    if (!formData.role) {
+      setError('Please select a role')
+      return
+    }
     if (requiresExtraStep) {
-      setStep(3)
+      setStep(2)
     } else {
       handleFinalSubmit()
     }
@@ -121,7 +120,7 @@ export default function Register() {
     }
   }
 
-  const totalSteps = requiresExtraStep ? 3 : 2
+  const totalSteps = requiresExtraStep ? 2 : 1
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
@@ -139,16 +138,16 @@ export default function Register() {
         </div>
 
         {/* Progress Bar */}
-        {step > 1 && (
+        {totalSteps > 1 && (
           <div className="mb-6">
             <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
-              <span>Step {step - 1} of {totalSteps - 1}</span>
-              <span>{Math.round(((step - 1) / (totalSteps - 1)) * 100)}%</span>
+              <span>Step {step} of {totalSteps}</span>
+              <span>{Math.round((step / totalSteps) * 100)}%</span>
             </div>
             <div className="h-1 overflow-hidden rounded-full" style={{ backgroundColor: COLORS.blueBorder }}>
               <div
                 className="h-1 rounded-full transition-all duration-500"
-                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%`, background: COLORS.heroGradient }}
+                style={{ width: `${(step / totalSteps) * 100}%`, background: COLORS.heroGradient }}
               ></div>
             </div>
           </div>
@@ -156,57 +155,13 @@ export default function Register() {
 
         <div className="overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.blueBorder }}>
 
-          {/* ── Step 1: Role Selection ─────────────── */}
+          {/* ── Step 1: Basic Account Info ─────────── */}
           {step === 1 && (
-            <div className="p-8">
-              <h2 className="mb-1 text-2xl font-black text-slate-900">Create your account</h2>
-              <p className="mb-2 text-sm text-slate-600">Choose your role to begin.</p>
-              <p className="mb-8 text-xs text-slate-500">Only a few details are needed. You can update your profile later.</p>
-
-              <div className="grid grid-cols-1 gap-3">
-                {ROLES.map((role) => (
-                  <button
-                    key={role.role}
-                    onClick={() => handleRoleSelect(role.role)}
-                    className="group w-full rounded-2xl border px-5 py-4 text-left transition-all duration-200 hover:-translate-y-0.5"
-                    style={{ borderColor: COLORS.blueBorder, backgroundColor: 'white' }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900">{role.label}</div>
-                        <div className="mt-0.5 text-xs text-slate-500">{role.loginPurpose}</div>
-                      </div>
-                      <div className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
-                        {getUserTypeGuide(role.role)?.dashboardPath.replace('/', '')}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <p className="mt-8 text-center text-sm text-slate-600">
-                Already have an account?{' '}
-                <a href="/login" className="font-semibold hover:opacity-80" style={{ color: COLORS.blue }}>Sign in</a>
-              </p>
-            </div>
-          )}
-
-          {/* ── Step 2: Basic Account Info ─────────── */}
-          {step === 2 && (
             <form onSubmit={handleBasicSubmit}>
               <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
-                <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setStep(1)} className="text-slate-400 transition-colors hover:text-slate-700">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <div>
-                    <h2 className="text-xl font-black text-slate-900">Your details</h2>
-                    {selectedRole && (
-                      <p className="text-xs text-slate-500">Role: <span className="font-semibold" style={{ color: COLORS.blue }}>{selectedRole.label}</span></p>
-                    )}
-                  </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">Create your account</h2>
+                  <p className="text-xs text-slate-500">Simple details to get started.</p>
                 </div>
               </div>
 
@@ -216,6 +171,22 @@ export default function Register() {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Role *</label>
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      required
+                      className="w-full border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.blueSoft }}
+                    >
+                      <option value="">Select your role</option>
+                      {ROLES.map((role) => (
+                        <option key={role.role} value={role.role}>{role.label}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Full Name *</label>
                     <input type="text" name="name" value={formData.name} onChange={handleChange}
@@ -259,18 +230,22 @@ export default function Register() {
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95"
                   style={{ background: COLORS.heroGradient }}
                 >
-                  {isSpecial || isGuardian ? 'Continue to Profile Details →' : isOrg ? 'Continue to Organization Details →' : 'Create Account'}
+                  {isSpecial || isGuardian ? 'Continue to profile details ->' : isOrg ? 'Continue to organization details ->' : 'Create account'}
                 </button>
+                <p className="mt-4 text-center text-sm text-slate-600">
+                  Already have an account?{' '}
+                  <a href="/login" className="font-semibold hover:opacity-80" style={{ color: COLORS.blue }}>Sign in</a>
+                </p>
               </div>
             </form>
           )}
 
-          {/* ── Step 3: Organization Info ──────────── */}
-          {step === 3 && (
+          {/* ── Step 2: Role-Specific Info ────────── */}
+          {step === 2 && requiresExtraStep && (
             <form onSubmit={handleFinalSubmit}>
               <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setStep(2)} className="text-slate-400 transition-colors hover:text-slate-700">
+                  <button type="button" onClick={() => setStep(1)} className="text-slate-400 transition-colors hover:text-slate-700">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -326,7 +301,7 @@ export default function Register() {
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
                   style={{ background: COLORS.heroGradient }}
                 >
-                  {loading ? 'Submitting...' : isSpecial ? 'Create Specially Abled Profile' : isGuardian ? 'Create Guardian Profile' : 'Submit for Approval'}
+                  {loading ? 'Submitting...' : isSpecial ? 'Create specially abled profile' : isGuardian ? 'Create guardian profile' : 'Submit for approval'}
                 </button>
               </div>
             </form>
@@ -334,11 +309,9 @@ export default function Register() {
 
         </div>
 
-        {step === 1 && (
-          <p className="mt-4 text-center text-xs text-slate-500">
-            By signing up you agree to our Terms of Service and Privacy Policy.
-          </p>
-        )}
+        <p className="mt-4 text-center text-xs text-slate-500">
+          By signing up you agree to our Terms of Service and Privacy Policy.
+        </p>
       </div>
     </div>
   )
