@@ -73,15 +73,19 @@ const Icons = {
 }
 
 function TopNav({ user }) {
-  const messagingHref = user?.role === 'USER' ? '/messages' : '/ngo/profile?tab=messages'
-
-  const navItems = [
-    { label: 'Home', href: '/', Icon: Icons.Home },
-    { label: 'My Network', href: '/search', Icon: Icons.Network },
-    { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
-    { label: 'Messaging', href: messagingHref, Icon: Icons.Messages },
-    { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
-  ]
+  const navItems = user
+    ? [
+        { label: 'Home', href: '/', Icon: Icons.Home },
+        { label: 'My Network', href: '/search', Icon: Icons.Network },
+        { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
+        { label: 'Messaging', href: user.role === 'USER' ? '/messages' : '/ngo/profile?tab=messages', Icon: Icons.Messages },
+        { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
+      ]
+    : [
+        { label: 'Home', href: '/', Icon: Icons.Home },
+        { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
+        { label: 'Login', href: '/login', Icon: Icons.User },
+      ]
 
   return (
     <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.greenBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
@@ -96,7 +100,7 @@ function TopNav({ user }) {
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
             <input
               type="text"
-              placeholder="Search NGOs, schools, and products"
+              placeholder="Search public updates, stories, and products"
               className="h-10 w-72 rounded-full border bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
               style={{ borderColor: COLORS.greenBorder }}
             />
@@ -361,168 +365,86 @@ export default function Home() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #f3fbf6 0%, #ffffff 25%)' }}>
       <TopNav user={user} />
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 pb-10 pt-5 md:grid-cols-12 md:px-6">
-        <aside className="md:col-span-3">
-          <div className="sticky top-20 space-y-4">
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">General User / Viewer</p>
-              <h1 className="mt-2 text-lg font-extrabold text-slate-900">Browse the ecosystem without logging in</h1>
-              <p className="mt-2 text-sm text-slate-600">Explore platform updates, success stories, public products, events, and awareness content with no posting required.</p>
-              <div className="mt-4 flex gap-2">
-                <a href="/register" className="rounded-lg px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>Upgrade to Active User</a>
-                <a href="/dashboard" className="rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Open Dashboard</a>
-              </div>
-            </section>
-
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h2 className="text-sm font-bold text-slate-900">Public View</h2>
-              <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                <li>Platform updates and awareness content</li>
-                <li>Success stories from schools and NGOs</li>
-                <li>Product listings and events in view-only mode</li>
-                <li>Upgrade path to volunteer, buyer, or organization roles</li>
-              </ul>
-            </section>
-
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h2 className="text-sm font-bold text-slate-900">User Types</h2>
-              <p className="mt-1 text-xs text-slate-500">Each role has a different reason to join, a different view, and different actions.</p>
-              <div className="mt-3 space-y-3">
-                {userTypes.map((type) => (
-                  <div key={type.role} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{type.label}</p>
-                        <p className="mt-1 text-xs text-slate-600">{type.loginPurpose}</p>
-                      </div>
-                      <a href={type.dashboardPath} className="text-xs font-bold" style={{ color: COLORS.green }}>Open</a>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
-                      <div className="rounded-lg bg-white px-2 py-2">
-                        <p className="font-semibold text-slate-800">View</p>
-                        <p className="mt-1 line-clamp-3">{type.canView?.[0]}</p>
-                      </div>
-                      <div className="rounded-lg bg-white px-2 py-2">
-                        <p className="font-semibold text-slate-800">Do</p>
-                        <p className="mt-1 line-clamp-3">{type.canDo?.[0]}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h2 className="text-sm font-bold text-slate-900">Live Counts</h2>
-              <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                <li>Jobs: <strong>{counts.jobs}</strong></li>
-                <li>Requirements: <strong>{counts.requirements}</strong></li>
-                <li>Products: <strong>{counts.products}</strong></li>
-              </ul>
-            </section>
-          </div>
-        </aside>
-
-        <section className="md:col-span-6">
-          <section className="mb-4 rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Viewer-first default</p>
-                <h2 className="mt-2 text-xl font-extrabold text-slate-900">Explore first. Upgrade later.</h2>
-                <p className="mt-2 text-sm text-slate-600">Anyone can browse this page without login. When you are ready, sign up as a volunteer, buyer, school, NGO, or startup user.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <a href="/register" className="rounded-lg px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: COLORS.green }}>Register</a>
-                <a href="/login" className="rounded-lg border px-4 py-2 text-sm font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Login</a>
-              </div>
+      <main className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
+        <section className="rounded-3xl border bg-white p-6 shadow-sm md:p-8" style={{ borderColor: COLORS.greenBorder }}>
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">General User / Viewer</p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-5xl">Browse the ecosystem without logging in.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+              Explore platform updates, success stories, public products, events, and awareness content.
+              No posting required. Upgrade later if you want to volunteer, buy, or join as an organization user.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="/register" className="inline-flex rounded-xl px-5 py-3 text-sm font-bold text-white" style={{ backgroundColor: COLORS.green }}>Upgrade to Active User</a>
+              <a href="/login" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Login</a>
+              <a href="/marketplace" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-slate-700" style={{ borderColor: COLORS.greenBorder }}>Browse Marketplace</a>
             </div>
-          </section>
-
-          <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.greenBorder }}>
-            <label className="relative block">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                type="text"
-                placeholder="Search inside current tab"
-                className="h-11 w-full rounded-xl border bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500"
-                style={{ borderColor: COLORS.greenBorder }}
-              />
-            </label>
-          </div>
-
-          <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
-
-          <div className="space-y-3">
-            {loading && (
-              <div className="space-y-3">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="h-32 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.greenBorder }} />
-                ))}
-              </div>
-            )}
-
-            {!loading && filteredFeedItems.length === 0 && <EmptyFeed activeTab={activeTab} />}
-
-            {!loading && filteredFeedItems.map((item, index) => (
-              <article
-                key={item.id}
-                className="rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-                style={{ borderColor: COLORS.greenBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
-              >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase" style={{ backgroundColor: COLORS.greenSoft, color: item.accent }}>
-                      {item.type === 'stories' ? 'Story' : item.type.slice(0, -1)}
-                    </span>
-                    <h3 className="mt-2 text-lg font-extrabold text-slate-900">{item.title}</h3>
-                    <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
-                  </div>
-                  {item.verified && (
-                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>
-                      <Icons.Verified /> Verified
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
-
-                <div className="mt-4 flex items-center gap-2">
-                  <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>
-                    {item.cta}
-                  </a>
-                  <a href="/search" className="rounded-lg border px-3.5 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
-                    Similar Results
-                  </a>
-                </div>
-              </article>
-            ))}
           </div>
         </section>
 
-        <aside className="md:col-span-3">
-          <div className="sticky top-20 space-y-4">
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h2 className="text-sm font-bold text-slate-900">Suggested Actions</h2>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>Browse without login</li>
-                <li>Read platform updates and awareness content</li>
-                <li>Open success stories and public events</li>
-                <li>Upgrade later to an active role</li>
-              </ul>
-            </section>
+        <section className="mt-6 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.greenBorder }}>
+          <label className="relative block">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              type="text"
+              placeholder="Search public updates, stories, and products"
+              className="h-11 w-full rounded-xl border bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500"
+              style={{ borderColor: COLORS.greenBorder }}
+            />
+          </label>
+        </section>
 
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h2 className="text-sm font-bold text-slate-900">Quick Links</h2>
-              <div className="mt-3 grid grid-cols-1 gap-2 text-sm font-semibold">
-                <a href="/marketplace" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>Marketplace</a>
-                <a href="/admin/approvals" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>Admin Approvals</a>
-                <a href="/school/profile" className="rounded-lg px-3 py-2" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>School Profile</a>
+        <section className="mt-4">
+          <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
+        </section>
+
+        <section className="mt-4 space-y-3">
+          {loading && (
+            <div className="space-y-3">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="h-28 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.greenBorder }} />
+              ))}
+            </div>
+          )}
+
+          {!loading && filteredFeedItems.length === 0 && <EmptyFeed activeTab={activeTab} />}
+
+          {!loading && filteredFeedItems.map((item, index) => (
+            <article
+              key={item.id}
+              className="rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+              style={{ borderColor: COLORS.greenBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
+            >
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase" style={{ backgroundColor: COLORS.greenSoft, color: item.accent }}>
+                    {item.type === 'stories' ? 'Story' : item.type.slice(0, -1)}
+                  </span>
+                  <h3 className="mt-2 text-lg font-extrabold text-slate-900">{item.title}</h3>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
+                </div>
+                {item.verified && (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>
+                    <Icons.Verified /> Verified
+                  </span>
+                )}
               </div>
-            </section>
-          </div>
-        </aside>
+
+              <p className="text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
+
+              <div className="mt-4 flex items-center gap-2">
+                <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>
+                  {item.cta}
+                </a>
+                <a href="/search" className="rounded-lg border px-3.5 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
+                  Similar Results
+                </a>
+              </div>
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   )
