@@ -796,6 +796,19 @@ export default function NgoProfile() {
     loadEventApps(eventApps.event)
   }
 
+  const deleteEvent = async (ev) => {
+    if (!ngo?.id) return
+    if (!window.confirm(`Delete "${ev.title}"? This will also remove all applications.`)) return
+    try {
+      await fetch(`${BASE}/events/ngo/${ngo.id}/events/${ev.id}`, {
+        method:'DELETE',
+        headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`},
+      })
+      loadData(ngo.id)
+      flash('Event deleted.')
+    } catch { setError('Failed to delete event') }
+  }
+
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
 
   const handleLogout = () => { logout(); navigate('/login') }
@@ -1812,7 +1825,7 @@ export default function NgoProfile() {
                               <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{app.applicantName}</p>
                               <span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:20,...appStatusColor(app.status)}}>{app.status}</span>
                             </div>
-                            <p style={{margin:'0 0 4px',fontSize:12,color:'#64748b'}}>{app.applicantEmail}</p>
+                            <p style={{margin:'0 0 4px',fontSize:12,color:'#64748b'}}>{app.applicantEmail}{app.applicantPhone ? ` · ${app.applicantPhone}` : ''}</p>
                             {app.applicantNotes && <p style={{margin:'4px 0 0',fontSize:13,color:'#374151',fontStyle:'italic'}}>"{app.applicantNotes}"</p>}
                           </div>
                           {app.status==='PENDING' && (
@@ -1919,6 +1932,7 @@ export default function NgoProfile() {
                           </div>
                           <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
                             <GhostBtn onClick={()=>loadEventApps(ev)} color={B} iconName="users">Applicants</GhostBtn>
+                            <GhostBtn onClick={()=>deleteEvent(ev)} color="#ef4444" iconName="trash">Delete</GhostBtn>
                           </div>
                         </div>
                       )

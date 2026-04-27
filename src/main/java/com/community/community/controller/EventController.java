@@ -183,6 +183,9 @@ public class EventController {
         application.setUser(user.get());
         application.setApplicantName(user.get().getName());
         application.setApplicantEmail(user.get().getEmail());
+        if (request != null && request.containsKey("phone")) {
+            application.setApplicantPhone(request.get("phone"));
+        }
         if (request != null && request.containsKey("notes")) {
             application.setApplicantNotes(request.get("notes"));
         }

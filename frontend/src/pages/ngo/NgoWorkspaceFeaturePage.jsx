@@ -275,6 +275,16 @@ function EventsSection() {
     loadApplications(selectedEvent.id)
   }
 
+  const deleteEvent = async (ev) => {
+    if (!ngoId) return
+    if (!window.confirm(`Delete "${ev.title}"? This will also remove all applications.`)) return
+    await fetch(`${API}/events/ngo/${ngoId}/events/${ev.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+    loadEvents()
+  }
+
   const EVENT_TYPES = ['WORKSHOP', 'SEMINAR', 'FUNDRAISER', 'AWARENESS', 'COMMUNITY']
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
   const statusColor = (s) => ({
@@ -333,7 +343,7 @@ function EventsSection() {
                   {app.status}
                 </span>
                 <p className="mt-1 text-sm font-extrabold text-slate-900">{app.applicantName}</p>
-                <p className="text-xs text-slate-500">{app.applicantEmail}</p>
+                <p className="text-xs text-slate-500">{app.applicantEmail}{app.applicantPhone ? ` · ${app.applicantPhone}` : ''}</p>
                 {app.applicantNotes && <p className="mt-1 text-xs text-slate-600 italic">"{app.applicantNotes}"</p>}
               </div>
               {app.status === 'PENDING' && (
@@ -508,14 +518,23 @@ function EventsSection() {
                   Registered: {ev.registeredParticipants || 0} / {ev.maxParticipants || '∞'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => handleSelectEvent(ev)}
-                className="rounded-xl px-3 py-1.5 text-xs font-bold text-white"
-                style={{ backgroundColor: INDIGO }}
-              >
-                View Applicants
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSelectEvent(ev)}
+                  className="rounded-xl px-3 py-1.5 text-xs font-bold text-white"
+                  style={{ backgroundColor: INDIGO }}
+                >
+                  View Applicants
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteEvent(ev)}
+                  className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
             <p className="mt-2 line-clamp-2 text-sm text-slate-600">{ev.description}</p>
           </div>
