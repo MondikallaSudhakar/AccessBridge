@@ -1,45 +1,30 @@
-import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { OPPORTUNITIES, loadBookmarks, toggleBookmark } from './specialData'
 
-function allOpportunities() {
-  return Object.values(OPPORTUNITIES).flatMap((items) => items)
-}
+const NAVY = '#0f172a'
+const G = '#16a34a'
 
 export default function SpecialSavedPage() {
   const navigate = useNavigate()
-  const [bookmarks, setBookmarks] = useState(loadBookmarks())
-
-  const savedItems = useMemo(() => {
-    const ids = new Set(bookmarks)
-    return allOpportunities().filter((item) => ids.has(item.id))
-  }, [bookmarks])
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-xl font-black text-slate-900">Saved opportunities</h2>
-      <p className="mt-1 text-sm text-slate-600">Your bookmarked jobs, products, services, programs, events, campaigns, and schemes.</p>
+    <section style={{ background: '#fff', borderRadius: 20, border: '1px solid #e2e8f0', padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,.05)', fontFamily: "'Inter',sans-serif" }}>
+      <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 900, color: NAVY }}>Saved Opportunities</h2>
+      <p style={{ margin: '0 0 24px', fontSize: 13, color: '#64748b' }}>
+        Items you bookmark across Jobs, NGOs, Events, and Marketplace will appear here.
+      </p>
 
-      {savedItems.length === 0 ? (
-        <div className="mt-5 rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-600">
-          No saved items yet. Save opportunities from feature pages and they will appear here.
+      <div style={{ border: '2px dashed #e2e8f0', borderRadius: 14, padding: '40px 24px', textAlign: 'center', color: '#94a3b8' }}>
+        <p style={{ fontSize: 28, margin: '0 0 8px' }}>🔖</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: NAVY, margin: '0 0 6px' }}>No saved items yet</p>
+        <p style={{ fontSize: 13, margin: '0 0 20px' }}>
+          Browse jobs, NGOs, events, and products — save anything you want to revisit later.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/special/jobs')} style={{ background: G, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Browse Jobs</button>
+          <button onClick={() => navigate('/special/ngos')} style={{ background: '#1A8FD1', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Browse NGOs</button>
+          <button onClick={() => navigate('/special/marketplace')} style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Marketplace</button>
         </div>
-      ) : (
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {savedItems.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{item.place}</p>
-              <h3 className="mt-1 text-base font-bold text-slate-900">{item.title}</h3>
-              <p className="mt-1 text-xs font-semibold text-slate-500">{item.org}</p>
-              <p className="mt-3 text-sm text-slate-600">{item.summary}</p>
-              <div className="mt-4 flex gap-2">
-                <button type="button" onClick={() => navigate('/special')} className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white">Open workspace</button>
-                <button type="button" onClick={() => setBookmarks((current) => toggleBookmark(current, item.id))} className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Remove</button>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+      </div>
     </section>
   )
 }

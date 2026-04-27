@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { OPPORTUNITIES } from './specialData'
 
 const TEAL = '#0d9488'
 
@@ -173,10 +172,10 @@ function PostingTimeline({ items }) {
 
 export default function SpecialHome() {
   const stats = [
-    { label: 'Jobs', count: OPPORTUNITIES.jobs.length },
-    { label: 'Products', count: OPPORTUNITIES.marketplace.length },
-    { label: 'Training', count: OPPORTUNITIES.training.length },
-    { label: 'Schemes', count: OPPORTUNITIES.schemes.length },
+    { label: 'Jobs', count: '...' },
+    { label: 'Products', count: '...' },
+    { label: 'Training', count: '...' },
+    { label: 'Schemes', count: 4 },
   ]
 
   return (
