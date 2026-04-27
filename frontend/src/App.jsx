@@ -14,6 +14,7 @@ import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
 import NgoProfile from './pages/dashboard/NgoProfile'
+import VolunteerDashboard from './pages/volunteer/VolunteerDashboard'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
 import SpecialAbledProfile from './pages/special/SpecialAbledProfile'
@@ -33,6 +34,7 @@ function App() {
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
         <Route path="/messages" element={<RoleRoute allowedRoles={['USER']}><UserMessages /></RoleRoute>} />
+        <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerDashboard /></RoleRoute>} />
         <Route path="/special/profile" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialAbledProfile /></RoleRoute>} />
         <Route path="/guardian/profile" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianProfile /></RoleRoute>} />
 

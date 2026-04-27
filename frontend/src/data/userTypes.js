@@ -17,6 +17,26 @@ export const USER_TYPE_GUIDES = [
     ],
   },
   {
+    role: 'VOLUNTEER',
+    label: 'Normal Public / Volunteer',
+    loginPurpose: 'To contribute time, skills, and support to the community.',
+    dashboardPath: '/volunteer/dashboard',
+    canView: [
+      'NGO needs and requests',
+      'Volunteer opportunities',
+      'Events and campaigns',
+      'Schools needing mentors',
+      'Impact stories and community outcomes',
+    ],
+    canDo: [
+      'Register as a volunteer',
+      'Apply for volunteering roles',
+      'Offer mentorship or training',
+      'Join events and campaigns',
+      'Support campaigns in the future',
+    ],
+  },
+  {
     role: 'SPECIAL_ABLED_PERSON',
     label: 'Specially Abled Person',
     loginPurpose: 'Join to gain independence through jobs, learning, income, support, and community access.',

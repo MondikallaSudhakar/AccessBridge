@@ -65,8 +65,8 @@ public class AuthController {
             user.setDependentNeeds(request.getDependentNeeds());
             user.setActive(true);
             
-            // Auto-approve individuals, organizations need manual approval
-            if (request.getRole() == Role.USER || request.getRole() == Role.SPECIAL_ABLED_PERSON || request.getRole() == Role.GUARDIAN_CAREGIVER) {
+            // Auto-approve public participation roles; organizations need manual approval
+            if (request.getRole() == Role.USER || request.getRole() == Role.VOLUNTEER || request.getRole() == Role.SPECIAL_ABLED_PERSON || request.getRole() == Role.GUARDIAN_CAREGIVER) {
                 user.setStatus("APPROVED");
             } else {
                 user.setStatus("PENDING");

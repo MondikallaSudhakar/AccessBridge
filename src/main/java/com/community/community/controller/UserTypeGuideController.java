@@ -33,6 +33,26 @@ public class UserTypeGuideController {
                         )
                 ),
                 new UserTypeGuideDto(
+                        "VOLUNTEER",
+                        "Normal Public / Volunteer",
+                        "To contribute time, skills, and support to the community.",
+                        "/volunteer/dashboard",
+                        List.of(
+                                "NGO needs and requests",
+                                "Volunteer opportunities",
+                                "Events and campaigns",
+                                "Schools needing mentors",
+                                "Impact stories and community outcomes"
+                        ),
+                        List.of(
+                                "Register as a volunteer",
+                                "Apply for volunteering roles",
+                                "Offer mentorship or training",
+                                "Join events and campaigns",
+                                "Support campaigns in the future"
+                        )
+                ),
+                new UserTypeGuideDto(
                         "SPECIAL_ABLED_PERSON",
                         "Specially Abled Person",
                         "Join to gain independence through jobs, learning, income, support, and community access.",
