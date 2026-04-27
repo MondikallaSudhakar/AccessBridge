@@ -42,7 +42,7 @@ function Ic({ n, s = 16, c = 'currentColor', sw = 1.8, st = {} }) {
 
 /* ── role config ──────────────────────────────────────────────────────── */
 const ROLE_MAP = {
-  USER:          { label: 'Member',       icon: 'user',   color: '#8b5cf6' },
+  USER:          { label: 'General User', icon: 'user',   color: '#8b5cf6' },
   SPECIAL_ABLED_PERSON: { label: 'Specially Abled', icon: 'info', color: '#0ea5e9' },
   GUARDIAN_CAREGIVER: { label: 'Guardian', icon: 'info', color: '#10b981' },
   SCHOOL_ADMIN:  { label: 'School Admin', icon: 'school', color: G         },

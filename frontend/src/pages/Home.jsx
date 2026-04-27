@@ -124,6 +124,8 @@ function TopNav({ user }) {
 function RoleTabs({ activeTab, setActiveTab, counts }) {
   const tabs = [
     { id: 'all', label: 'All', count: counts.total },
+    { id: 'events', label: 'Events', count: counts.events },
+    { id: 'stories', label: 'Stories', count: counts.stories },
     { id: 'jobs', label: 'Jobs', count: counts.jobs },
     { id: 'requirements', label: 'Requirements', count: counts.requirements },
     { id: 'products', label: 'Products', count: counts.products },
@@ -158,9 +160,9 @@ function EmptyFeed({ activeTab }) {
   return (
     <div className="rounded-2xl border border-dashed p-8 text-center" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.white }}>
       <h3 className="text-lg font-bold text-slate-800">No {activeTab === 'all' ? 'entries' : activeTab} found right now.</h3>
-      <p className="mt-2 text-sm text-slate-500">Try another tab or register your organization to be visible in this community feed.</p>
+      <p className="mt-2 text-sm text-slate-500">Try another tab or upgrade from viewer-only access to an active role.</p>
       <a href="/register" className="mt-4 inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
-        Register Now
+        Upgrade Now
       </a>
     </div>
   )
@@ -176,7 +178,7 @@ export default function Home() {
   const [query, setQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
   const [loading, setLoading] = useState(true)
-  const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [] })
+  const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [], events: [], stories: [] })
   const [userTypes, setUserTypes] = useState([])
 
   useEffect(() => {
@@ -187,6 +189,8 @@ export default function Home() {
         fetchPublic('/ngos'),
         fetchUserTypeGuides(),
       ])
+
+      const events = await fetchPublic('/events/public')
 
       const ngoNeedsGroups = await Promise.all(
         ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/needs`) }))
@@ -202,6 +206,14 @@ export default function Home() {
 
       const ngoProductsGroups = await Promise.all(
         ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/products`) }))
+      )
+
+      const ngoCampaignGroups = await Promise.all(
+        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/campaigns`) }))
+      )
+
+      const schoolAchievementGroups = await Promise.all(
+        schools.map(async (school) => ({ school, items: await fetchPublic(`/schools/${school.id}/achievements`) }))
       )
 
       const requirements = [
@@ -269,7 +281,48 @@ export default function Home() {
           }))
       )
 
-      setDirectory({ schools, ngos, requirements, jobs, products })
+      const stories = [
+        ...schoolAchievementGroups.flatMap(({ school, items }) =>
+          items.slice(0, 2).map((story) => ({
+            id: `school-story-${story.id}`,
+            type: 'stories',
+            title: story.title,
+            subtitle: story.description || 'School success story.',
+            meta: `${school.name} • ${story.category || 'Achievement'}`,
+            verified: school.verified,
+            cta: 'View School Profile',
+            href: `/schools/${school.id}`,
+            accent: COLORS.blue,
+          }))
+        ),
+        ...ngoCampaignGroups.flatMap(({ ngo, items }) =>
+          items.slice(0, 2).map((campaign) => ({
+            id: `ngo-campaign-${campaign.id}`,
+            type: 'stories',
+            title: campaign.campaignName,
+            subtitle: campaign.campaignDescription || 'Community success story.',
+            meta: `${ngo.name} • ${campaign.status || 'Campaign'}`,
+            verified: ngo.verified,
+            cta: 'View NGO Profile',
+            href: `/ngos/${ngo.id}`,
+            accent: COLORS.green,
+          }))
+        ),
+      ]
+
+      const publicEvents = events.map((event) => ({
+        id: `event-${event.id}`,
+        type: 'events',
+        title: event.title,
+        subtitle: event.description || 'Public event.',
+        meta: `${event.location || 'Location not specified'}${event.city ? ` • ${event.city}` : ''}`,
+        verified: true,
+        cta: 'View Event',
+        href: '/search',
+        accent: COLORS.blue,
+      }))
+
+      setDirectory({ schools, ngos, requirements, jobs, products, events: publicEvents, stories })
       setUserTypes(Array.isArray(guideData) ? guideData : [])
       setLoading(false)
     }
@@ -278,7 +331,7 @@ export default function Home() {
   }, [])
 
   const allFeedItems = useMemo(() => {
-    return [...directory.jobs, ...directory.requirements, ...directory.products]
+    return [...directory.events, ...directory.stories, ...directory.jobs, ...directory.requirements, ...directory.products]
   }, [directory])
 
   const filteredFeedItems = useMemo(() => {
@@ -299,7 +352,9 @@ export default function Home() {
     jobs: directory.jobs.length,
     requirements: directory.requirements.length,
     products: directory.products.length,
-    total: directory.jobs.length + directory.requirements.length + directory.products.length,
+    events: directory.events.length,
+    stories: directory.stories.length,
+    total: directory.jobs.length + directory.requirements.length + directory.products.length + directory.events.length + directory.stories.length,
   }
 
   return (
@@ -310,12 +365,23 @@ export default function Home() {
         <aside className="md:col-span-3">
           <div className="sticky top-20 space-y-4">
             <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
-              <h1 className="text-lg font-extrabold text-slate-900">Community Dashboard</h1>
-              <p className="mt-2 text-sm text-slate-600">Discover verified NGOs, schools, and social products in separate tabs just like a professional network feed.</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">General User / Viewer</p>
+              <h1 className="mt-2 text-lg font-extrabold text-slate-900">Browse the ecosystem without logging in</h1>
+              <p className="mt-2 text-sm text-slate-600">Explore platform updates, success stories, public products, events, and awareness content with no posting required.</p>
               <div className="mt-4 flex gap-2">
-                <a href="/register" className="rounded-lg px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>Join</a>
-                <a href="/dashboard" className="rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Dashboard</a>
+                <a href="/register" className="rounded-lg px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>Upgrade to Active User</a>
+                <a href="/dashboard" className="rounded-lg border px-3 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Open Dashboard</a>
               </div>
+            </section>
+
+            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+              <h2 className="text-sm font-bold text-slate-900">Public View</h2>
+              <ul className="mt-3 space-y-2 text-sm text-slate-700">
+                <li>Platform updates and awareness content</li>
+                <li>Success stories from schools and NGOs</li>
+                <li>Product listings and events in view-only mode</li>
+                <li>Upgrade path to volunteer, buyer, or organization roles</li>
+              </ul>
             </section>
 
             <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
@@ -358,6 +424,20 @@ export default function Home() {
         </aside>
 
         <section className="md:col-span-6">
+          <section className="mb-4 rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Viewer-first default</p>
+                <h2 className="mt-2 text-xl font-extrabold text-slate-900">Explore first. Upgrade later.</h2>
+                <p className="mt-2 text-sm text-slate-600">Anyone can browse this page without login. When you are ready, sign up as a volunteer, buyer, school, NGO, or startup user.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a href="/register" className="rounded-lg px-4 py-2 text-sm font-bold text-white" style={{ backgroundColor: COLORS.green }}>Register</a>
+                <a href="/login" className="rounded-lg border px-4 py-2 text-sm font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Login</a>
+              </div>
+            </div>
+          </section>
+
           <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.greenBorder }}>
             <label className="relative block">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
@@ -394,7 +474,7 @@ export default function Home() {
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
                     <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase" style={{ backgroundColor: COLORS.greenSoft, color: item.accent }}>
-                      {item.type.slice(0, -1)}
+                      {item.type === 'stories' ? 'Story' : item.type.slice(0, -1)}
                     </span>
                     <h3 className="mt-2 text-lg font-extrabold text-slate-900">{item.title}</h3>
                     <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
@@ -426,10 +506,10 @@ export default function Home() {
             <section className="rounded-2xl border bg-white p-5" style={{ borderColor: COLORS.greenBorder }}>
               <h2 className="text-sm font-bold text-slate-900">Suggested Actions</h2>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>Create your organization profile</li>
-                <li>Connect with verified NGOs</li>
-                <li>Browse school support needs</li>
-                <li>Check social products in marketplace</li>
+                <li>Browse without login</li>
+                <li>Read platform updates and awareness content</li>
+                <li>Open success stories and public events</li>
+                <li>Upgrade later to an active role</li>
               </ul>
             </section>
 

@@ -1,19 +1,18 @@
 export const USER_TYPE_GUIDES = [
   {
     role: 'USER',
-    label: 'Member / Donor',
-    loginPurpose: 'Join to discover verified schools, NGOs, and startups, then support the ones that match your interests.',
+    label: 'General User / Viewer',
+    loginPurpose: 'Explore, learn, and stay aware about the ecosystem without posting.',
     dashboardPath: '/dashboard',
     canView: [
-      'Public directory of schools, NGOs, startups, products, and search results',
-      'Verified organization profiles with needs, jobs, achievements, services, and marketplace items',
-      'Your messages, donation activity, and community updates',
+      'Platform updates and awareness content',
+      'Success stories from schools, NGOs, and community partners',
+      'Product listings, events, and public ecosystem information',
     ],
     canDo: [
       'Browse and search the community directory',
-      'Open organization profiles and review public requests',
-      'Send messages and make donations',
-      'Track impact from the community feed',
+      'View products, events, stories, and updates',
+      'Upgrade later to an active role like volunteer, buyer, or organization user',
     ],
   },
   {
