@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchUserTypeGuides } from '../services/userTypeService'
 
 const API = 'http://localhost:8081/api'
 
@@ -8,8 +7,12 @@ const COLORS = {
   green: '#5BCB2B',
   greenSoft: '#eaf6ef',
   greenBorder: '#c8e6d2',
+  blue: '#0197B2',
+  blueSoft: '#e7f7fb',
+  blueBorder: '#b8e7f1',
+  blueDark: '#0a4b5a',
+  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #5BCB2B 100%)',
   white: '#ffffff',
-  blue: '#0d6efd',
 }
 
 async function fetchPublic(path) {
@@ -88,11 +91,11 @@ function TopNav({ user }) {
       ]
 
   return (
-    <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.greenBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
+    <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.blueBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 md:px-6">
         <div className="flex min-w-0 items-center gap-3 md:gap-4">
           <a href="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-8 w-8 rounded-lg text-sm font-black text-white grid place-items-center" style={{ backgroundColor: COLORS.green }}>IC</div>
+            <div className="h-8 w-8 rounded-lg text-sm font-black text-white grid place-items-center" style={{ background: COLORS.heroGradient }}>IC</div>
             <span className="hidden text-sm font-extrabold tracking-tight text-slate-900 md:inline">Inclusive Connect</span>
           </a>
 
@@ -102,7 +105,7 @@ function TopNav({ user }) {
               type="text"
               placeholder="Search public updates, stories, and products"
               className="h-10 w-72 rounded-full border bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
-              style={{ borderColor: COLORS.greenBorder }}
+              style={{ borderColor: COLORS.blueBorder }}
             />
           </label>
         </div>
@@ -147,8 +150,8 @@ function RoleTabs({ activeTab, setActiveTab, counts }) {
               onClick={() => setActiveTab(tab.id)}
               className="rounded-xl px-4 py-2 text-sm font-semibold transition-all"
               style={{
-                backgroundColor: selected ? COLORS.green : COLORS.greenSoft,
-                color: selected ? COLORS.white : COLORS.green,
+                backgroundColor: selected ? COLORS.blue : COLORS.blueSoft,
+                color: selected ? COLORS.white : COLORS.blue,
               }}
             >
               {tab.label} ({tab.count})
@@ -183,15 +186,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('all')
   const [loading, setLoading] = useState(true)
   const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [], events: [], stories: [] })
-  const [userTypes, setUserTypes] = useState([])
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
-      const [schools, ngos, guideData] = await Promise.all([
+      const [schools, ngos] = await Promise.all([
         fetchPublic('/schools'),
         fetchPublic('/ngos'),
-        fetchUserTypeGuides(),
       ])
 
       const events = await fetchPublic('/events/public')
@@ -327,7 +328,6 @@ export default function Home() {
       }))
 
       setDirectory({ schools, ngos, requirements, jobs, products, events: publicEvents, stories })
-      setUserTypes(Array.isArray(guideData) ? guideData : [])
       setLoading(false)
     }
 
@@ -362,27 +362,27 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #f3fbf6 0%, #ffffff 25%)' }}>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #e7f7fb 0%, #f4fbef 35%, #ffffff 100%)' }}>
       <TopNav user={user} />
 
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
-        <section className="rounded-3xl border bg-white p-6 shadow-sm md:p-8" style={{ borderColor: COLORS.greenBorder }}>
+        <section className="rounded-3xl border p-6 shadow-md md:p-8" style={{ borderColor: COLORS.blueBorder, background: COLORS.heroGradient }}>
           <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">General User / Viewer</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-5xl">Browse the ecosystem without logging in.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">General User / Viewer</p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-white md:text-5xl">Browse the ecosystem without logging in.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/90 md:text-lg">
               Explore platform updates, success stories, public products, events, and awareness content.
               No posting required. Upgrade later if you want to volunteer, buy, or join as an organization user.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <a href="/register" className="inline-flex rounded-xl px-5 py-3 text-sm font-bold text-white" style={{ backgroundColor: COLORS.green }}>Upgrade to Active User</a>
-              <a href="/login" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>Login</a>
-              <a href="/marketplace" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-slate-700" style={{ borderColor: COLORS.greenBorder }}>Browse Marketplace</a>
+              <a href="/register" className="inline-flex rounded-xl px-5 py-3 text-sm font-bold text-white" style={{ backgroundColor: COLORS.blueDark }}>Upgrade to Active User</a>
+              <a href="/login" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.75)' }}>Login</a>
+              <a href="/marketplace" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.75)' }}>Browse Marketplace</a>
             </div>
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.greenBorder }}>
+        <section className="mt-6 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.blueBorder }}>
           <label className="relative block">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
             <input
@@ -391,7 +391,7 @@ export default function Home() {
               type="text"
               placeholder="Search public updates, stories, and products"
               className="h-11 w-full rounded-xl border bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500"
-              style={{ borderColor: COLORS.greenBorder }}
+              style={{ borderColor: COLORS.blueBorder }}
             />
           </label>
         </section>
@@ -404,7 +404,7 @@ export default function Home() {
           {loading && (
             <div className="space-y-3">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="h-28 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.greenBorder }} />
+                <div key={item} className="h-28 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.blueBorder }} />
               ))}
             </div>
           )}
@@ -415,7 +415,7 @@ export default function Home() {
             <article
               key={item.id}
               className="rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-              style={{ borderColor: COLORS.greenBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
+              style={{ borderColor: COLORS.blueBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
@@ -426,7 +426,7 @@ export default function Home() {
                   <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
                 </div>
                 {item.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.greenSoft, color: COLORS.green }}>
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
                     <Icons.Verified /> Verified
                   </span>
                 )}
@@ -435,7 +435,7 @@ export default function Home() {
               <p className="text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
 
               <div className="mt-4 flex items-center gap-2">
-                <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.green }}>
+                <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.blue }}>
                   {item.cta}
                 </a>
                 <a href="/search" className="rounded-lg border px-3.5 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
