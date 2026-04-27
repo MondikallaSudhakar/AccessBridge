@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../../services/api'
@@ -264,6 +265,331 @@ function SidebarFooterBtn({ icon, label, color, onClick }) {
       <Ic n={icon} s={16} c={color}/>
       <span style={{fontSize:13, fontWeight:500, color}}>{label}</span>
     </button>
+  )
+}
+
+/* ─────────────────────────── APPS SECTION (compact rows + modal) ──────── */
+function AppsSection({ jobs, selectedJobApps, loadingApps, viewJobApplications, updateAppStatus }) {
+  const [selApp, setSelApp] = useState(null) // the application open in modal
+
+  const STATUS_COLOR = s => s==='HIRED'?G:s==='SHORTLISTED'?B:s==='REJECTED'?'#ef4444':'#f59e0b'
+
+  const handleStatusUpdate = async (appId, status) => {
+    await updateAppStatus(appId, status)
+    // update modal if it's the same app
+    if (selApp?.id === appId) setSelApp(prev => ({ ...prev, status }))
+  }
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:14}}>
+
+      {/* Job picker */}
+      <Panel style={{padding:'16px 20px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+          <div style={{flex:1,minWidth:180}}>
+            <FieldLabel>Job</FieldLabel>
+            <select
+              value={selectedJobApps?.job?.id ?? ''}
+              onChange={e=>{ const j=jobs.find(x=>String(x.id)===e.target.value); if(j) viewJobApplications(j) }}
+              style={{width:'100%',border:'1.5px solid #e2e8f0',borderRadius:radius.md,padding:'8px 12px',fontSize:13,color:NAVY,background:'#fff',outline:'none',fontFamily:"'Inter',sans-serif"}}
+            >
+              <option value="">— select a job —</option>
+              {jobs.map(j=>(<option key={j.id} value={j.id}>{j.title} · {j.status}</option>))}
+            </select>
+          </div>
+          {selectedJobApps && !loadingApps && (
+            <div style={{paddingTop:20}}>
+              <span style={{fontSize:12,color:'#64748b',fontWeight:600,background:'#f1f5f9',padding:'4px 10px',borderRadius:20}}>
+                {selectedJobApps.apps?.length ?? 0} applicant{selectedJobApps.apps?.length===1?'':'s'}
+              </span>
+            </div>
+          )}
+        </div>
+      </Panel>
+
+      {/* States */}
+      {!selectedJobApps && <EmptyPane iconName="briefcase" title="Select a job above" body="Applicants will appear here."/>}
+      {selectedJobApps && loadingApps && (
+        <div style={{textAlign:'center',padding:'32px 0'}}>
+          <div style={{width:32,height:32,borderRadius:'50%',border:`3px solid ${G}30`,borderTopColor:G,animation:'spin .8s linear infinite',margin:'0 auto 8px'}}/>
+          <p style={{color:'#64748b',fontSize:13,margin:0}}>Loading…</p>
+        </div>
+      )}
+      {selectedJobApps && !loadingApps && selectedJobApps.fetchError && (
+        <div style={{background:'#fef2f2',border:'1px solid #fecaca',borderRadius:radius.lg,padding:'14px 18px'}}>
+          <p style={{margin:0,fontSize:13,fontWeight:700,color:'#dc2626'}}>⚠ {selectedJobApps.fetchError}</p>
+          <p style={{margin:'4px 0 0',fontSize:12,color:'#ef4444'}}>Restart the backend and try again.</p>
+        </div>
+      )}
+      {selectedJobApps && !loadingApps && !selectedJobApps.fetchError && selectedJobApps.apps.length===0 && (
+        <EmptyPane iconName="users" title="No applications yet" body="Candidates who apply on the platform appear here."/>
+      )}
+
+      {/* Compact rows */}
+      {selectedJobApps && !loadingApps && !selectedJobApps.fetchError && selectedJobApps.apps.length>0 && (
+        <Panel style={{padding:0,overflow:'hidden'}}>
+          {/* Table header */}
+          <div style={{display:'grid',gridTemplateColumns:'40px 1fr auto auto 80px',gap:12,alignItems:'center',padding:'10px 18px',background:'#f8fafc',borderBottom:'1px solid #e9ecef'}}>
+            <span/>
+            <span style={{fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em'}}>Applicant</span>
+            <span style={{fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em'}}>Disability</span>
+            <span style={{fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em'}}>Status</span>
+            <span/>
+          </div>
+          {selectedJobApps.apps.map((app, i) => (
+            <div
+              key={app.id}
+              style={{display:'grid',gridTemplateColumns:'40px 1fr auto auto 80px',gap:12,alignItems:'center',padding:'12px 18px',borderBottom: i<selectedJobApps.apps.length-1?'1px solid #f1f5f9':'none',cursor:'pointer',transition:'background .15s'}}
+              onMouseEnter={e=>e.currentTarget.style.background='#f8fafc'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+              onClick={()=>setSelApp(app)}
+            >
+              {/* Avatar */}
+              <div style={{width:34,height:34,borderRadius:'50%',background:`${B}18`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:800,color:B,flexShrink:0}}>
+                {(app.applicantName||'?').charAt(0).toUpperCase()}
+              </div>
+              {/* Name + email */}
+              <div style={{minWidth:0}}>
+                <p style={{margin:0,fontSize:13,fontWeight:700,color:NAVY,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{app.applicantName}</p>
+                <p style={{margin:0,fontSize:11.5,color:'#64748b',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{app.applicantEmail}{app.applicantPhone?` · ${app.applicantPhone}`:''}</p>
+              </div>
+              {/* Disability */}
+              <div>{app.disabilityType ? <Chip color="#6366f1">{app.disabilityType}</Chip> : <span style={{fontSize:12,color:'#cbd5e1'}}>—</span>}</div>
+              {/* Status */}
+              <Chip color={STATUS_COLOR(app.status)}>{app.status}</Chip>
+              {/* Action */}
+              <button
+                onClick={e=>{e.stopPropagation();setSelApp(app)}}
+                style={{fontSize:12,fontWeight:600,color:B,background:`${B}12`,border:`1px solid ${B}30`,borderRadius:radius.sm,padding:'4px 10px',cursor:'pointer',fontFamily:"'Inter',sans-serif"}}
+              >View</button>
+            </div>
+          ))}
+        </Panel>
+      )}
+
+      {/* ── Modal popup — rendered via portal so it escapes all overflow constraints ── */}
+      {selApp && createPortal(
+        <div
+          onClick={()=>setSelApp(null)}
+          style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(15,23,42,.55)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',boxSizing:'border-box',overflowY:'auto'}}
+        >
+          <div
+            onClick={e=>e.stopPropagation()}
+            style={{position:'relative',background:'#fff',borderRadius:radius.xl,boxShadow:'0 24px 64px rgba(0,0,0,.28)',width:'100%',maxWidth:580,maxHeight:'90vh',display:'flex',flexDirection:'column',overflow:'hidden'}}
+          >
+            {/* Floating ✕ close — always visible */}
+            <button
+              onClick={()=>setSelApp(null)}
+              style={{position:'absolute',top:14,right:14,width:32,height:32,borderRadius:'50%',border:'none',background:'#f1f5f9',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',zIndex:10}}
+            >
+              <Ic n="x" s={16} c="#64748b"/>
+            </button>
+
+            {/* Header */}
+            <div style={{display:'flex',gap:14,alignItems:'center',padding:'22px 24px 18px',borderBottom:'1px solid #f1f5f9',flexShrink:0}}>
+              <div style={{width:50,height:50,borderRadius:'50%',background:`${B}18`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:800,color:B,flexShrink:0}}>
+                {(selApp.applicantName||'?').charAt(0).toUpperCase()}
+              </div>
+              <div style={{flex:1,minWidth:0,paddingRight:44}}>
+                <p style={{margin:0,fontSize:16,fontWeight:800,color:NAVY}}>{selApp.applicantName}</p>
+                <p style={{margin:'2px 0 5px',fontSize:12,color:'#64748b'}}>{selApp.applicantEmail}{selApp.applicantPhone?` · ${selApp.applicantPhone}`:''}</p>
+                <Chip color={STATUS_COLOR(selApp.status)}>{selApp.status}</Chip>
+              </div>
+            </div>
+
+            {/* Body — scrollable */}
+            <div style={{flex:1,overflowY:'auto',padding:'18px 24px',display:'flex',flexDirection:'column',gap:16}}>
+              <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+                {selApp.disabilityType && <Chip color="#6366f1">{selApp.disabilityType} disability</Chip>}
+                <span style={{fontSize:12,color:'#94a3b8'}}>
+                  Applied {selApp.appliedAt ? new Date(selApp.appliedAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : ''}
+                </span>
+              </div>
+
+              {selApp.coverLetter && (
+                <div>
+                  <p style={{margin:'0 0 6px',fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em'}}>Cover Letter</p>
+                  <p style={{margin:0,fontSize:13,color:'#374151',lineHeight:1.75,whiteSpace:'pre-wrap',background:'#f8fafc',borderRadius:radius.md,padding:'12px 16px',border:'1px solid #f1f5f9'}}>{selApp.coverLetter}</p>
+                </div>
+              )}
+
+              {selApp.resumeText && (
+                <div>
+                  <p style={{margin:'0 0 6px',fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:'0.08em'}}>Resume / Skills</p>
+                  <p style={{margin:0,fontSize:13,color:'#374151',lineHeight:1.75,whiteSpace:'pre-wrap',background:'#f8fafc',borderRadius:radius.md,padding:'12px 16px',border:'1px solid #f1f5f9'}}>{selApp.resumeText}</p>
+                </div>
+              )}
+
+              {selApp.audioNoteFileName && (
+                <div style={{display:'flex',alignItems:'center',gap:10,background:'#f0f4ff',borderRadius:radius.md,padding:'12px 16px',border:'1px solid #c7d2fe'}}>
+                  <Ic n="chat" s={18} c="#6366f1"/>
+                  <div>
+                    <p style={{margin:0,fontSize:13,fontWeight:700,color:'#4338ca'}}>Audio Note Attached</p>
+                    <p style={{margin:'2px 0 0',fontSize:12,color:'#6366f1'}}>{selApp.audioNoteFileName}</p>
+                  </div>
+                </div>
+              )}
+
+              {!selApp.coverLetter && !selApp.resumeText && !selApp.audioNoteFileName && (
+                <p style={{color:'#94a3b8',fontSize:13,textAlign:'center',padding:'16px 0'}}>No additional details provided.</p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{padding:'14px 24px',borderTop:'1px solid #f1f5f9',background:'#f8fafc',display:'flex',gap:8,flexWrap:'wrap',alignItems:'center',flexShrink:0}}>
+              <span style={{fontSize:12,color:'#94a3b8',marginRight:'auto'}}>Update status:</span>
+              {[['SHORTLISTED','Shortlist',B,'check'],['HIRED','Hire',G,'check'],['REJECTED','Reject','#ef4444','x'],['PENDING','Reset','#f59e0b','clock']]
+                .filter(([s])=>s!==selApp.status)
+                .map(([s,label,color,icon])=>(
+                  <GhostBtn key={s} onClick={()=>handleStatusUpdate(selApp.id,s)} color={color} iconName={icon}>{label}</GhostBtn>
+                ))
+              }
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+/* ─────────────────────────── JOBS TAB PANEL ─────────────────────────── */
+function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobApplications, del, selectedJobApps, setSelectedJobApps, loadingApps, updateAppStatus }) {
+  const [sec, setSec] = useState('list') // 'post' | 'list' | 'apps'
+  const SECS = [
+    { id:'list', label:'Job Listings', icon:'briefcase' },
+    { id:'post', label:'Post a Job',   icon:'plus'      },
+    { id:'apps', label:'Applications', icon:'users'     },
+  ]
+  // When user clicks Applications from job listing, auto-switch to apps section
+  const handleViewApps = (job) => { viewJobApplications(job); setSec('apps') }
+
+  return (
+    <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:20}}>
+
+      {/* ── Section tab bar ── */}
+      <div style={{display:'flex',gap:6,background:'#f1f5f9',borderRadius:radius.xl,padding:5,alignSelf:'flex-start'}}>
+        {SECS.map(s => {
+          const active = sec === s.id
+          return (
+            <button key={s.id} onClick={()=>setSec(s.id)}
+              style={{display:'flex',alignItems:'center',gap:7,padding:'8px 18px',borderRadius:radius.lg,border:'none',cursor:'pointer',fontFamily:"'Inter',sans-serif",fontWeight:active?700:500,fontSize:13,transition:'all .15s',
+                background: active ? '#fff' : 'transparent',
+                color: active ? NAVY : '#64748b',
+                boxShadow: active ? shadow.xs : 'none',
+              }}
+              onMouseEnter={e=>{ if(!active) e.currentTarget.style.background='rgba(255,255,255,.5)' }}
+              onMouseLeave={e=>{ if(!active) e.currentTarget.style.background='transparent' }}
+            >
+              <Ic n={s.icon} s={14} c={active?NAVY:'#94a3b8'}/>
+              {s.label}
+              {s.id==='list' && jobs.length>0 && (
+                <span style={{fontSize:11,fontWeight:700,color:active?NAVY:'#64748b',background:active?`${G}18`:'#e2e8f0',padding:'1px 7px',borderRadius:10}}>{jobs.length}</span>
+              )}
+              {s.id==='apps' && selectedJobApps && (
+                <span style={{fontSize:11,fontWeight:700,color:B,background:`${B}18`,padding:'1px 7px',borderRadius:10}}>{selectedJobApps.apps?.length??0}</span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── POST JOB ── */}
+      {sec==='post' && (
+        <Panel>
+          <PanelHeader
+            title="Post a New Job"
+            subtitle="Applications are received directly on the platform — no external redirect needed."
+          />
+          <form onSubmit={e=>{createJob(e);setSec('list')}} style={{display:'flex',flexDirection:'column',gap:16}}>
+            <div>
+              <FieldLabel required>Job Title</FieldLabel>
+              <TextInput value={jobForm.title} onChange={e=>setJobForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Community Outreach Officer" required/>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+              <div>
+                <FieldLabel>Employment Type</FieldLabel>
+                <select value={jobForm.employmentType} onChange={e=>setJobForm(p=>({...p,employmentType:e.target.value}))}
+                  style={{width:'100%',boxSizing:'border-box',border:'1.5px solid #e2e8f0',borderRadius:radius.md,padding:'9px 13px',fontSize:14,color:NAVY,background:'#fff',outline:'none',fontFamily:"'Inter',sans-serif"}}>
+                  {Object.entries(EMP_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
+                </select>
+              </div>
+              <div><FieldLabel>Location</FieldLabel><TextInput value={jobForm.location} onChange={e=>setJobForm(p=>({...p,location:e.target.value}))} placeholder="City or Remote"/></div>
+              <div><FieldLabel>Salary Range</FieldLabel><TextInput value={jobForm.salaryRange} onChange={e=>setJobForm(p=>({...p,salaryRange:e.target.value}))} placeholder="₹20,000–₹35,000/mo"/></div>
+              <div><FieldLabel>Last Date to Apply</FieldLabel><TextInput type="date" value={jobForm.lastDateToApply} onChange={e=>setJobForm(p=>({...p,lastDateToApply:e.target.value}))}/></div>
+            </div>
+            <div>
+              <FieldLabel required>Job Description</FieldLabel>
+              <TextArea value={jobForm.description} onChange={e=>setJobForm(p=>({...p,description:e.target.value}))} placeholder="Describe responsibilities, requirements, and any accessibility support offered…" rows={5} required/>
+            </div>
+            <div style={{display:'flex',gap:10,alignItems:'center'}}>
+              <PrimaryBtn type="submit" iconName="plus">Post Job</PrimaryBtn>
+              <GhostBtn type="button" onClick={()=>setSec('list')} color="#64748b">Cancel</GhostBtn>
+            </div>
+          </form>
+        </Panel>
+      )}
+
+      {/* ── JOB LISTINGS ── */}
+      {sec==='list' && (
+        <Panel>
+          <PanelHeader
+            title="Job Listings"
+            subtitle={jobs.length===0 ? 'No jobs posted yet' : `${jobs.filter(j=>j.status==='OPEN').length} open · ${jobs.filter(j=>j.status!=='OPEN').length} closed`}
+            action={
+              <PrimaryBtn iconName="plus" onClick={()=>setSec('post')} style={{fontSize:12,padding:'7px 14px'}}>New Job</PrimaryBtn>
+            }
+          />
+          {jobs.length===0
+            ? <EmptyPane iconName="briefcase" title="No jobs posted" body="Click 'New Job' above to post your first inclusive role."/>
+            : <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                {jobs.map(j=>(
+                  <div key={j.id} style={{borderRadius:radius.lg,border:'1.5px solid #e9ecef',background:'#fafbfc',padding:'18px 20px',transition:'border-color .18s',display:'flex',gap:16,alignItems:'flex-start'}}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor=`${G}60`}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor='#e9ecef'}
+                  >
+                    {/* Left: icon */}
+                    <div style={{width:42,height:42,borderRadius:10,background:j.status==='OPEN'?`${G}12`:'#f1f5f9',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <Ic n="briefcase" s={20} c={j.status==='OPEN'?G:'#94a3b8'}/>
+                    </div>
+                    {/* Middle: info */}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:5}}>
+                        <Chip color={j.status==='OPEN'?G:'#94a3b8'}>{j.status==='OPEN'?'Open':'Closed'}</Chip>
+                        {j.employmentType && <Chip color={B}>{EMP_LABELS[j.employmentType]||j.employmentType}</Chip>}
+                      </div>
+                      <p style={{margin:'0 0 4px',fontSize:15,fontWeight:700,color:NAVY,lineHeight:1.3}}>{j.title}</p>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:12,marginBottom:6}}>
+                        {j.location && <MetaItem iconName="location">{j.location}</MetaItem>}
+                        {j.salaryRange && <MetaItem iconName="currency">{j.salaryRange}</MetaItem>}
+                        {j.lastDateToApply && <MetaItem iconName="calendar">Closes {j.lastDateToApply}</MetaItem>}
+                      </div>
+                      <p style={{margin:0,fontSize:13,color:'#64748b',lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{j.description}</p>
+                    </div>
+                    {/* Right: actions */}
+                    <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
+                      <GhostBtn onClick={()=>handleViewApps(j)} color={B} iconName="users">View Apps</GhostBtn>
+                      {j.status==='OPEN' && <GhostBtn onClick={()=>closeJob(j.id)} color="#f59e0b" iconName="x">Close</GhostBtn>}
+                      <GhostBtn onClick={()=>del(`/ngos/jobs/${j.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
+                    </div>
+                  </div>
+                ))}
+              </div>
+          }
+        </Panel>
+      )}
+
+      {/* ── APPLICATIONS ── */}
+      {sec==='apps' && (
+        <AppsSection
+          jobs={jobs}
+          selectedJobApps={selectedJobApps}
+          loadingApps={loadingApps}
+          viewJobApplications={viewJobApplications}
+          updateAppStatus={updateAppStatus}
+        />
+      )}
+    </div>
   )
 }
 
@@ -981,108 +1307,14 @@ export default function NgoProfile() {
 
           {/* ── JOBS ────────────────────────────────────────────────── */}
           {tab === 'jobs' && (
-            <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
-
-              {/* Applications drawer */}
-              {selectedJobApps && (
-                <div style={{background:'#f0fdf4',border:'1.5px solid #bbf7d0',borderRadius:radius.xl,padding:'24px 28px'}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
-                    <div>
-                      <p style={{margin:0,fontSize:11,fontWeight:700,color:G,textTransform:'uppercase',letterSpacing:'0.1em'}}>Applications</p>
-                      <h3 style={{margin:'4px 0 0',fontSize:16,fontWeight:800,color:NAVY}}>{selectedJobApps.job.title}</h3>
-                    </div>
-                    <GhostBtn onClick={()=>setSelectedJobApps(null)} color="#64748b" iconName="x">Close</GhostBtn>
-                  </div>
-                  {loadingApps && <p style={{color:'#64748b',fontSize:13}}>Loading applications…</p>}
-                  {!loadingApps && selectedJobApps.fetchError && (
-                    <div style={{background:'#fef2f2',border:'1px solid #fecaca',borderRadius:radius.md,padding:'12px 16px',marginBottom:12}}>
-                      <p style={{margin:0,fontSize:13,color:'#dc2626',fontWeight:600}}>⚠ Failed to load: {selectedJobApps.fetchError}</p>
-                      <p style={{margin:'4px 0 0',fontSize:12,color:'#ef4444'}}>Make sure the backend is running and restarted after the latest code changes.</p>
-                    </div>
-                  )}
-                  {!loadingApps && !selectedJobApps.fetchError && selectedJobApps.apps.length===0 && (
-                    <EmptyPane iconName="users" title="No applications yet" body="Applications submitted on the platform will appear here."/>
-                  )}
-                  {!loadingApps && selectedJobApps.apps.map(app=>(
-                    <div key={app.id} style={{background:'#fff',border:'1px solid #e9ecef',borderRadius:radius.lg,padding:'14px 18px',marginBottom:10}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,flexWrap:'wrap'}}>
-                        <div>
-                          <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{app.applicantName}</p>
-                          <p style={{margin:'2px 0 0',fontSize:12,color:'#64748b'}}>{app.applicantEmail}{app.applicantPhone?` • ${app.applicantPhone}`:''}</p>
-                          {app.disabilityType && <Chip color='#6366f1' style={{marginTop:4}}>{app.disabilityType}</Chip>}
-                        </div>
-                        <Chip color={app.status==='HIRED'?G:app.status==='SHORTLISTED'?B:app.status==='REJECTED'?'#ef4444':'#f59e0b'}>{app.status}</Chip>
-                      </div>
-                      {app.coverLetter && <p style={{margin:'10px 0 0',fontSize:13,color:'#374151',lineHeight:1.6,whiteSpace:'pre-wrap'}}>{app.coverLetter}</p>}
-                      {app.audioNoteFileName && <p style={{margin:'6px 0 0',fontSize:12,color:'#6366f1'}}>🎵 Audio: {app.audioNoteFileName}</p>}
-                      <div style={{display:'flex',gap:6,marginTop:12,flexWrap:'wrap'}}>
-                        {['SHORTLISTED','HIRED','REJECTED'].map(s=>(
-                          <GhostBtn key={s} onClick={()=>updateAppStatus(app.id,s)} color={s==='HIRED'?G:s==='SHORTLISTED'?B:'#ef4444'} style={{fontSize:11}}>{s.charAt(0)+s.slice(1).toLowerCase()}</GhostBtn>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
-                <Panel>
-                  <PanelHeader title="Post a Job" subtitle="Applications are received directly on the platform — no external link needed."/>
-                  <form onSubmit={createJob} style={{display:'flex',flexDirection:'column',gap:14}}>
-                    <div><FieldLabel required>Job Title</FieldLabel><TextInput value={jobForm.title} onChange={e=>setJobForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Community Outreach Officer" required/></div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <div>
-                        <FieldLabel>Employment Type</FieldLabel>
-                        <select
-                          value={jobForm.employmentType}
-                          onChange={e=>setJobForm(p=>({...p,employmentType:e.target.value}))}
-                          style={{width:'100%',boxSizing:'border-box',border:'1.5px solid #e2e8f0',borderRadius:radius.md,padding:'9px 13px',fontSize:14,color:NAVY,background:'#fff',outline:'none',fontFamily:"'Inter',sans-serif"}}
-                        >
-                          {Object.entries(EMP_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
-                        </select>
-                      </div>
-                      <div><FieldLabel>Location</FieldLabel><TextInput value={jobForm.location} onChange={e=>setJobForm(p=>({...p,location:e.target.value}))} placeholder="City or Remote"/></div>
-                      <div><FieldLabel>Salary Range</FieldLabel><TextInput value={jobForm.salaryRange} onChange={e=>setJobForm(p=>({...p,salaryRange:e.target.value}))} placeholder="e.g. ₹20,000–₹35,000/mo"/></div>
-                      <div><FieldLabel>Last Date to Apply</FieldLabel><TextInput type="date" value={jobForm.lastDateToApply} onChange={e=>setJobForm(p=>({...p,lastDateToApply:e.target.value}))}/></div>
-                    </div>
-                    <div><FieldLabel required>Job Description</FieldLabel><TextArea value={jobForm.description} onChange={e=>setJobForm(p=>({...p,description:e.target.value}))} placeholder="Describe responsibilities, requirements, and accessibility support offered…" rows={4} required/></div>
-                    <PrimaryBtn type="submit" iconName="plus">Post Job</PrimaryBtn>
-                  </form>
-                </Panel>
-
-                <Panel>
-                  <PanelHeader title="Job Listings" subtitle={`${jobs.length} posted`}/>
-                  {jobs.length===0 ? <EmptyPane iconName="briefcase" title="No jobs listed" body="Post your first inclusive job using the form."/> :
-                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                      {jobs.map(j=>(
-                        <ListItem key={j.id}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
-                                <Chip color={j.status==='OPEN'?G:'#ef4444'}>{j.status}</Chip>
-                                {j.employmentType && <Chip color={B}>{EMP_LABELS[j.employmentType]||j.employmentType}</Chip>}
-                              </div>
-                              <p style={{margin:'0 0 4px',fontSize:14,fontWeight:700,color:NAVY}}>{j.title}</p>
-                              <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:6}}>
-                                {j.location && <MetaItem iconName="location">{j.location}</MetaItem>}
-                                {j.salaryRange && <MetaItem iconName="currency">{j.salaryRange}</MetaItem>}
-                                {j.lastDateToApply && <MetaItem iconName="calendar">Last date: {j.lastDateToApply}</MetaItem>}
-                              </div>
-                              <p style={{margin:0,fontSize:13,color:'#64748b',lineHeight:1.5}}>{j.description}</p>
-                            </div>
-                            <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
-                              <GhostBtn onClick={()=>viewJobApplications(j)} color={B} iconName="users">Applications</GhostBtn>
-                              {j.status==='OPEN' && <GhostBtn onClick={()=>closeJob(j.id)} color="#f59e0b" iconName="x">Close</GhostBtn>}
-                              <GhostBtn onClick={()=>del(`/ngos/jobs/${j.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
-                            </div>
-                          </div>
-                        </ListItem>
-                      ))}
-                    </div>
-                  }
-                </Panel>
-              </div>
-            </div>
+            <JobsTabPanel
+              jobs={jobs} jobForm={jobForm} setJobForm={setJobForm}
+              createJob={createJob} closeJob={closeJob}
+              viewJobApplications={viewJobApplications}
+              del={del}
+              selectedJobApps={selectedJobApps} setSelectedJobApps={setSelectedJobApps}
+              loadingApps={loadingApps} updateAppStatus={updateAppStatus}
+            />
           )}
 
           {/* ── PRODUCTS ────────────────────────────────────────────── */}
