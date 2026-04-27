@@ -65,7 +65,7 @@ const NAV_GROUPS = [
       { id: 'school',     label: 'School Dashboard',  icon: 'school',  role: 'SCHOOL_ADMIN',  path: '/school/profile'  },
       { id: 'special',    label: 'Special Workspace', icon: 'info',    role: 'SPECIAL_ABLED_PERSON', path: '/special' },
       { id: 'guardian',   label: 'Guardian Workspace', icon: 'info',   role: 'GUARDIAN_CAREGIVER', path: '/guardian' },
-      { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo/profile'     },
+      { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo'             },
       { id: 'startup',    label: 'Startup Dashboard', icon: 'startup', role: 'STARTUP_ADMIN', path: '/startup/profile' },
       { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/admin/approvals' },
     ],
@@ -118,7 +118,7 @@ const CARDS = [
     icon: 'ngo',
     color: TEAL,
     bg: '#f0fdfa',
-    path: '/ngo/profile',
+    path: '/ngo',
     cta: 'Open Dashboard',
   },
   {
@@ -260,7 +260,7 @@ export default function Dashboard() {
   const [activeNav, setActiveNav] = useState('home')
 
   useEffect(() => {
-    if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
+    if (user?.role === 'NGO_ADMIN') navigate('/ngo', { replace: true })
     if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special', { replace: true })
     if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian', { replace: true })
   }, [navigate, user])

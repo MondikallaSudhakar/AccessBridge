@@ -96,7 +96,7 @@ export const USER_TYPE_GUIDES = [
     role: 'NGO_ADMIN',
     label: 'NGO Admin',
     loginPurpose: 'Join to provide support, expand impact, connect with beneficiaries, and collaborate with schools and CSR partners.',
-    dashboardPath: '/ngo/profile',
+    dashboardPath: '/ngo',
     canView: [
       'User support requests (help needed), volunteer interest, and partner leads',
       'Special schools, partner organizations, events, campaigns, and NGO requirements',

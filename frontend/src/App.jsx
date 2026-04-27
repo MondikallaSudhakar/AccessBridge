@@ -14,6 +14,9 @@ import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
 import NgoProfile from './pages/dashboard/NgoProfile'
+import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
+import NgoWorkspaceHome from './pages/ngo/NgoWorkspaceHome'
+import NgoWorkspaceFeaturePage from './pages/ngo/NgoWorkspaceFeaturePage'
 import VolunteerDashboard from './pages/volunteer/VolunteerDashboard'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
@@ -32,6 +35,9 @@ import GuardianFeaturePage from './pages/guardian/GuardianFeaturePage'
 import GuardianHelpPage from './pages/guardian/GuardianHelpPage'
 import GuardianSavedPage from './pages/guardian/GuardianSavedPage'
 import GuardianProgressPage from './pages/guardian/GuardianProgressPage'
+import SchoolWorkspaceLayout from './pages/school-workspace/SchoolWorkspaceLayout'
+import SchoolWorkspaceHome from './pages/school-workspace/SchoolWorkspaceHome'
+import SchoolWorkspaceFeaturePage from './pages/school-workspace/SchoolWorkspaceFeaturePage'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 
 function App() {
@@ -73,6 +79,31 @@ function App() {
           <Route path="help" element={<GuardianHelpPage />} />
           <Route path="saved" element={<GuardianSavedPage />} />
           <Route path="progress" element={<GuardianProgressPage />} />
+        </Route>
+        <Route path="/ngo" element={<RoleRoute allowedRoles={['NGO_ADMIN', 'SUPER_ADMIN']}><NgoWorkspaceLayout /></RoleRoute>}>
+          <Route index element={<NgoWorkspaceHome />} />
+          <Route path="requirements" element={<NgoWorkspaceFeaturePage type="requirements" />} />
+          <Route path="support-requests" element={<NgoWorkspaceFeaturePage type="support-requests" />} />
+          <Route path="volunteers" element={<NgoWorkspaceFeaturePage type="volunteers" />} />
+          <Route path="campaigns" element={<NgoWorkspaceFeaturePage type="campaigns" />} />
+          <Route path="jobs" element={<NgoWorkspaceFeaturePage type="jobs" />} />
+          <Route path="products" element={<NgoWorkspaceFeaturePage type="products" />} />
+          <Route path="services" element={<NgoWorkspaceFeaturePage type="services" />} />
+          <Route path="achievements" element={<NgoWorkspaceFeaturePage type="achievements" />} />
+          <Route path="messages" element={<NgoWorkspaceFeaturePage type="messages" />} />
+          <Route path="csr" element={<NgoWorkspaceFeaturePage type="csr" />} />
+        </Route>
+        <Route path="/school-workspace" element={<RoleRoute allowedRoles={['SCHOOL_ADMIN', 'SUPER_ADMIN']}><SchoolWorkspaceLayout /></RoleRoute>}>
+          <Route index element={<SchoolWorkspaceHome />} />
+          <Route path="students" element={<SchoolWorkspaceFeaturePage type="students" />} />
+          <Route path="programs" element={<SchoolWorkspaceFeaturePage type="programs" />} />
+          <Route path="staff" element={<SchoolWorkspaceFeaturePage type="staff" />} />
+          <Route path="admissions" element={<SchoolWorkspaceFeaturePage type="admissions" />} />
+          <Route path="therapy" element={<SchoolWorkspaceFeaturePage type="therapy" />} />
+          <Route path="events" element={<SchoolWorkspaceFeaturePage type="events" />} />
+          <Route path="achievements" element={<SchoolWorkspaceFeaturePage type="achievements" />} />
+          <Route path="ngo-partners" element={<SchoolWorkspaceFeaturePage type="ngo-partners" />} />
+          <Route path="messages" element={<SchoolWorkspaceFeaturePage type="messages" />} />
         </Route>
 
         {/* Protected Routes */}
