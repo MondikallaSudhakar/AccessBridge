@@ -123,11 +123,11 @@ export default function Register() {
   const totalSteps = requiresExtraStep ? 2 : 1
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
       <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
       <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
 
-      <div className="w-full max-w-xl">
+      <div className="mx-auto w-full max-w-xl">
 
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-3">
