@@ -69,7 +69,7 @@ export default function UserMessages() {
       navigate('/login')
       return
     }
-    if (user.role !== 'USER') {
+    if (!['USER', 'SPECIAL_ABLED_PERSON'].includes(user.role)) {
       navigate('/dashboard')
       return
     }

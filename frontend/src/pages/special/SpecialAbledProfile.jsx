@@ -184,6 +184,26 @@ function OpportunityCard({ item, bookmarked, onBookmark, onPrimary, primaryLabel
   )
 }
 
+function CapabilityList({ title, items, tone = 'blue' }) {
+  const toneStyles = tone === 'green'
+    ? { border: 'border-emerald-200', bg: 'bg-emerald-50', dot: 'bg-emerald-500', heading: 'text-emerald-900' }
+    : { border: 'border-sky-200', bg: 'bg-sky-50', dot: 'bg-sky-500', heading: 'text-sky-900' }
+
+  return (
+    <section className={`rounded-2xl border ${toneStyles.border} ${toneStyles.bg} p-4`}>
+      <h3 className={`text-sm font-extrabold ${toneStyles.heading}`}>{title}</h3>
+      <ul className="mt-3 space-y-2">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
+            <span className={`mt-1.5 h-2 w-2 rounded-full ${toneStyles.dot}`} />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 export default function SpecialAbledProfile() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -328,6 +348,24 @@ export default function SpecialAbledProfile() {
     { label: 'Schemes', count: OPPORTUNITIES.schemes.length },
   ]
 
+  const canViewItems = [
+    'Disability-friendly job listings',
+    'Marketplace to buy or sell products',
+    'Nearby NGOs and support services',
+    'Special schools and training programs',
+    'Events and upcoming campaigns',
+    'Government schemes and benefits',
+  ]
+
+  const canDoItems = [
+    'Create profile with skills, needs, and disability type',
+    'Apply for jobs using text or audio',
+    'Request help from NGOs',
+    'Enroll in training programs',
+    'Register for events and campaigns',
+    'Save and bookmark opportunities',
+  ]
+
   return (
     <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-20">
@@ -426,10 +464,15 @@ export default function SpecialAbledProfile() {
         </section>
 
         <section className="lg:col-span-8 space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <CapabilityList title="What You Can View" items={canViewItems} tone="blue" />
+            <CapabilityList title="What You Can Do" items={canDoItems} tone="green" />
+          </div>
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[
               { title: 'Jobs', desc: 'Apply with text or audio support.' },
-              { title: 'Marketplace', desc: 'Buy useful products and assistive tools.' },
+              { title: 'Marketplace', desc: 'Buy or sell products and assistive tools.' },
               { title: 'Training', desc: 'Enroll in special schools and programs.' },
               { title: 'Support', desc: 'Request NGO help and govt benefits.' },
             ].map((item) => (
@@ -481,7 +524,7 @@ export default function SpecialAbledProfile() {
             </div>
           </SectionCard>
 
-          <SectionCard title="Marketplace - buy products" action="Find assistive and helpful products from startups and NGOs.">
+          <SectionCard title="Marketplace - buy or sell products" action="Buy assistive products or list your own products in the marketplace.">
             <div className="grid gap-4 md:grid-cols-2">
               {OPPORTUNITIES.marketplace.map((item) => (
                 <OpportunityCard
@@ -490,10 +533,20 @@ export default function SpecialAbledProfile() {
                   bookmarked={bookmarkSet.has(item.id)}
                   onBookmark={() => toggleBookmark(item.id)}
                   onPrimary={() => navigate('/marketplace')}
-                  primaryLabel="Open marketplace"
-                  secondaryLabel="Save product"
+                  primaryLabel="Buy product"
+                  secondaryLabel="Sell / save"
                 />
               ))}
+            </div>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/marketplace')}
+                className="rounded-lg border px-3 py-2 text-xs font-bold"
+                style={{ borderColor: '#5BCB2B', color: '#5BCB2B' }}
+              >
+                Sell a product
+              </button>
             </div>
           </SectionCard>
 

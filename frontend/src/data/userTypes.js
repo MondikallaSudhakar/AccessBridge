@@ -39,7 +39,7 @@ export const USER_TYPE_GUIDES = [
     role: 'SPECIAL_ABLED_PERSON',
     label: 'Specially Abled Person',
     loginPurpose: 'Join to gain independence through jobs, learning, income, support, and community access.',
-    dashboardPath: '/special/profile',
+    dashboardPath: '/special',
     canView: [
       'Disability-friendly job listings and text/audio job application support',
       'Marketplace products and nearby NGO services',

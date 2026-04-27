@@ -17,7 +17,13 @@ import NgoProfile from './pages/dashboard/NgoProfile'
 import VolunteerDashboard from './pages/volunteer/VolunteerDashboard'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
-import SpecialAbledProfile from './pages/special/SpecialAbledProfile'
+import SpecialLayout from './pages/special/SpecialLayout'
+import SpecialHome from './pages/special/SpecialHome'
+import SpecialProfilePage from './pages/special/SpecialProfilePage'
+import SpecialJobsPage from './pages/special/SpecialJobsPage'
+import SpecialFeaturePage from './pages/special/SpecialFeaturePage'
+import SpecialHelpPage from './pages/special/SpecialHelpPage'
+import SpecialSavedPage from './pages/special/SpecialSavedPage'
 import GuardianProfile from './pages/guardian/GuardianProfile'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 
@@ -33,9 +39,21 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
-        <Route path="/messages" element={<RoleRoute allowedRoles={['USER']}><UserMessages /></RoleRoute>} />
+        <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON']}><UserMessages /></RoleRoute>} />
         <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerDashboard /></RoleRoute>} />
-        <Route path="/special/profile" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialAbledProfile /></RoleRoute>} />
+        <Route path="/special" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialLayout /></RoleRoute>}>
+          <Route index element={<SpecialHome />} />
+          <Route path="profile" element={<SpecialProfilePage />} />
+          <Route path="jobs" element={<SpecialJobsPage />} />
+          <Route path="marketplace" element={<SpecialFeaturePage type="marketplace" />} />
+          <Route path="ngos" element={<SpecialFeaturePage type="ngos" />} />
+          <Route path="training" element={<SpecialFeaturePage type="training" />} />
+          <Route path="events" element={<SpecialFeaturePage type="events" />} />
+          <Route path="campaigns" element={<SpecialFeaturePage type="campaigns" />} />
+          <Route path="schemes" element={<SpecialFeaturePage type="schemes" />} />
+          <Route path="help" element={<SpecialHelpPage />} />
+          <Route path="saved" element={<SpecialSavedPage />} />
+        </Route>
         <Route path="/guardian/profile" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianProfile /></RoleRoute>} />
 
         {/* Protected Routes */}
