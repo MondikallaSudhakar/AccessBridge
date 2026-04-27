@@ -95,31 +95,27 @@ export default function NgoDetail() {
     try {
       const token = localStorage.getItem('token')
       const body = {
-        senderName: supportForm.name,
-        senderEmail: supportForm.email,
-        message: `Support Request for: ${supportNeed.title}\n\n${supportForm.message}`,
-        ngoId: id,
-        requirementId: supportNeed.id,
-        requirementTitle: supportNeed.title,
-        type: 'SUPPORT_REQUEST'
+        requesterName:  supportForm.name,
+        requesterEmail: supportForm.email,
+        title:       `Support for: ${supportNeed.title}`,
+        description: supportForm.message,
+        requestType: 'REQUIREMENT_SUPPORT',
+        status:      'PENDING'
       }
-      const r = await fetch(`${BASE}/ngos/${id}/messages`, {
+      const r = await fetch(`${BASE}/ngos/${id}/support-requests`, {
         method: 'POST',
         headers: { 'Content-Type':'application/json', ...(token?{'Authorization':`Bearer ${token}`}:{}) },
         body: JSON.stringify(body)
       })
-      if (r.ok) {
-        setSupportMsg({ type:'ok', text:'Support request sent successfully! The NGO will contact you soon.' })
+      if (r.ok || r.status === 201) {
+        setSupportMsg({ type:'ok', text:'Support request sent! The NGO will contact you soon.' })
         setSupportForm({ name:'', email:'', message:'' })
         setTimeout(() => setSupportNeed(null), 2500)
       } else {
-        // Fallback: navigate to chat
-        setSupportMsg({ type:'warn', text:'Redirecting to chat...' })
-        setTimeout(() => { setSupportNeed(null); openChat('requirement', supportNeed.title) }, 1000)
+        setSupportMsg({ type:'error', text:'Failed to send. Please try again.' })
       }
     } catch {
-      setSupportMsg({ type:'warn', text:'Redirecting to chat...' })
-      setTimeout(() => { setSupportNeed(null); openChat('requirement', supportNeed.title) }, 1000)
+      setSupportMsg({ type:'error', text:'Network error. Please try again.' })
     }
     finally { setSupportSubmitting(false) }
   }
