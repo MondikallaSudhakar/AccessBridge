@@ -1,9 +1,17 @@
 export const SCHOOL_WORKSPACE_NAV = [
   { to: '/school-workspace', label: 'Home' },
   { to: '/school-workspace/students', label: 'Students' },
-  { to: '/school-workspace/programs', label: 'Programs' },
+  {
+    to: '/school-workspace/programs',
+    label: 'Programs',
+    meta: { openDate: '2025-03-15', closeDate: '2025-06-30', applied: 34 },
+  },
   { to: '/school-workspace/staff', label: 'Staff' },
-  { to: '/school-workspace/admissions', label: 'Admissions' },
+  {
+    to: '/school-workspace/admissions',
+    label: 'Admissions',
+    meta: { openDate: '2025-04-01', closeDate: '2025-05-20', applied: 18 },
+  },
   { to: '/school-workspace/therapy', label: 'Therapy & Support' },
   { to: '/school-workspace/events', label: 'Events' },
   { to: '/school-workspace/achievements', label: 'Achievements' },

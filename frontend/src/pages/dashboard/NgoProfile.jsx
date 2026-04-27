@@ -13,7 +13,8 @@ const SIDEBAR_W = 260
 
 /* ─────────────────────────── blank forms ────────────────────────────── */
 const blankNeed        = { title:'', description:'', category:'SUPPORT', targetAmount:'', urgent:false }
-const blankJob         = { title:'', description:'', employmentType:'FULL_TIME', location:'', salaryRange:'', applicationUrl:'', lastDateToApply:'' }
+const blankJob         = { title:'', description:'', employmentType:'FULL_TIME', location:'', salaryRange:'', lastDateToApply:'' }
+const EMP_LABELS = { FULL_TIME:'Full-time', PART_TIME:'Part-time', CONTRACT:'Contract', INTERN:'Internship', VOLUNTEER:'Volunteer' }
 const blankProduct     = { name:'', description:'', category:'', price:'', stockQuantity:'', available:true }
 const blankService     = { title:'', description:'', category:'', contactInfo:'', availability:'', status:'ACTIVE' }
 const blankAchievement = { title:'', description:'', category:'', achievementDate:'', imageUrl:'' }
@@ -303,6 +304,8 @@ export default function NgoProfile() {
   const [volunteerForm, setVolunteerForm] = useState(blankVolunteer)
   const [campaignForm, setCampaignForm] = useState(blankCampaign)
   const [supportRequestFilter, setSupportRequestFilter] = useState('PENDING')
+  const [selectedJobApps, setSelectedJobApps] = useState(null) // { job, apps[] }
+  const [loadingApps, setLoadingApps] = useState(false)
 
   /* effects */
   useEffect(() => {
@@ -444,6 +447,29 @@ export default function NgoProfile() {
     } catch { setError('Failed to post requirement') }
   }
   const createJob = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/jobs`,jobForm);setJobForm(blankJob);loadData(ngo.id);flash('Job posted!')}catch(err){setError(err.message||'Error')} }
+  const closeJob = async id => { if(!ngo?.id)return; try{ await fetch(`${BASE}/ngos/jobs/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({status:'CLOSED'})}); loadData(ngo.id); flash('Job closed.') }catch{} }
+  const viewJobApplications = async job => {
+    setSelectedJobApps({job,apps:[],fetchError:null})
+    setLoadingApps(true)
+    try{
+      const r = await fetch(`${BASE}/ngos/jobs/${job.id}/applications`,{
+        headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}
+      })
+      if(!r.ok){ setSelectedJobApps({job,apps:[],fetchError:`Server error ${r.status}`}); return }
+      const d = await r.json()
+      setSelectedJobApps({job, apps: Array.isArray(d)?d:[], fetchError:null})
+    }catch(e){ setSelectedJobApps({job,apps:[],fetchError:'Network error'}) }
+    finally{ setLoadingApps(false) }
+  }
+  const updateAppStatus = async (appId, status) => {
+    try{
+      const r = await fetch(`${BASE}/ngos/jobs/applications/${appId}/status?status=${status}`,{method:'PATCH',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}})
+      if(r.ok){
+        const updated = await r.json()
+        setSelectedJobApps(prev=>({...prev, apps: prev.apps.map(a=>a.id===appId?updated:a)}))
+      }
+    }catch{}
+  }
   const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
   const createService = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
   const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
@@ -955,47 +981,107 @@ export default function NgoProfile() {
 
           {/* ── JOBS ────────────────────────────────────────────────── */}
           {tab === 'jobs' && (
-            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
-              <Panel>
-                <PanelHeader title="Post a Job" subtitle="Recruit for your NGO's team."/>
-                <form onSubmit={createJob} style={{display:'flex',flexDirection:'column',gap:14}}>
-                  <div><FieldLabel required>Job Title</FieldLabel><TextInput value={jobForm.title} onChange={e=>setJobForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Community Outreach Officer" required/></div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Employment Type</FieldLabel><TextInput value={jobForm.employmentType} onChange={e=>setJobForm(p=>({...p,employmentType:e.target.value}))} placeholder="FULL_TIME"/></div>
-                    <div><FieldLabel>Location</FieldLabel><TextInput value={jobForm.location} onChange={e=>setJobForm(p=>({...p,location:e.target.value}))} placeholder="City or Remote"/></div>
-                    <div><FieldLabel>Salary Range</FieldLabel><TextInput value={jobForm.salaryRange} onChange={e=>setJobForm(p=>({...p,salaryRange:e.target.value}))} placeholder="₹20,000–₹35,000"/></div>
-                    <div><FieldLabel>Last Date to Apply</FieldLabel><TextInput type="date" value={jobForm.lastDateToApply} onChange={e=>setJobForm(p=>({...p,lastDateToApply:e.target.value}))}/></div>
-                  </div>
-                  <div><FieldLabel>Application URL</FieldLabel><TextInput value={jobForm.applicationUrl} onChange={e=>setJobForm(p=>({...p,applicationUrl:e.target.value}))} placeholder="https://…"/></div>
-                  <div><FieldLabel required>Job Description</FieldLabel><TextArea value={jobForm.description} onChange={e=>setJobForm(p=>({...p,description:e.target.value}))} placeholder="Responsibilities, requirements…" rows={4} required/></div>
-                  <PrimaryBtn type="submit" iconName="plus">Post Job</PrimaryBtn>
-                </form>
-              </Panel>
+            <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
 
-              <Panel>
-                <PanelHeader title="Job Listings" subtitle={`${jobs.length} active`}/>
-                {jobs.length===0 ? <EmptyPane iconName="briefcase" title="No jobs listed" body="Post your first job using the form."/> :
-                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                    {jobs.map(j=>(
-                      <ListItem key={j.id}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
-                          <div style={{flex:1,minWidth:0}}>
-                            <p style={{margin:'0 0 6px',fontSize:14,fontWeight:700,color:NAVY}}>{j.title}</p>
-                            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:6}}>
-                              {j.employmentType && <Chip color={B}>{j.employmentType}</Chip>}
-                              {j.location && <MetaItem iconName="location">{j.location}</MetaItem>}
-                              {j.salaryRange && <MetaItem iconName="currency">{j.salaryRange}</MetaItem>}
-                              {j.lastDateToApply && <MetaItem iconName="calendar">By {j.lastDateToApply}</MetaItem>}
-                            </div>
-                            <p style={{margin:0,fontSize:13,color:'#64748b',lineHeight:1.5}}>{j.description}</p>
-                          </div>
-                          <GhostBtn onClick={()=>del(`/ngos/jobs/${j.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
-                        </div>
-                      </ListItem>
-                    ))}
+              {/* Applications drawer */}
+              {selectedJobApps && (
+                <div style={{background:'#f0fdf4',border:'1.5px solid #bbf7d0',borderRadius:radius.xl,padding:'24px 28px'}}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+                    <div>
+                      <p style={{margin:0,fontSize:11,fontWeight:700,color:G,textTransform:'uppercase',letterSpacing:'0.1em'}}>Applications</p>
+                      <h3 style={{margin:'4px 0 0',fontSize:16,fontWeight:800,color:NAVY}}>{selectedJobApps.job.title}</h3>
+                    </div>
+                    <GhostBtn onClick={()=>setSelectedJobApps(null)} color="#64748b" iconName="x">Close</GhostBtn>
                   </div>
-                }
-              </Panel>
+                  {loadingApps && <p style={{color:'#64748b',fontSize:13}}>Loading applications…</p>}
+                  {!loadingApps && selectedJobApps.fetchError && (
+                    <div style={{background:'#fef2f2',border:'1px solid #fecaca',borderRadius:radius.md,padding:'12px 16px',marginBottom:12}}>
+                      <p style={{margin:0,fontSize:13,color:'#dc2626',fontWeight:600}}>⚠ Failed to load: {selectedJobApps.fetchError}</p>
+                      <p style={{margin:'4px 0 0',fontSize:12,color:'#ef4444'}}>Make sure the backend is running and restarted after the latest code changes.</p>
+                    </div>
+                  )}
+                  {!loadingApps && !selectedJobApps.fetchError && selectedJobApps.apps.length===0 && (
+                    <EmptyPane iconName="users" title="No applications yet" body="Applications submitted on the platform will appear here."/>
+                  )}
+                  {!loadingApps && selectedJobApps.apps.map(app=>(
+                    <div key={app.id} style={{background:'#fff',border:'1px solid #e9ecef',borderRadius:radius.lg,padding:'14px 18px',marginBottom:10}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,flexWrap:'wrap'}}>
+                        <div>
+                          <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{app.applicantName}</p>
+                          <p style={{margin:'2px 0 0',fontSize:12,color:'#64748b'}}>{app.applicantEmail}{app.applicantPhone?` • ${app.applicantPhone}`:''}</p>
+                          {app.disabilityType && <Chip color='#6366f1' style={{marginTop:4}}>{app.disabilityType}</Chip>}
+                        </div>
+                        <Chip color={app.status==='HIRED'?G:app.status==='SHORTLISTED'?B:app.status==='REJECTED'?'#ef4444':'#f59e0b'}>{app.status}</Chip>
+                      </div>
+                      {app.coverLetter && <p style={{margin:'10px 0 0',fontSize:13,color:'#374151',lineHeight:1.6,whiteSpace:'pre-wrap'}}>{app.coverLetter}</p>}
+                      {app.audioNoteFileName && <p style={{margin:'6px 0 0',fontSize:12,color:'#6366f1'}}>🎵 Audio: {app.audioNoteFileName}</p>}
+                      <div style={{display:'flex',gap:6,marginTop:12,flexWrap:'wrap'}}>
+                        {['SHORTLISTED','HIRED','REJECTED'].map(s=>(
+                          <GhostBtn key={s} onClick={()=>updateAppStatus(app.id,s)} color={s==='HIRED'?G:s==='SHORTLISTED'?B:'#ef4444'} style={{fontSize:11}}>{s.charAt(0)+s.slice(1).toLowerCase()}</GhostBtn>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
+                <Panel>
+                  <PanelHeader title="Post a Job" subtitle="Applications are received directly on the platform — no external link needed."/>
+                  <form onSubmit={createJob} style={{display:'flex',flexDirection:'column',gap:14}}>
+                    <div><FieldLabel required>Job Title</FieldLabel><TextInput value={jobForm.title} onChange={e=>setJobForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Community Outreach Officer" required/></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div>
+                        <FieldLabel>Employment Type</FieldLabel>
+                        <select
+                          value={jobForm.employmentType}
+                          onChange={e=>setJobForm(p=>({...p,employmentType:e.target.value}))}
+                          style={{width:'100%',boxSizing:'border-box',border:'1.5px solid #e2e8f0',borderRadius:radius.md,padding:'9px 13px',fontSize:14,color:NAVY,background:'#fff',outline:'none',fontFamily:"'Inter',sans-serif"}}
+                        >
+                          {Object.entries(EMP_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
+                        </select>
+                      </div>
+                      <div><FieldLabel>Location</FieldLabel><TextInput value={jobForm.location} onChange={e=>setJobForm(p=>({...p,location:e.target.value}))} placeholder="City or Remote"/></div>
+                      <div><FieldLabel>Salary Range</FieldLabel><TextInput value={jobForm.salaryRange} onChange={e=>setJobForm(p=>({...p,salaryRange:e.target.value}))} placeholder="e.g. ₹20,000–₹35,000/mo"/></div>
+                      <div><FieldLabel>Last Date to Apply</FieldLabel><TextInput type="date" value={jobForm.lastDateToApply} onChange={e=>setJobForm(p=>({...p,lastDateToApply:e.target.value}))}/></div>
+                    </div>
+                    <div><FieldLabel required>Job Description</FieldLabel><TextArea value={jobForm.description} onChange={e=>setJobForm(p=>({...p,description:e.target.value}))} placeholder="Describe responsibilities, requirements, and accessibility support offered…" rows={4} required/></div>
+                    <PrimaryBtn type="submit" iconName="plus">Post Job</PrimaryBtn>
+                  </form>
+                </Panel>
+
+                <Panel>
+                  <PanelHeader title="Job Listings" subtitle={`${jobs.length} posted`}/>
+                  {jobs.length===0 ? <EmptyPane iconName="briefcase" title="No jobs listed" body="Post your first inclusive job using the form."/> :
+                    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                      {jobs.map(j=>(
+                        <ListItem key={j.id}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+                                <Chip color={j.status==='OPEN'?G:'#ef4444'}>{j.status}</Chip>
+                                {j.employmentType && <Chip color={B}>{EMP_LABELS[j.employmentType]||j.employmentType}</Chip>}
+                              </div>
+                              <p style={{margin:'0 0 4px',fontSize:14,fontWeight:700,color:NAVY}}>{j.title}</p>
+                              <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:6}}>
+                                {j.location && <MetaItem iconName="location">{j.location}</MetaItem>}
+                                {j.salaryRange && <MetaItem iconName="currency">{j.salaryRange}</MetaItem>}
+                                {j.lastDateToApply && <MetaItem iconName="calendar">Last date: {j.lastDateToApply}</MetaItem>}
+                              </div>
+                              <p style={{margin:0,fontSize:13,color:'#64748b',lineHeight:1.5}}>{j.description}</p>
+                            </div>
+                            <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
+                              <GhostBtn onClick={()=>viewJobApplications(j)} color={B} iconName="users">Applications</GhostBtn>
+                              {j.status==='OPEN' && <GhostBtn onClick={()=>closeJob(j.id)} color="#f59e0b" iconName="x">Close</GhostBtn>}
+                              <GhostBtn onClick={()=>del(`/ngos/jobs/${j.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
+                            </div>
+                          </div>
+                        </ListItem>
+                      ))}
+                    </div>
+                  }
+                </Panel>
+              </div>
             </div>
           )}
 

@@ -73,6 +73,18 @@ const Icons = {
       <path d="m5 12 4.5 4.5L19 7" />
     </svg>
   ),
+  Calendar: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  ),
+  Users: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5">
+      <circle cx="9" cy="7" r="4" />
+      <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.87" />
+    </svg>
+  ),
 }
 
 function TopNav({ user }) {
@@ -180,6 +192,131 @@ function formatLocation(item) {
   return cityState || item.address || 'Location not specified'
 }
 
+function fmtDate(dateStr) {
+  if (!dateStr) return null
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d)) return null
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  } catch { return null }
+}
+
+function isDeadlinePassed(dateStr) {
+  if (!dateStr) return false
+  return new Date(dateStr) < new Date()
+}
+
+/* ── Timeline dot colours by type ── */
+const TYPE_DOT = {
+  jobs: { dot: '#4f46e5', bg: '#eef2ff', label: 'Job' },
+  requirements: { dot: '#0197B2', bg: '#e7f7fb', label: 'Requirement' },
+  events: { dot: '#d97706', bg: '#fef3c7', label: 'Event' },
+  stories: { dot: '#5BCB2B', bg: '#eaf6ef', label: 'Story' },
+  products: { dot: '#e11d48', bg: '#fff1f2', label: 'Product' },
+}
+
+function TimelineItem({ item, index, isLast }) {
+  const typeStyle = TYPE_DOT[item.type] || TYPE_DOT.stories
+  const openFmt = fmtDate(item.openDate)
+  const closeFmt = fmtDate(item.closeDate)
+  const expired = isDeadlinePassed(item.closeDate)
+  const hasDateMeta = openFmt || closeFmt || item.applied != null
+
+  return (
+    <div className="flex gap-4">
+      {/* Left: dot + line */}
+      <div className="flex flex-col items-center">
+        <div
+          className="z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-white shadow"
+          style={{ backgroundColor: typeStyle.dot }}
+        />
+        {!isLast && <div className="mt-1 w-0.5 flex-1" style={{ backgroundColor: '#e2e8f0' }} />}
+      </div>
+
+      {/* Right: card */}
+      <article
+        className="mb-4 min-w-0 flex-1 rounded-2xl border bg-white p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+        style={{ borderColor: COLORS.blueBorder }}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+              style={{ backgroundColor: typeStyle.bg, color: typeStyle.dot }}
+            >
+              {typeStyle.label}
+            </span>
+            {item.verified && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
+                <Icons.Verified /> Verified
+              </span>
+            )}
+          </div>
+
+          {/* Open/Closed badge for jobs & requirements */}
+          {(item.type === 'jobs' || item.type === 'requirements') && item.closeDate && (
+            <span
+              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+              style={{
+                backgroundColor: expired ? '#fee2e2' : '#dcfce7',
+                color: expired ? '#dc2626' : '#16a34a',
+              }}
+            >
+              {expired ? 'Closed' : 'Open'}
+            </span>
+          )}
+        </div>
+
+        <h3 className="mt-2 text-base font-extrabold text-slate-900">{item.title}</h3>
+        <p className="mt-0.5 text-xs font-semibold text-slate-500">{item.meta}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
+
+        {/* Date + applied strip for jobs & requirements */}
+        {hasDateMeta && (item.type === 'jobs' || item.type === 'requirements') && (
+          <div className="mt-3 flex flex-wrap items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+            {openFmt && (
+              <div className="flex items-center gap-1.5">
+                <Icons.Calendar />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Open Date</span>
+                  <span className="text-xs font-bold text-slate-700">{openFmt}</span>
+                </div>
+              </div>
+            )}
+            {closeFmt && (
+              <div className="flex items-center gap-1.5">
+                <Icons.Calendar />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Last Date</span>
+                  <span className={`text-xs font-bold ${expired ? 'text-rose-500' : 'text-slate-700'}`}>{closeFmt}</span>
+                </div>
+              </div>
+            )}
+            {item.applied != null && (
+              <div className="flex items-center gap-1.5">
+                <Icons.Users />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Applied</span>
+                  <span className="text-xs font-bold text-slate-700">{item.applied} nos</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center gap-2">
+          <a href={item.href} className="rounded-lg px-3.5 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: COLORS.blue }}>
+            {item.cta}
+          </a>
+          <a href="/search" className="rounded-lg border px-3.5 py-1.5 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
+            Similar Results
+          </a>
+        </div>
+      </article>
+    </div>
+  )
+}
+
 export default function Home() {
   const { user } = useAuth()
   const [query, setQuery] = useState('')
@@ -235,6 +372,9 @@ export default function Home() {
               cta: 'View NGO Profile',
               href: `/ngos/${ngo.id}`,
               accent: COLORS.green,
+              openDate: need.openDate || need.createdAt || null,
+              closeDate: need.closeDate || need.deadline || null,
+              applied: need.applicantCount ?? null,
             }))
         ),
         ...schoolNeedsGroups.flatMap(({ school, items }) =>
@@ -250,6 +390,9 @@ export default function Home() {
               cta: 'View School Profile',
               href: `/schools/${school.id}`,
               accent: COLORS.blue,
+              openDate: need.openDate || need.createdAt || null,
+              closeDate: need.closeDate || need.deadline || null,
+              applied: need.applicantCount ?? null,
             }))
         ),
       ]
@@ -267,6 +410,9 @@ export default function Home() {
             cta: 'View NGO Profile',
             href: `/ngos/${ngo.id}`,
             accent: COLORS.green,
+            openDate: job.openDate || job.createdAt || null,
+            closeDate: job.closeDate || job.deadline || null,
+            applied: job.applicantCount ?? null,
           }))
       )
 
@@ -325,6 +471,8 @@ export default function Home() {
         cta: 'View Event',
         href: '/search',
         accent: COLORS.blue,
+        openDate: event.startDate || null,
+        closeDate: event.endDate || null,
       }))
 
       setDirectory({ schools, ngos, requirements, jobs, products, events: publicEvents, stories })
@@ -400,7 +548,8 @@ export default function Home() {
           <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
         </section>
 
-        <section className="mt-4 space-y-3">
+        {/* ── Timeline feed ── */}
+        <section className="mt-4">
           {loading && (
             <div className="space-y-3">
               {[1, 2, 3].map((item) => (
@@ -411,39 +560,18 @@ export default function Home() {
 
           {!loading && filteredFeedItems.length === 0 && <EmptyFeed activeTab={activeTab} />}
 
-          {!loading && filteredFeedItems.map((item, index) => (
-            <article
-              key={item.id}
-              className="rounded-2xl border bg-white p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-              style={{ borderColor: COLORS.blueBorder, animation: `slide-up 0.25s ease-out ${index * 0.03}s both` }}
-            >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <span className="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase" style={{ backgroundColor: COLORS.greenSoft, color: item.accent }}>
-                    {item.type === 'stories' ? 'Story' : item.type.slice(0, -1)}
-                  </span>
-                  <h3 className="mt-2 text-lg font-extrabold text-slate-900">{item.title}</h3>
-                  <p className="mt-1 text-xs font-semibold text-slate-500">{item.meta}</p>
-                </div>
-                {item.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
-                    <Icons.Verified /> Verified
-                  </span>
-                )}
-              </div>
-
-              <p className="text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
-
-              <div className="mt-4 flex items-center gap-2">
-                <a href={item.href} className="rounded-lg px-3.5 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.blue }}>
-                  {item.cta}
-                </a>
-                <a href="/search" className="rounded-lg border px-3.5 py-2 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
-                  Similar Results
-                </a>
-              </div>
-            </article>
-          ))}
+          {!loading && filteredFeedItems.length > 0 && (
+            <div className="pl-1">
+              {filteredFeedItems.map((item, index) => (
+                <TimelineItem
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isLast={index === filteredFeedItems.length - 1}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </div>

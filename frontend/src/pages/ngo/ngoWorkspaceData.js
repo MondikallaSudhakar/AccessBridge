@@ -1,10 +1,18 @@
 export const NGO_WORKSPACE_NAV = [
   { to: '/ngo', label: 'Home' },
-  { to: '/ngo/requirements', label: 'Requirements' },
+  {
+    to: '/ngo/requirements',
+    label: 'Requirements',
+    meta: { openDate: '2025-04-01', closeDate: '2025-05-15', applied: 7 },
+  },
   { to: '/ngo/support-requests', label: 'Support Requests' },
   { to: '/ngo/volunteers', label: 'Volunteers' },
   { to: '/ngo/campaigns', label: 'Campaigns' },
-  { to: '/ngo/jobs', label: 'Jobs' },
+  {
+    to: '/ngo/jobs',
+    label: 'Jobs',
+    meta: { openDate: '2025-04-10', closeDate: '2025-05-31', applied: 23 },
+  },
   { to: '/ngo/products', label: 'Products' },
   { to: '/ngo/services', label: 'Services' },
   { to: '/ngo/achievements', label: 'Achievements' },

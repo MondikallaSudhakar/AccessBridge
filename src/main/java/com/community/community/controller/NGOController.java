@@ -9,6 +9,7 @@ import com.community.community.model.NGOServiceItem;
 import com.community.community.model.NGOSupportRequest;
 import com.community.community.model.NGOVolunteerProfile;
 import com.community.community.model.Need;
+import com.community.community.model.JobApplication;
 import com.community.community.repository.NGOAchievementRepository;
 import com.community.community.repository.NGOCampaignRepository;
 import com.community.community.repository.NGOJobRepository;
@@ -17,6 +18,7 @@ import com.community.community.repository.NGOServiceItemRepository;
 import com.community.community.repository.NGOSupportRequestRepository;
 import com.community.community.repository.NGOVolunteerProfileRepository;
 import com.community.community.repository.NeedRepository;
+import com.community.community.repository.JobApplicationRepository;
 import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,7 @@ public class NGOController {
     private final NGOSupportRequestRepository ngoSupportRequestRepository;
     private final NGOVolunteerProfileRepository ngoVolunteerProfileRepository;
     private final NGOCampaignRepository ngoCampaignRepository;
+    private final JobApplicationRepository jobApplicationRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -466,5 +469,58 @@ public class NGOController {
     public ResponseEntity<Void> deleteNGOAchievement(@PathVariable Long achievementId) {
         ngoAchievementRepository.deleteById(achievementId);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── Job Applications (in-platform apply) ────────────────────────────────
+
+    @PostMapping("/jobs/{jobId}/apply")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<JobApplication> applyToJob(
+            @PathVariable Long jobId,
+            @RequestBody JobApplication req) {
+        NGOJob job = ngoJobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+        if (!"OPEN".equalsIgnoreCase(job.getStatus())) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (req.getApplicantEmail() != null &&
+                jobApplicationRepository.existsByJobIdAndApplicantEmail(jobId, req.getApplicantEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        JobApplication application = new JobApplication();
+        application.setJob(job);
+        application.setApplicantName(req.getApplicantName());
+        application.setApplicantEmail(req.getApplicantEmail());
+        application.setApplicantPhone(req.getApplicantPhone());
+        application.setCoverLetter(req.getCoverLetter());
+        application.setResumeText(req.getResumeText());
+        application.setAudioNoteFileName(req.getAudioNoteFileName());
+        application.setDisabilityType(req.getDisabilityType());
+        application.setStatus("PENDING");
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobApplicationRepository.save(application));
+    }
+
+    @GetMapping("/jobs/{jobId}/applications")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<JobApplication>> getJobApplications(@PathVariable Long jobId) {
+        return ResponseEntity.ok(jobApplicationRepository.findByJobIdOrderByAppliedAtDesc(jobId));
+    }
+
+    @PatchMapping("/jobs/applications/{applicationId}/status")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<JobApplication> updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestParam String status,
+            @RequestParam(required = false) String reviewNote) {
+        JobApplication app = jobApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        String normalized = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+        if (!normalized.equals("PENDING") && !normalized.equals("SHORTLISTED")
+                && !normalized.equals("REJECTED") && !normalized.equals("HIRED")) {
+            throw new RuntimeException("Invalid status. Allowed: PENDING, SHORTLISTED, REJECTED, HIRED");
+        }
+        app.setStatus(normalized);
+        app.setNgoReviewNote(reviewNote);
+        return ResponseEntity.ok(jobApplicationRepository.save(app));
     }
 }
