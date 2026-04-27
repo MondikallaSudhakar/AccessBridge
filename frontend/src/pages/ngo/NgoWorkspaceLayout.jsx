@@ -28,6 +28,7 @@ const NAV_ICON = {
   'Support Requests': 'chat',
   Volunteers: 'users',
   Campaigns: 'calendar',
+  Events: 'calendar',
   Jobs: 'briefcase',
   Products: 'box',
   Services: 'heart',

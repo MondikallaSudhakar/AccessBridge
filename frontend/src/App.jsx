@@ -86,6 +86,7 @@ function App() {
           <Route path="support-requests" element={<NgoWorkspaceFeaturePage type="support-requests" />} />
           <Route path="volunteers" element={<NgoWorkspaceFeaturePage type="volunteers" />} />
           <Route path="campaigns" element={<NgoWorkspaceFeaturePage type="campaigns" />} />
+          <Route path="events" element={<NgoWorkspaceFeaturePage type="events" />} />
           <Route path="jobs" element={<NgoWorkspaceFeaturePage type="jobs" />} />
           <Route path="products" element={<NgoWorkspaceFeaturePage type="products" />} />
           <Route path="services" element={<NgoWorkspaceFeaturePage type="services" />} />

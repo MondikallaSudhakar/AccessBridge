@@ -10,6 +10,8 @@ import com.community.community.model.NGOSupportRequest;
 import com.community.community.model.NGOVolunteerProfile;
 import com.community.community.model.Need;
 import com.community.community.model.JobApplication;
+import com.community.community.model.Event;
+import com.community.community.model.EventApplication;
 import com.community.community.repository.NGOAchievementRepository;
 import com.community.community.repository.NGOCampaignRepository;
 import com.community.community.repository.NGOJobRepository;
@@ -19,6 +21,8 @@ import com.community.community.repository.NGOSupportRequestRepository;
 import com.community.community.repository.NGOVolunteerProfileRepository;
 import com.community.community.repository.NeedRepository;
 import com.community.community.repository.JobApplicationRepository;
+import com.community.community.repository.EventRepository;
+import com.community.community.repository.EventApplicationRepository;
 import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +33,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ngos")
@@ -45,6 +51,8 @@ public class NGOController {
     private final NGOVolunteerProfileRepository ngoVolunteerProfileRepository;
     private final NGOCampaignRepository ngoCampaignRepository;
     private final JobApplicationRepository jobApplicationRepository;
+    private final EventRepository eventRepository;
+    private final EventApplicationRepository eventApplicationRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -522,5 +530,153 @@ public class NGOController {
         app.setStatus(normalized);
         app.setNgoReviewNote(reviewNote);
         return ResponseEntity.ok(jobApplicationRepository.save(app));
+    }
+
+    // ── Event Management Endpoints ───────────────────────────────────────────
+
+    @GetMapping("/{id}/events")
+    public ResponseEntity<List<Event>> getNGOEvents(@PathVariable Long id) {
+        Optional<NGO> ngo = ngoService.getNGOById(id) != null ? Optional.of(ngoService.getNGOById(id)) : Optional.empty();
+        if (ngo.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Event> events = eventRepository.findByNgo(ngo.get())
+                .stream()
+                .sorted((e1, e2) -> e2.getEventDate().compareTo(e1.getEventDate()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(events);
+    }
+
+    @PostMapping("/{id}/events")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Event> createNGOEvent(@PathVariable Long id, @RequestBody Event event) {
+        NGO ngo = ngoService.getNGOById(id);
+        if (ngo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        event.setNgo(ngo);
+        event.setStatus("UPCOMING");
+        event.setRegisteredParticipants(0);
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventRepository.save(event));
+    }
+
+    @GetMapping("/{ngoId}/events/{eventId}")
+    public ResponseEntity<Event> getNGOEvent(@PathVariable Long ngoId, @PathVariable Long eventId) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty() || event.get().getNgo() == null || !event.get().getNgo().getId().equals(ngoId)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(event.get());
+    }
+
+    @PutMapping("/{ngoId}/events/{eventId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Event> updateNGOEvent(
+            @PathVariable Long ngoId,
+            @PathVariable Long eventId,
+            @RequestBody Event updatedEvent) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty() || event.get().getNgo() == null || !event.get().getNgo().getId().equals(ngoId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Event e = event.get();
+        if (updatedEvent.getTitle() != null) e.setTitle(updatedEvent.getTitle());
+        if (updatedEvent.getDescription() != null) e.setDescription(updatedEvent.getDescription());
+        if (updatedEvent.getEventDate() != null) e.setEventDate(updatedEvent.getEventDate());
+        if (updatedEvent.getLocation() != null) e.setLocation(updatedEvent.getLocation());
+        if (updatedEvent.getCity() != null) e.setCity(updatedEvent.getCity());
+        if (updatedEvent.getState() != null) e.setState(updatedEvent.getState());
+        if (updatedEvent.getEventType() != null) e.setEventType(updatedEvent.getEventType());
+        if (updatedEvent.getMaxParticipants() != null) e.setMaxParticipants(updatedEvent.getMaxParticipants());
+        if (updatedEvent.getStatus() != null) e.setStatus(updatedEvent.getStatus());
+        if (updatedEvent.getImageUrl() != null) e.setImageUrl(updatedEvent.getImageUrl());
+
+        return ResponseEntity.ok(eventRepository.save(e));
+    }
+
+    @DeleteMapping("/{ngoId}/events/{eventId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> deleteNGOEvent(@PathVariable Long ngoId, @PathVariable Long eventId) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty() || event.get().getNgo() == null || !event.get().getNgo().getId().equals(ngoId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        eventApplicationRepository.deleteByEvent(event.get());
+        eventRepository.deleteById(eventId);
+        return ResponseEntity.ok("Event deleted successfully");
+    }
+
+    @GetMapping("/{ngoId}/events/{eventId}/applications")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getNGOEventApplications(
+            @PathVariable Long ngoId,
+            @PathVariable Long eventId,
+            @RequestParam(required = false) String status) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty() || event.get().getNgo() == null || !event.get().getNgo().getId().equals(ngoId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<EventApplication> applications;
+        if (status != null && !status.isBlank()) {
+            applications = eventApplicationRepository.findByEventAndStatus(event.get(), status);
+        } else {
+            applications = eventApplicationRepository.findByEvent(event.get());
+        }
+
+        return ResponseEntity.ok(applications);
+    }
+
+    @PatchMapping("/{ngoId}/events/{eventId}/applications/{appId}/approve")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> approveEventApplication(
+            @PathVariable Long ngoId,
+            @PathVariable Long eventId,
+            @PathVariable Long appId,
+            @RequestBody(required = false) java.util.Map<String, String> request) {
+        Optional<EventApplication> application = eventApplicationRepository.findById(appId);
+        if (application.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        application.get().setStatus("APPROVED");
+        if (request != null && request.containsKey("notes")) {
+            application.get().setApprovalNotes(request.get("notes"));
+        }
+        application.get().setUpdatedAt(java.time.LocalDateTime.now());
+
+        return ResponseEntity.ok(eventApplicationRepository.save(application.get()));
+    }
+
+    @PatchMapping("/{ngoId}/events/{eventId}/applications/{appId}/reject")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> rejectEventApplication(
+            @PathVariable Long ngoId,
+            @PathVariable Long eventId,
+            @PathVariable Long appId,
+            @RequestBody(required = false) java.util.Map<String, String> request) {
+        Optional<EventApplication> application = eventApplicationRepository.findById(appId);
+        if (application.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        application.get().setStatus("REJECTED");
+        if (request != null && request.containsKey("notes")) {
+            application.get().setApprovalNotes(request.get("notes"));
+        }
+        application.get().setUpdatedAt(java.time.LocalDateTime.now());
+
+        EventApplication saved = eventApplicationRepository.save(application.get());
+
+        // Decrement registered participants
+        Event event = application.get().getEvent();
+        if (event.getRegisteredParticipants() != null && event.getRegisteredParticipants() > 0) {
+            event.setRegisteredParticipants(event.getRegisteredParticipants() - 1);
+            eventRepository.save(event);
+        }
+
+        return ResponseEntity.ok(saved);
     }
 }

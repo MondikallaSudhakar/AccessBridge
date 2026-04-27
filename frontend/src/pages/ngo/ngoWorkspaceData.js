@@ -8,6 +8,7 @@ export const NGO_WORKSPACE_NAV = [
   { to: '/ngo/support-requests', label: 'Support Requests' },
   { to: '/ngo/volunteers', label: 'Volunteers' },
   { to: '/ngo/campaigns', label: 'Campaigns' },
+  { to: '/ngo/events', label: 'Events' },
   {
     to: '/ngo/jobs',
     label: 'Jobs',
@@ -54,6 +55,11 @@ export const NGO_FEATURES = {
     title: 'Campaigns',
     subtitle: 'Create and monitor awareness and impact campaigns.',
     tab: 'campaigns',
+  },
+  events: {
+    title: 'Events',
+    subtitle: 'Create and manage events for specially-abled persons and the community.',
+    tab: 'events',
   },
   jobs: {
     title: 'Jobs',

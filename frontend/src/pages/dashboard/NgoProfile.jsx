@@ -15,7 +15,9 @@ const SIDEBAR_W = 260
 /* ─────────────────────────── blank forms ────────────────────────────── */
 const blankNeed        = { title:'', description:'', category:'SUPPORT', targetAmount:'', urgent:false }
 const blankJob         = { title:'', description:'', employmentType:'FULL_TIME', location:'', salaryRange:'', lastDateToApply:'' }
+const blankEvent       = { title:'', description:'', eventDate:'', location:'', city:'', state:'', eventType:'WORKSHOP', maxParticipants:'' }
 const EMP_LABELS = { FULL_TIME:'Full-time', PART_TIME:'Part-time', CONTRACT:'Contract', INTERN:'Internship', VOLUNTEER:'Volunteer' }
+const EVENT_TYPES = ['WORKSHOP', 'SEMINAR', 'FUNDRAISER', 'AWARENESS', 'COMMUNITY']
 const blankProduct     = { name:'', description:'', category:'', price:'', stockQuantity:'', available:true }
 const blankService     = { title:'', description:'', category:'', contactInfo:'', availability:'', status:'ACTIVE' }
 const blankAchievement = { title:'', description:'', category:'', achievementDate:'', imageUrl:'' }
@@ -96,6 +98,7 @@ const TABS = [
   { id:'supportRequests', label:'Support Requests', icon:'chat' },
   { id:'volunteers',    label:'Volunteers',   icon:'users'     },
   { id:'campaigns',     label:'Campaigns',    icon:'calendar'  },
+  { id:'events',        label:'Events',       icon:'calendar'  },
   { id:'jobs',          label:'Jobs',         icon:'briefcase' },
   { id:'products',      label:'Products',     icon:'box'       },
   { id:'services',      label:'Services',     icon:'users'     },
@@ -610,6 +613,8 @@ export default function NgoProfile() {
 
   const [needs, setNeeds]         = useState([])
   const [jobs, setJobs]           = useState([])
+  const [events, setEvents]       = useState([])
+  const [eventApps, setEventApps] = useState({ event:null, apps:[], loading:false })
   const [products, setProducts]   = useState([])
   const [services, setServices]   = useState([])
   const [achievements, setAchievements] = useState([])
@@ -624,6 +629,8 @@ export default function NgoProfile() {
 
   const [needForm, setNeedForm]               = useState(blankNeed)
   const [jobForm, setJobForm]                 = useState(blankJob)
+  const [eventForm, setEventForm]             = useState(blankEvent)
+  const [showEventForm, setShowEventForm]     = useState(false)
   const [productForm, setProductForm]         = useState(blankProduct)
   const [serviceForm, setServiceForm]         = useState(blankService)
   const [achievementForm, setAchievementForm] = useState(blankAchievement)
@@ -732,7 +739,7 @@ export default function NgoProfile() {
   }
 
   const loadData = async id => {
-    const [n,j,p,s,a,sr,v,c] = await Promise.all([
+    const [n,j,p,s,a,sr,v,c,ev] = await Promise.all([
       api.get(`/ngos/${id}/needs`).catch(()=>[]),
       api.get(`/ngos/${id}/jobs`).catch(()=>[]),
       api.get(`/ngos/${id}/products`).catch(()=>[]),
@@ -741,6 +748,7 @@ export default function NgoProfile() {
       api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
       api.get(`/ngos/${id}/volunteers`).catch(()=>[]),
       api.get(`/ngos/${id}/campaigns`).catch(()=>[]),
+      fetch(`${BASE}/events/ngo/${id}`,{headers:{Authorization:`Bearer ${localStorage.getItem('token')}`}}).then(r=>r.ok?r.json():[]).catch(()=>[]),
     ])
     setNeeds(Array.isArray(n)?n:[]); setJobs(Array.isArray(j)?j:[])
     setProducts(Array.isArray(p)?p:[]); setServices(Array.isArray(s)?s:[])
@@ -748,6 +756,44 @@ export default function NgoProfile() {
     setSupportRequests(Array.isArray(sr)?sr:[])
     setVolunteers(Array.isArray(v)?v:[])
     setCampaigns(Array.isArray(c)?c:[])
+    setEvents(Array.isArray(ev)?ev:[])
+  }
+
+  const createEvent = async e => {
+    e.preventDefault(); if(!ngo?.id)return
+    try {
+      const payload = {
+        ...eventForm,
+        maxParticipants: eventForm.maxParticipants ? Number(eventForm.maxParticipants) : 0,
+        eventDate: eventForm.eventDate ? new Date(eventForm.eventDate).toISOString() : null,
+      }
+      await fetch(`${BASE}/events/ngo/${ngo.id}/create`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},
+        body:JSON.stringify(payload),
+      })
+      setEventForm(blankEvent); setShowEventForm(false); loadData(ngo.id); flash('Event created!')
+    } catch { setError('Failed to create event') }
+  }
+
+  const loadEventApps = async ev => {
+    setEventApps({ event:ev, apps:[], loading:true })
+    try {
+      const r = await fetch(`${BASE}/events/${ev.id}/applications`, {
+        headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}
+      })
+      const d = r.ok ? await r.json() : []
+      setEventApps({ event:ev, apps:Array.isArray(d)?d:[], loading:false })
+    } catch { setEventApps(p=>({...p,loading:false})) }
+  }
+
+  const updateEventAppStatus = async (appId, action) => {
+    if (!eventApps.event) return
+    await fetch(`${BASE}/events/${eventApps.event.id}/applications/${appId}/${action}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},
+    })
+    loadEventApps(eventApps.event)
   }
 
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
@@ -836,6 +882,7 @@ export default function NgoProfile() {
     supportRequests:supportRequests.filter(r => r.status === 'PENDING').length,
     volunteers:volunteers.length,
     campaigns:campaigns.length,
+    events:events.length,
     jobs:jobs.length,
     products:products.length,
     services:services.length,
@@ -1002,6 +1049,7 @@ export default function NgoProfile() {
               tab==='supportRequests'? 'Review and respond to user help requests' :
               tab==='volunteers'     ? 'Track volunteer profiles and readiness' :
               tab==='campaigns'      ? 'Plan and track campaign outcomes' :
+              tab==='events'         ? 'Create and manage community events' :
               tab==='jobs'           ? 'Manage job listings' :
               tab==='products'       ? 'List products for the community' :
               tab==='services'       ? 'Services visible on public profile' :
@@ -1710,6 +1758,176 @@ export default function NgoProfile() {
               </div>
             </div>
           )}
+
+          {tab === 'events' && (() => {
+            const evStatusColor = s => ({
+              UPCOMING:  { background:'#dbeafe', color:'#1d4ed8' },
+              ONGOING:   { background:'#d1fae5', color:'#065f46' },
+              COMPLETED: { background:'#f1f5f9', color:'#475569' },
+              CANCELLED: { background:'#fee2e2', color:'#dc2626' },
+            })[s] || { background:'#f1f5f9', color:'#64748b' }
+
+            const appStatusColor = s => ({
+              PENDING:  { background:'#fef9c3', color:'#854d0e' },
+              APPROVED: { background:'#d1fae5', color:'#065f46' },
+              REJECTED: { background:'#fee2e2', color:'#dc2626' },
+            })[s] || { background:'#f1f5f9', color:'#64748b' }
+
+            const fmtDT = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'
+
+            if (eventApps.event) {
+              return (
+                <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:16}}>
+                  <button
+                    onClick={() => setEventApps({ event:null, apps:[], loading:false })}
+                    style={{display:'inline-flex',alignItems:'center',gap:6,background:'none',border:'none',cursor:'pointer',color:TEAL,fontWeight:700,fontSize:13,padding:0,width:'fit-content'}}
+                  >
+                    ← Back to Events
+                  </button>
+                  <Panel>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
+                      <span style={{fontSize:10,fontWeight:700,padding:'3px 9px',borderRadius:20,...evStatusColor(eventApps.event.status)}}>{eventApps.event.status}</span>
+                      {eventApps.event.eventType && <span style={{fontSize:10,fontWeight:700,padding:'3px 9px',borderRadius:20,background:'#f1f5f9',color:'#475569'}}>{eventApps.event.eventType}</span>}
+                    </div>
+                    <p style={{margin:'0 0 4px',fontSize:17,fontWeight:800,color:NAVY}}>{eventApps.event.title}</p>
+                    <p style={{margin:0,fontSize:12,color:'#64748b'}}>{eventApps.event.location}{eventApps.event.city?` • ${eventApps.event.city}`:''} | {fmtDT(eventApps.event.eventDate)}</p>
+                    <p style={{margin:'4px 0 0',fontSize:12,color:'#94a3b8'}}>Registered: {eventApps.event.registeredParticipants||0} / {eventApps.event.maxParticipants||'∞'}</p>
+                  </Panel>
+                  <Panel>
+                    <PanelHeader title="Applicants" subtitle={eventApps.loading?'Loading…':`${eventApps.apps.length} application${eventApps.apps.length!==1?'s':''}`}/>
+                    {eventApps.loading && (
+                      <div style={{textAlign:'center',padding:'32px 0'}}>
+                        <div style={{width:32,height:32,borderRadius:'50%',border:`3px solid ${G}30`,borderTopColor:G,animation:'spin .8s linear infinite',margin:'0 auto 8px'}}/>
+                        <p style={{color:'#64748b',fontSize:13,margin:0}}>Loading…</p>
+                      </div>
+                    )}
+                    {!eventApps.loading && eventApps.apps.length===0 && (
+                      <EmptyPane iconName="users" title="No applications yet" body="Applications from participants will appear here."/>
+                    )}
+                    {!eventApps.loading && eventApps.apps.map(app => (
+                      <div key={app.id} style={{borderRadius:radius.lg,border:'1.5px solid #e9ecef',background:'#fafbfc',padding:'14px 18px',marginBottom:10}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12,flexWrap:'wrap'}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:4}}>
+                              <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{app.applicantName}</p>
+                              <span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:20,...appStatusColor(app.status)}}>{app.status}</span>
+                            </div>
+                            <p style={{margin:'0 0 4px',fontSize:12,color:'#64748b'}}>{app.applicantEmail}</p>
+                            {app.applicantNotes && <p style={{margin:'4px 0 0',fontSize:13,color:'#374151',fontStyle:'italic'}}>"{app.applicantNotes}"</p>}
+                          </div>
+                          {app.status==='PENDING' && (
+                            <div style={{display:'flex',gap:6,flexShrink:0}}>
+                              <GhostBtn onClick={()=>updateEventAppStatus(app.id,'approve')} color={G} iconName="check">Approve</GhostBtn>
+                              <GhostBtn onClick={()=>updateEventAppStatus(app.id,'reject')} color="#ef4444" iconName="x">Reject</GhostBtn>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </Panel>
+                </div>
+              )
+            }
+
+            return (
+              <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:20}}>
+                <Panel>
+                  <PanelHeader
+                    title="My Events"
+                    subtitle={events.length===0?'No events created yet':`${events.filter(e=>e.status==='UPCOMING').length} upcoming · ${events.length} total`}
+                    action={
+                      <PrimaryBtn iconName={showEventForm?'x':'plus'} onClick={()=>setShowEventForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                        {showEventForm?'Cancel':'New Event'}
+                      </PrimaryBtn>
+                    }
+                  />
+
+                  {showEventForm && (
+                    <form onSubmit={createEvent} style={{display:'flex',flexDirection:'column',gap:16,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                      <div>
+                        <FieldLabel required>Event Title</FieldLabel>
+                        <TextInput required value={eventForm.title} onChange={e=>setEventForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Inclusive Community Awareness Day"/>
+                      </div>
+                      <div className="ngo-form-2col" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+                        <div>
+                          <FieldLabel>Event Type</FieldLabel>
+                          <select value={eventForm.eventType} onChange={e=>setEventForm(p=>({...p,eventType:e.target.value}))}
+                            style={{width:'100%',boxSizing:'border-box',border:'1.5px solid #e2e8f0',borderRadius:radius.md,padding:'9px 13px',fontSize:14,color:NAVY,background:'#fff',outline:'none',fontFamily:"'Inter',sans-serif"}}>
+                            {EVENT_TYPES.map(t=><option key={t} value={t}>{t.charAt(0)+t.slice(1).toLowerCase()}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <FieldLabel required>Date &amp; Time</FieldLabel>
+                          <TextInput required type="datetime-local" value={eventForm.eventDate} onChange={e=>setEventForm(p=>({...p,eventDate:e.target.value}))}/>
+                        </div>
+                        <div>
+                          <FieldLabel required>Location / Venue</FieldLabel>
+                          <TextInput required value={eventForm.location} onChange={e=>setEventForm(p=>({...p,location:e.target.value}))} placeholder="e.g. Town Hall, Mumbai"/>
+                        </div>
+                        <div>
+                          <FieldLabel>City</FieldLabel>
+                          <TextInput value={eventForm.city} onChange={e=>setEventForm(p=>({...p,city:e.target.value}))} placeholder="e.g. Mumbai"/>
+                        </div>
+                        <div>
+                          <FieldLabel>State</FieldLabel>
+                          <TextInput value={eventForm.state} onChange={e=>setEventForm(p=>({...p,state:e.target.value}))} placeholder="e.g. Maharashtra"/>
+                        </div>
+                        <div>
+                          <FieldLabel>Max Participants</FieldLabel>
+                          <TextInput type="number" min="1" value={eventForm.maxParticipants} onChange={e=>setEventForm(p=>({...p,maxParticipants:e.target.value}))} placeholder="Leave blank for unlimited"/>
+                        </div>
+                      </div>
+                      <div>
+                        <FieldLabel required>Description</FieldLabel>
+                        <TextArea required rows={4} value={eventForm.description} onChange={e=>setEventForm(p=>({...p,description:e.target.value}))} placeholder="Describe the event, agenda, and who should attend…"/>
+                      </div>
+                      <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                        <PrimaryBtn type="submit" iconName="plus">Create Event</PrimaryBtn>
+                        <GhostBtn type="button" onClick={()=>setShowEventForm(false)} color="#64748b">Cancel</GhostBtn>
+                      </div>
+                    </form>
+                  )}
+
+                  {events.length===0 && !showEventForm && (
+                    <EmptyPane iconName="calendar" title="No events yet" body="Click 'New Event' to host your first community event."/>
+                  )}
+
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {events.map(ev=>{
+                      const sc = evStatusColor(ev.status)
+                      return (
+                        <div key={ev.id}
+                          style={{borderRadius:radius.lg,border:'1.5px solid #e9ecef',background:'#fafbfc',padding:'18px 20px',display:'flex',gap:16,alignItems:'flex-start',transition:'border-color .18s'}}
+                          onMouseEnter={e=>e.currentTarget.style.borderColor=`${TEAL}60`}
+                          onMouseLeave={e=>e.currentTarget.style.borderColor='#e9ecef'}
+                        >
+                          <div style={{width:42,height:42,borderRadius:10,background:`${TEAL}12`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            <Ic n="calendar" s={20} c={TEAL}/>
+                          </div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:5}}>
+                              <span style={{fontSize:10,fontWeight:700,padding:'3px 9px',borderRadius:20,...sc}}>{ev.status}</span>
+                              {ev.eventType && <span style={{fontSize:10,fontWeight:700,padding:'3px 9px',borderRadius:20,background:'#f1f5f9',color:'#475569'}}>{ev.eventType}</span>}
+                            </div>
+                            <p style={{margin:'0 0 4px',fontSize:15,fontWeight:700,color:NAVY,lineHeight:1.3}}>{ev.title}</p>
+                            <div style={{display:'flex',flexWrap:'wrap',gap:12,marginBottom:6}}>
+                              {ev.location && <MetaItem iconName="location">{ev.location}{ev.city?` • ${ev.city}`:''}</MetaItem>}
+                              <MetaItem iconName="calendar">{fmtDT(ev.eventDate)}</MetaItem>
+                              <MetaItem iconName="users">Registered: {ev.registeredParticipants||0} / {ev.maxParticipants||'∞'}</MetaItem>
+                            </div>
+                            <p style={{margin:0,fontSize:13,color:'#64748b',lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{ev.description}</p>
+                          </div>
+                          <div style={{display:'flex',flexDirection:'column',gap:6,flexShrink:0}}>
+                            <GhostBtn onClick={()=>loadEventApps(ev)} color={B} iconName="users">Applicants</GhostBtn>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Panel>
+              </div>
+            )
+          })()}
 
         </div>{/* /scrollable */}
       </main>

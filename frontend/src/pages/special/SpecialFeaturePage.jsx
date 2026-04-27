@@ -295,39 +295,112 @@ function EventsTab() {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState(null)
   const [regMsg, setRegMsg] = useState(null)
-  const [regForm, setRegForm] = useState({ name: '', email: '' })
+  const [regForm, setRegForm] = useState({ notes: '' })
+  const [myApplications, setMyApplications] = useState({})
 
-  useEffect(() => { get(`${BASE}/events/public`).then(d => setEvents(Array.isArray(d) ? d : [])).finally(() => setLoading(false)) }, [])
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const publicEvents = await get(`${BASE}/events/public`)
+        const safeEvents = Array.isArray(publicEvents) ? publicEvents : []
+        
+        setEvents(safeEvents)
+
+        // Load user's application status for each event
+        const user = localStorage.getItem('user')
+        if (user) {
+          const apps = {}
+          for (const event of safeEvents) {
+            try {
+              const appStatus = await get(`${BASE}/events/${event.id}/my-application`)
+              if (appStatus && appStatus.id) {
+                apps[event.id] = appStatus
+              }
+            } catch {}
+          }
+          setMyApplications(apps)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadEvents()
+  }, [])
 
   const handleRegister = async e => {
     e.preventDefault()
+    if (!registering) return
+    
     setRegMsg(null)
+    const authToken = localStorage.getItem('token')
+    if (!authToken) {
+      setRegMsg({ type: 'err', text: 'Please login to apply for events.' })
+      return
+    }
+
     try {
-      const r = await fetch(`${BASE}/events/${registering.id}/register`, {
-        method: 'POST', headers: authHdr(), body: JSON.stringify(regForm)
+      const r = await fetch(`${BASE}/events/${registering.id}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify(regForm.notes ? { notes: regForm.notes } : {})
       })
-      setRegMsg(r.ok ? { type: 'ok', text: 'Registered successfully!' } : { type: 'err', text: 'Registration failed. Try again.' })
-      if (r.ok) setTimeout(() => setRegistering(null), 2000)
-    } catch { setRegMsg({ type: 'err', text: 'Network error.' }) }
+
+      if (r.ok) {
+        const appData = await r.json()
+        setMyApplications(prev => ({ ...prev, [registering.id]: appData }))
+        setRegMsg({ type: 'ok', text: 'Applied successfully!' })
+        setTimeout(() => {
+          setRegistering(null)
+          setRegMsg(null)
+          setRegForm({ notes: '' })
+        }, 2000)
+      } else {
+        const errorText = await r.text()
+        try {
+          const errorJson = JSON.parse(errorText)
+          setRegMsg({ type: 'err', text: errorJson.message || 'Application failed.' })
+        } catch {
+          setRegMsg({ type: 'err', text: errorText || 'Application failed.' })
+        }
+      }
+    } catch {
+      setRegMsg({ type: 'err', text: 'Network error.' })
+    }
   }
 
   return (
     <section>
-      <SectionHeader title="Upcoming Events" sub="Accessibility meetups, workshops, and awareness events." />
+      <SectionHeader title="Upcoming Events" sub="Accessibility meetups, workshops, and awareness events from NGOs and organizations." />
       {loading ? <Spinner /> : events.length === 0 ? <Empty msg="No upcoming events." /> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
-          {events.map(ev => (
-            <div key={ev.id} style={card}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>{ev.title}</h4>
-                {ev.eventType && <span style={chip(B)}>{ev.eventType}</span>}
+          {events.map(ev => {
+            const myApp = myApplications[ev.id]
+            return (
+              <div key={ev.id} style={card}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                  <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>{ev.title}</h4>
+                  {ev.eventType && <span style={chip(B)}>{ev.eventType}</span>}
+                </div>
+                {ev.ngo && <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 600 }}>By: {ev.ngo.name}</p>}
+                <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}>{ev.location}{ev.city ? ` • ${ev.city}` : ''}</p>
+                <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: G }}>{ev.eventDate ? new Date(ev.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</p>
+                {ev.maxParticipants && <p style={{ margin: '0 0 8px', fontSize: 11, color: '#94a3b8' }}>Capacity: {ev.registeredParticipants || 0}/{ev.maxParticipants}</p>}
+                <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{ev.description || 'Join this event.'}</p>
+                {myApp ? (
+                  <div style={{ padding: 10, borderRadius: 8, background: '#f0fdf4', border: `1px solid ${G}` }}>
+                    <p style={{ margin: 0, fontSize: 12, color: G, fontWeight: 700 }}>
+                      Status: <span style={{ textTransform: 'capitalize' }}>{myApp.status || 'PENDING'}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <button style={btn(G)} onClick={() => { setRegistering(ev); setRegMsg(null); setRegForm({ notes: '' }) }}>Apply Now</button>
+                )}
               </div>
-              <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}>{ev.location}{ev.city ? ` • ${ev.city}` : ''}</p>
-              <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: G }}>{ev.eventDate ? new Date(ev.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</p>
-              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{ev.description}</p>
-              <button style={btn(G)} onClick={() => { setRegistering(ev); setRegMsg(null); setRegForm({ name: '', email: '' }) }}>Register</button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -335,17 +408,22 @@ function EventsTab() {
         <div onClick={() => setRegistering(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15,23,42,.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, boxSizing: 'border-box' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, boxShadow: '0 20px 60px rgba(0,0,0,.2)', maxWidth: 420, width: '100%', padding: 26, position: 'relative' }}>
             <button onClick={() => setRegistering(null)} style={{ position: 'absolute', top: 12, right: 14, border: 'none', background: '#f1f5f9', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontWeight: 700, color: '#64748b' }}>x</button>
-            <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: G, textTransform: 'uppercase' }}>Register for Event</p>
-            <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 900, color: NAVY }}>{registering.title}</h3>
+            <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: G, textTransform: 'uppercase' }}>Apply for Event</p>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 900, color: NAVY }}>{registering.title}</h3>
+            {registering.ngo && <p style={{ margin: '0 0 16px', fontSize: 12, color: '#64748b' }}>By: {registering.ngo.name}</p>}
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[['name', 'Your Name', 'text'], ['email', 'Email', 'email']].map(([f, l, t]) => (
-                <div key={f}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>{l} *</label>
-                  <input required type={t} value={regForm[f]} onChange={e => setRegForm(p => ({ ...p, [f]: e.target.value }))} style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 9, padding: '9px 12px', fontSize: 14, outline: 'none' }} />
-                </div>
-              ))}
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>Additional Notes (optional)</label>
+                <textarea
+                  rows={3}
+                  value={regForm.notes}
+                  onChange={e => setRegForm(p => ({ ...p, notes: e.target.value }))}
+                  style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 9, padding: '9px 12px', fontSize: 14, outline: 'none', resize: 'vertical' }}
+                  placeholder="Tell us why you'd like to attend..."
+                />
+              </div>
               {regMsg && <div style={{ padding: '9px 12px', borderRadius: 9, fontSize: 13, fontWeight: 600, background: regMsg.type === 'ok' ? '#f0fdf4' : '#fef2f2', color: regMsg.type === 'ok' ? G : '#dc2626' }}>{regMsg.text}</div>}
-              <button type="submit" style={btn(G, '#fff')}>Submit Registration</button>
+              <button type="submit" style={btn(G, '#fff')}>Submit Application</button>
             </form>
           </div>
         </div>
