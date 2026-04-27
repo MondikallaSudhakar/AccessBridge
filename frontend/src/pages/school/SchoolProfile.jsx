@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './SchoolProfile.css';
 
+const SPECIAL_TRAINING_ENROLLMENTS_KEY = 'special_training_enrollments_v1';
+
+const loadSpecialTrainingEnrollments = () => {
+  try {
+    const raw = localStorage.getItem(SPECIAL_TRAINING_ENROLLMENTS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 const SchoolProfile = () => {
   const { user, logout } = useAuth();
   const [currentTab, setCurrentTab] = useState('overview');
@@ -12,6 +24,7 @@ const SchoolProfile = () => {
   const [certifications, setCertifications] = useState([]);
   const [partnerships, setPartnerships] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
+  const [specialPageEnrollments, setSpecialPageEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -43,12 +56,22 @@ const SchoolProfile = () => {
 
   // Fetch school data
   useEffect(() => {
-    if (!user?.id) return;
+    const userEmail = user?.email;
+    const token = localStorage.getItem('token');
+
+    if (!userEmail || !token) {
+      setLoading(false);
+      setError('Please login again to load school data.');
+      return;
+    }
 
     const fetchSchoolData = async () => {
       try {
-        const schoolResponse = await fetch(`/api/schools/email/${user.email}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        setLoading(true);
+        setError('');
+
+        const schoolResponse = await fetch(`http://localhost:8081/api/schools/email/${encodeURIComponent(userEmail)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!schoolResponse.ok) throw new Error('Failed to load school data');
         const school = await schoolResponse.json();
@@ -56,12 +79,12 @@ const SchoolProfile = () => {
 
         // Fetch related data
         const [studentsRes, coursesRes, enrollmentsRes, certsRes, partnershipsRes, volunteersRes] = await Promise.all([
-          fetch(`/api/schools/${school.id}/students`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-          fetch(`/api/schools/${school.id}/courses`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-          fetch(`/api/schools/${school.id}/enrollments`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-          fetch(`/api/schools/${school.id}/certifications`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-          fetch(`/api/schools/${school.id}/partnerships`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-          fetch(`/api/schools/${school.id}/volunteers`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/students`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/courses`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/enrollments`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/certifications`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/partnerships`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`http://localhost:8081/api/schools/${school.id}/volunteers`, { headers: { 'Authorization': `Bearer ${token}` } }),
         ]);
 
         if (studentsRes.ok) setStudents(await studentsRes.json());
@@ -70,16 +93,34 @@ const SchoolProfile = () => {
         if (certsRes.ok) setCertifications(await certsRes.json());
         if (partnershipsRes.ok) setPartnerships(await partnershipsRes.json());
         if (volunteersRes.ok) setVolunteers(await volunteersRes.json());
-
-        setLoading(false);
       } catch (err) {
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchSchoolData();
-  }, [user]);
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!schoolData?.id) {
+      setSpecialPageEnrollments([]);
+      return;
+    }
+
+    const refreshEnrollments = () => {
+      const rows = loadSpecialTrainingEnrollments();
+      const filtered = rows
+        .filter((row) => String(row.schoolId) === String(schoolData.id))
+        .sort((a, b) => new Date(b.enrolledAt || 0).getTime() - new Date(a.enrolledAt || 0).getTime());
+      setSpecialPageEnrollments(filtered);
+    };
+
+    refreshEnrollments();
+    window.addEventListener('storage', refreshEnrollments);
+    return () => window.removeEventListener('storage', refreshEnrollments);
+  }, [schoolData?.id]);
 
   const handleSubmitStudent = async (e) => {
     e.preventDefault();
@@ -455,6 +496,26 @@ const SchoolProfile = () => {
                     <p><strong>Enrollment Date:</strong> {enrollment.enrollmentDate}</p>
                   </div>
                 ))}
+              </div>
+
+              <div style={{ marginTop: '18px' }}>
+                <h4 style={{ marginBottom: '10px' }}>Enrolled from Special Training Page</h4>
+                {specialPageEnrollments.length === 0 ? (
+                  <p style={{ color: '#64748b' }}>No learners enrolled yet from the /special/training page.</p>
+                ) : (
+                  <div className="enrollments-list">
+                    {specialPageEnrollments.map((item) => (
+                      <div key={item.id} className="enrollment-card">
+                        <p><strong>Learner:</strong> {item.name || 'Unknown'}</p>
+                        <p><strong>Email:</strong> {item.email || 'N/A'}</p>
+                        <p><strong>Course:</strong> {item.courseTitle || 'N/A'}</p>
+                        <p><strong>Status:</strong> {item.status || 'PENDING'}</p>
+                        <p><strong>Enrolled At:</strong> {item.enrolledAt ? new Date(item.enrolledAt).toLocaleString('en-IN') : 'N/A'}</p>
+                        {item.notes && <p><strong>Notes:</strong> {item.notes}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

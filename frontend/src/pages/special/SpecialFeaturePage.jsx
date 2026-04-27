@@ -5,6 +5,7 @@ const BASE = 'http://localhost:8081/api'
 const G = '#16a34a'
 const B = '#1A8FD1'
 const NAVY = '#0f172a'
+const SPECIAL_TRAINING_ENROLLMENTS_KEY = 'special_training_enrollments_v1'
 
 const hdr = { 'Content-Type': 'application/json' }
 const authHdr = () => {
@@ -18,6 +19,20 @@ const card = { background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0'
 const chip = (c) => ({ display: 'inline-block', fontSize: 10, fontWeight: 700, color: c, background: c + '18', padding: '2px 9px', borderRadius: 20, letterSpacing: '0.04em' })
 const btn = (bg, color = '#fff') => ({ background: bg, color, border: 'none', borderRadius: 9, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer' })
 const outBtn = (c) => ({ background: 'none', border: `1px solid ${c}`, color: c, borderRadius: 9, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer' })
+
+const loadTrainingEnrollments = () => {
+  try {
+    const raw = localStorage.getItem(SPECIAL_TRAINING_ENROLLMENTS_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+const saveTrainingEnrollments = (rows) => {
+  localStorage.setItem(SPECIAL_TRAINING_ENROLLMENTS_KEY, JSON.stringify(rows))
+}
 
 function Spinner() {
   return (
@@ -81,36 +96,185 @@ function NgosTab() {
 
 /* ═══════════════════════════════ TRAINING TAB ═══════════════════════════ */
 function TrainingTab() {
-  const navigate = useNavigate()
-  const [schools, setSchools] = useState([])
+  const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [enrollingCourse, setEnrollingCourse] = useState(null)
+  const [enrollments, setEnrollments] = useState(loadTrainingEnrollments)
+  const [enrollMsg, setEnrollMsg] = useState(null)
+  const [enrollForm, setEnrollForm] = useState({ name: '', email: '', notes: '' })
 
-  useEffect(() => { get(`${BASE}/schools`).then(d => setSchools(Array.isArray(d) ? d : [])).finally(() => setLoading(false)) }, [])
+  useEffect(() => {
+    const rawUser = localStorage.getItem('user')
+    if (!rawUser) return
+    try {
+      const user = JSON.parse(rawUser)
+      setEnrollForm((prev) => ({
+        ...prev,
+        name: user?.name || user?.fullName || '',
+        email: user?.email || ''
+      }))
+    } catch {
+      // no-op for invalid user payload
+    }
+  }, [])
 
-  const filtered = schools.filter(s => !search || s.name?.toLowerCase().includes(search.toLowerCase()) || s.city?.toLowerCase().includes(search.toLowerCase()))
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const schools = await get(`${BASE}/schools`)
+        const safeSchools = Array.isArray(schools) ? schools : []
+        const groups = await Promise.all(
+          safeSchools.map(async (school) => {
+            const rows = await get(`${BASE}/schools/${school.id}/courses`)
+            const safeRows = Array.isArray(rows) ? rows : []
+            return safeRows.map((course) => ({
+              ...course,
+              schoolId: school.id,
+              schoolName: school.name,
+              schoolCity: school.city,
+              schoolState: school.state,
+            }))
+          })
+        )
+
+        const allCourses = groups
+          .flat()
+          .filter((course) => Boolean(course?.courseTitle))
+          .sort((a, b) => (b.id || 0) - (a.id || 0))
+
+        setCourses(allCourses)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCourses()
+  }, [])
+
+  const filtered = courses.filter((course) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return [course.courseTitle, course.schoolName, course.schoolCity, course.category]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(q))
+  })
+
+  const alreadyEnrolled = (courseId, email) => {
+    if (!email) return false
+    return enrollments.some((item) => String(item.courseId) === String(courseId) && item.email?.toLowerCase() === email.toLowerCase())
+  }
+
+  const submitEnrollment = (e) => {
+    e.preventDefault()
+    if (!enrollingCourse) return
+
+    const email = enrollForm.email.trim()
+    const name = enrollForm.name.trim()
+    if (!name || !email) {
+      setEnrollMsg({ type: 'err', text: 'Name and email are required.' })
+      return
+    }
+    if (alreadyEnrolled(enrollingCourse.id, email)) {
+      setEnrollMsg({ type: 'err', text: 'You already enrolled in this course.' })
+      return
+    }
+
+    const row = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      schoolId: enrollingCourse.schoolId,
+      schoolName: enrollingCourse.schoolName,
+      courseId: enrollingCourse.id,
+      courseTitle: enrollingCourse.courseTitle,
+      email,
+      name,
+      notes: enrollForm.notes.trim(),
+      enrolledAt: new Date().toISOString(),
+      source: 'special-training-page',
+      status: 'PENDING'
+    }
+
+    const next = [row, ...enrollments]
+    setEnrollments(next)
+    saveTrainingEnrollments(next)
+    setEnrollMsg({ type: 'ok', text: 'Enrollment submitted successfully.' })
+    setTimeout(() => {
+      setEnrollingCourse(null)
+      setEnrollMsg(null)
+      setEnrollForm((prev) => ({ ...prev, notes: '' }))
+    }, 1200)
+  }
 
   return (
     <section>
-      <SectionHeader title="Schools & Training Programs" sub="Special schools and skill development programs for all abilities." />
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search schools..." style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '9px 14px', fontSize: 13, marginBottom: 14, outline: 'none' }} />
-      {loading ? <Spinner /> : filtered.length === 0 ? <Empty msg="No schools or training programs found." /> : (
+      <SectionHeader title="Schools & Training Programs" sub="Only newly listed courses from school/training center logins are shown here." />
+      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by course or school..." style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '9px 14px', fontSize: 13, marginBottom: 14, outline: 'none' }} />
+      {loading ? <Spinner /> : filtered.length === 0 ? <Empty msg="No new courses listed yet by any school or training center." /> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 14 }}>
-          {filtered.map(s => (
-            <div key={s.id} style={card}>
+          {filtered.map(course => (
+            <div key={`${course.schoolId}-${course.id}`} style={card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>{s.name}</h4>
-                {s.specialSchool && <span style={chip(B)}>Special School</span>}
+                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>{course.courseTitle}</h4>
+                <span style={chip(B)}>New Course</span>
               </div>
-              <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}>{[s.city, s.state].filter(Boolean).join(', ') || 'Location not listed'}</p>
-              {s.disabilityTypes && <p style={{ margin: '0 0 6px', fontSize: 11, color: G, fontWeight: 600 }}>{s.disabilityTypes}</p>}
-              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{s.description || 'Programs for skill development and learning.'}</p>
+              <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}><strong style={{ color: NAVY }}>School/Center:</strong> {course.schoolName || 'Unknown'}</p>
+              <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}>{[course.schoolCity, course.schoolState].filter(Boolean).join(', ') || 'Location not listed'}</p>
+              {course.category && <p style={{ margin: '0 0 6px', fontSize: 11, color: G, fontWeight: 600 }}>{course.category}</p>}
+              <p style={{ margin: '0 0 6px', fontSize: 12, color: '#64748b' }}><strong style={{ color: NAVY }}>Capacity:</strong> {course.capacity || 'N/A'} | <strong style={{ color: NAVY }}>Enrolled:</strong> {course.enrolled || 0}</p>
+              {(course.startDate || course.endDate) && (
+                <p style={{ margin: '0 0 8px', fontSize: 12, color: '#64748b' }}><strong style={{ color: NAVY }}>Dates:</strong> {course.startDate || '-'} to {course.endDate || '-'}</p>
+              )}
+              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{course.description || 'Programs for skill development and learning.'}</p>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={btn(G)} onClick={() => navigate(`/schools/${s.id}`)}>View Programs</button>
-                {s.websiteUrl && <a href={s.websiteUrl} target="_blank" rel="noreferrer" style={{ ...outBtn(B), textDecoration: 'none' }}>Website</a>}
+                <button
+                  style={alreadyEnrolled(course.id, enrollForm.email) ? btn('#94a3b8') : btn(G)}
+                  disabled={alreadyEnrolled(course.id, enrollForm.email)}
+                  onClick={() => {
+                    setEnrollingCourse(course)
+                    setEnrollMsg(null)
+                  }}
+                >
+                  {alreadyEnrolled(course.id, enrollForm.email) ? 'Enrolled' : 'Enroll'}
+                </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {enrollingCourse && (
+        <div onClick={() => setEnrollingCourse(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15,23,42,.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, boxSizing: 'border-box' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, boxShadow: '0 20px 60px rgba(0,0,0,.2)', maxWidth: 420, width: '100%', padding: 26, position: 'relative' }}>
+            <button onClick={() => setEnrollingCourse(null)} style={{ position: 'absolute', top: 12, right: 14, border: 'none', background: '#f1f5f9', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontWeight: 700, color: '#64748b' }}>x</button>
+            <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: G, textTransform: 'uppercase' }}>Course Enrollment</p>
+            <h3 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 900, color: NAVY }}>{enrollingCourse.courseTitle}</h3>
+            <p style={{ margin: '0 0 16px', fontSize: 12, color: '#64748b' }}>{enrollingCourse.schoolName}</p>
+            <form onSubmit={submitEnrollment} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[['name', 'Your Name', 'text'], ['email', 'Email', 'email']].map(([f, label, type]) => (
+                <div key={f}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>{label} *</label>
+                  <input
+                    required
+                    type={type}
+                    value={enrollForm[f]}
+                    onChange={(e) => setEnrollForm((prev) => ({ ...prev, [f]: e.target.value }))}
+                    style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 9, padding: '9px 12px', fontSize: 14, outline: 'none' }}
+                  />
+                </div>
+              ))}
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>Notes (optional)</label>
+                <textarea
+                  rows={3}
+                  value={enrollForm.notes}
+                  onChange={(e) => setEnrollForm((prev) => ({ ...prev, notes: e.target.value }))}
+                  style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 9, padding: '9px 12px', fontSize: 14, outline: 'none', resize: 'vertical' }}
+                />
+              </div>
+              {enrollMsg && <div style={{ padding: '9px 12px', borderRadius: 9, fontSize: 13, fontWeight: 600, background: enrollMsg.type === 'ok' ? '#f0fdf4' : '#fef2f2', color: enrollMsg.type === 'ok' ? G : '#dc2626' }}>{enrollMsg.text}</div>}
+              <button type="submit" style={btn(G, '#fff')}>Submit Enrollment</button>
+            </form>
+          </div>
         </div>
       )}
     </section>
