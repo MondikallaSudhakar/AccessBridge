@@ -51,6 +51,16 @@ const ORG_FIELDS = {
   ],
 }
 
+const COLORS = {
+  green: '#5BCB2B',
+  greenSoft: '#eaf6ef',
+  greenBorder: '#c8e6d2',
+  blue: '#0197B2',
+  blueSoft: '#e7f7fb',
+  blueBorder: '#b8e7f1',
+  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #5BCB2B 100%)',
+}
+
 export default function Register() {
   const [step, setStep] = useState(1) // 1 = role select, 2 = basic info, 3 = org info
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '', phone: '' })
@@ -114,59 +124,59 @@ export default function Register() {
   const totalSteps = requiresExtraStep ? 3 : 2
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
+      <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
+      <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
+
       <div className="w-full max-w-xl">
 
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center">
-            <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-            <div className="w-4 h-7 rounded-sm -ml-1" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-2xl text-sm font-black text-white" style={{ background: COLORS.heroGradient }}>
+            IC
           </div>
-          <span className="font-bold text-gray-900">Inclusive Connect</span>
+          <span className="text-sm font-extrabold tracking-tight text-slate-900">Inclusive Connect</span>
         </div>
 
         {/* Progress Bar */}
         {step > 1 && (
           <div className="mb-6">
-            <div className="flex items-center justify-between text-xs font-medium text-gray-400 mb-2">
+            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
               <span>Step {step - 1} of {totalSteps - 1}</span>
               <span>{Math.round(((step - 1) / (totalSteps - 1)) * 100)}%</span>
             </div>
-            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-1 overflow-hidden rounded-full" style={{ backgroundColor: COLORS.blueBorder }}>
               <div
                 className="h-1 rounded-full transition-all duration-500"
-                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%`, backgroundColor: '#1A8FD1' }}
+                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%`, background: COLORS.heroGradient }}
               ></div>
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.blueBorder }}>
 
           {/* ── Step 1: Role Selection ─────────────── */}
           {step === 1 && (
             <div className="p-8">
-              <h2 className="text-2xl font-black text-gray-900 mb-1">Create an account</h2>
-              <p className="text-gray-400 text-sm mb-2">Who are you joining as?</p>
-              <p className="text-gray-500 text-xs mb-8">Pick the role that matches why you are joining. The next screens will follow that path.</p>
+              <h2 className="mb-1 text-2xl font-black text-slate-900">Create your account</h2>
+              <p className="mb-2 text-sm text-slate-600">Choose your role to begin.</p>
+              <p className="mb-8 text-xs text-slate-500">Only a few details are needed. You can update your profile later.</p>
 
               <div className="grid grid-cols-1 gap-3">
                 {ROLES.map((role) => (
                   <button
                     key={role.role}
                     onClick={() => handleRoleSelect(role.role)}
-                    className="w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 group"
-                    style={{ borderColor: '#e5e7eb' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#1A8FD1'; e.currentTarget.style.backgroundColor = '#F0F8FF' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.backgroundColor = '' }}
+                    className="group w-full rounded-2xl border px-5 py-4 text-left transition-all duration-200 hover:-translate-y-0.5"
+                    style={{ borderColor: COLORS.blueBorder, backgroundColor: 'white' }}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="font-semibold text-gray-900 text-sm">{role.label}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{role.loginPurpose}</div>
+                        <div className="text-sm font-semibold text-slate-900">{role.label}</div>
+                        <div className="mt-0.5 text-xs text-slate-500">{role.loginPurpose}</div>
                       </div>
-                      <div className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                      <div className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
                         {getUserTypeGuide(role.role)?.dashboardPath.replace('/', '')}
                       </div>
                     </div>
@@ -174,9 +184,9 @@ export default function Register() {
                 ))}
               </div>
 
-              <p className="text-center text-gray-400 text-sm mt-8">
+              <p className="mt-8 text-center text-sm text-slate-600">
                 Already have an account?{' '}
-                <a href="/login" className="font-semibold hover:opacity-80" style={{ color: '#1A8FD1' }}>Sign in</a>
+                <a href="/login" className="font-semibold hover:opacity-80" style={{ color: COLORS.blue }}>Sign in</a>
               </p>
             </div>
           )}
@@ -184,17 +194,17 @@ export default function Register() {
           {/* ── Step 2: Basic Account Info ─────────── */}
           {step === 2 && (
             <form onSubmit={handleBasicSubmit}>
-              <div className="px-8 py-6 border-b border-gray-50">
+              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setStep(1)} className="text-gray-400 hover:text-gray-700 transition-colors">
+                  <button type="button" onClick={() => setStep(1)} className="text-slate-400 transition-colors hover:text-slate-700">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <div>
-                    <h2 className="text-xl font-black text-gray-900">Your account details</h2>
+                    <h2 className="text-xl font-black text-slate-900">Your details</h2>
                     {selectedRole && (
-                      <p className="text-xs text-gray-400">Registering as: <span className="font-semibold" style={{ color: '#1A8FD1' }}>{selectedRole.label}</span></p>
+                      <p className="text-xs text-slate-500">Role: <span className="font-semibold" style={{ color: COLORS.blue }}>{selectedRole.label}</span></p>
                     )}
                   </div>
                 </div>
@@ -237,17 +247,17 @@ export default function Register() {
                 </div>
 
                 {selectedRole && (
-                  <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-4 text-sm text-gray-700">
-                    <p className="font-semibold text-gray-900">Why this role exists</p>
-                    <p className="mt-1 text-xs text-gray-600">{selectedRole.loginPurpose}</p>
+                  <div className="rounded-xl border p-4 text-sm" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.greenSoft }}>
+                    <p className="font-semibold text-slate-900">Role summary</p>
+                    <p className="mt-1 text-xs text-slate-600">{selectedRole.loginPurpose}</p>
                   </div>
                 )}
               </div>
 
               <div className="px-8 pb-8">
                 <button type="submit"
-                  className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: '#1A8FD1' }}
+                  className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95"
+                  style={{ background: COLORS.heroGradient }}
                 >
                   {isSpecial || isGuardian ? 'Continue to Profile Details →' : isOrg ? 'Continue to Organization Details →' : 'Create Account'}
                 </button>
@@ -258,16 +268,16 @@ export default function Register() {
           {/* ── Step 3: Organization Info ──────────── */}
           {step === 3 && (
             <form onSubmit={handleFinalSubmit}>
-              <div className="px-8 py-6 border-b border-gray-50">
+              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setStep(2)} className="text-gray-400 hover:text-gray-700 transition-colors">
+                  <button type="button" onClick={() => setStep(2)} className="text-slate-400 transition-colors hover:text-slate-700">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <div>
-                    <h2 className="text-xl font-black text-gray-900">{selectedRole?.label} details</h2>
-                    <p className="text-xs text-gray-400">This information helps tailor the right experience for your role</p>
+                    <h2 className="text-xl font-black text-slate-900">{selectedRole?.label} details</h2>
+                    <p className="text-xs text-slate-500">Add a few extra details to complete registration.</p>
                   </div>
                 </div>
               </div>
@@ -297,24 +307,24 @@ export default function Register() {
                 ))}
 
                 {isSpecial ? (
-                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-                    Your account will be approved automatically so you can start exploring jobs, training, support, and opportunities right away.
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                    Your account is approved automatically. You can start exploring opportunities right away.
                   </p>
                 ) : isGuardian ? (
-                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-                    Your guardian account will be approved automatically so you can start managing dependent opportunities immediately.
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                    Your account is approved automatically. You can start supporting your dependent immediately.
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-                    After submitting, your account will be reviewed by a Super Admin. You will be able to log in once approved.
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                    After submission, your account will be reviewed by admin. You can sign in once approved.
                   </p>
                 )}
               </div>
 
               <div className="px-8 pb-8">
                 <button type="submit" disabled={loading}
-                  className="w-full text-white font-semibold py-3.5 rounded-lg text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
-                  style={{ backgroundColor: '#5BBE00' }}
+                  className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+                  style={{ background: COLORS.heroGradient }}
                 >
                   {loading ? 'Submitting...' : isSpecial ? 'Create Specially Abled Profile' : isGuardian ? 'Create Guardian Profile' : 'Submit for Approval'}
                 </button>
@@ -325,7 +335,7 @@ export default function Register() {
         </div>
 
         {step === 1 && (
-          <p className="text-center text-xs text-gray-400 mt-4">
+          <p className="mt-4 text-center text-xs text-slate-500">
             By signing up you agree to our Terms of Service and Privacy Policy.
           </p>
         )}

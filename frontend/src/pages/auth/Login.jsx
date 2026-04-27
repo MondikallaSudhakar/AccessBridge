@@ -2,7 +2,17 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { USER_TYPE_GUIDES, getRoleLandingPath, getUserTypeGuide } from '../../data/userTypes'
+import { getRoleLandingPath } from '../../data/userTypes'
+
+const COLORS = {
+  green: '#5BCB2B',
+  greenSoft: '#eaf6ef',
+  greenBorder: '#c8e6d2',
+  blue: '#0197B2',
+  blueSoft: '#e7f7fb',
+  blueBorder: '#b8e7f1',
+  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #5BCB2B 100%)',
+}
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -29,76 +39,71 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
-          <p className="text-gray-600 mt-2">Login to your account and continue to your role-specific workspace</p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
+      <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
+      <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
-              {error}
+      <div className="relative mx-auto flex w-full max-w-md items-center justify-center">
+        <div className="w-full overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.blueBorder }}>
+          <div className="px-6 pb-6 pt-7 text-center sm:px-8">
+            <div className="mx-auto mb-4 h-11 w-11 rounded-2xl text-sm font-black text-white grid place-items-center" style={{ background: COLORS.heroGradient }}>
+              IC
             </div>
-          )}
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="you@example.com"
-              required
-            />
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">Welcome back</h2>
+            <p className="mt-2 text-sm text-slate-600">Sign in to continue your community work.</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full ${loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-semibold py-3 rounded-lg transition-colors`}
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          Don't have an account?{' '}
-          <a href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
-            Sign up
-          </a>
-        </p>
-
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          {USER_TYPE_GUIDES.map((guide) => {
-            if (!guide) return null
-
-            return (
-              <div key={guide.role} className="rounded-xl border border-gray-200 p-4 bg-gray-50">
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-400">{guide.label}</p>
-                <p className="mt-2 text-sm font-semibold text-gray-900">{guide.loginPurpose}</p>
-                <p className="mt-2 text-xs text-gray-500">Route: {guide.dashboardPath}</p>
+          <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6 sm:px-8 sm:pb-8">
+            {error && (
+              <div className="rounded-xl border p-3 text-sm" style={{ borderColor: '#fecaca', backgroundColor: '#fff1f2', color: '#b91c1c' }}>
+                {error}
               </div>
-            )
-          })}
+            )}
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border px-4 py-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
+                style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.blueSoft }}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border px-4 py-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
+                style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.greenSoft }}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+              style={{ background: COLORS.heroGradient }}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+
+          <div className="border-t px-6 pb-7 pt-5 text-center sm:px-8" style={{ borderColor: COLORS.blueBorder }}>
+            <p className="text-sm text-slate-600">
+              New here?{' '}
+              <a href="/register" className="font-semibold" style={{ color: COLORS.blue }}>
+                Create account
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
