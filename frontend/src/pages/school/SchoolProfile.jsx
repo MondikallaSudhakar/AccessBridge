@@ -2,23 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './SchoolProfile.css';
 
-const SPECIAL_TRAINING_ENROLLMENTS_KEY = 'special_training_enrollments_v1';
-
-const loadSpecialTrainingEnrollments = () => {
-  try {
-    const raw = localStorage.getItem(SPECIAL_TRAINING_ENROLLMENTS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
+const API_BASE = 'http://localhost:8081/api';
 
 const SchoolProfile = () => {
   const { user, logout } = useAuth();
   const [currentTab, setCurrentTab] = useState('overview');
   const [schoolData, setSchoolData] = useState(null);
   const [students, setStudents] = useState([]);
+  const [baseCourses, setBaseCourses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [certifications, setCertifications] = useState([]);
@@ -70,7 +61,7 @@ const SchoolProfile = () => {
         setLoading(true);
         setError('');
 
-        const schoolResponse = await fetch(`http://localhost:8081/api/schools/email/${encodeURIComponent(userEmail)}`, {
+        const schoolResponse = await fetch(`${API_BASE}/schools/email/${encodeURIComponent(userEmail)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!schoolResponse.ok) throw new Error('Failed to load school data');
@@ -79,16 +70,16 @@ const SchoolProfile = () => {
 
         // Fetch related data
         const [studentsRes, coursesRes, enrollmentsRes, certsRes, partnershipsRes, volunteersRes] = await Promise.all([
-          fetch(`http://localhost:8081/api/schools/${school.id}/students`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`http://localhost:8081/api/schools/${school.id}/courses`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`http://localhost:8081/api/schools/${school.id}/enrollments`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`http://localhost:8081/api/schools/${school.id}/certifications`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`http://localhost:8081/api/schools/${school.id}/partnerships`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`http://localhost:8081/api/schools/${school.id}/volunteers`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/students`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/courses`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/enrollments`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/certifications`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/partnerships`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/schools/${school.id}/volunteers`, { headers: { 'Authorization': `Bearer ${token}` } }),
         ]);
 
         if (studentsRes.ok) setStudents(await studentsRes.json());
-        if (coursesRes.ok) setCourses(await coursesRes.json());
+        if (coursesRes.ok) setBaseCourses(await coursesRes.json());
         if (enrollmentsRes.ok) setEnrollments(await enrollmentsRes.json());
         if (certsRes.ok) setCertifications(await certsRes.json());
         if (partnershipsRes.ok) setPartnerships(await partnershipsRes.json());
@@ -109,23 +100,39 @@ const SchoolProfile = () => {
       return;
     }
 
-    const refreshEnrollments = () => {
-      const rows = loadSpecialTrainingEnrollments();
-      const filtered = rows
-        .filter((row) => String(row.schoolId) === String(schoolData.id))
-        .sort((a, b) => new Date(b.enrolledAt || 0).getTime() - new Date(a.enrolledAt || 0).getTime());
-      setSpecialPageEnrollments(filtered);
+    const refreshEnrollments = async () => {
+      const token = localStorage.getItem('token');
+      const [specialRes, coursesRes] = await Promise.all([
+        fetch(`${API_BASE}/schools/${schoolData.id}/special-enrollments`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_BASE}/schools/${schoolData.id}/courses`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      if (specialRes.ok) {
+        const rows = await specialRes.json();
+        const safeRows = Array.isArray(rows) ? rows : [];
+        setSpecialPageEnrollments(safeRows);
+      }
+
+      if (coursesRes.ok) {
+        setBaseCourses(await coursesRes.json());
+      }
     };
 
     refreshEnrollments();
-    window.addEventListener('storage', refreshEnrollments);
-    return () => window.removeEventListener('storage', refreshEnrollments);
+    window.addEventListener('special-training-enrollments-updated', refreshEnrollments);
+    return () => {
+      window.removeEventListener('special-training-enrollments-updated', refreshEnrollments);
+    };
   }, [schoolData?.id]);
+
+  useEffect(() => {
+    setCourses(baseCourses);
+  }, [baseCourses]);
 
   const handleSubmitStudent = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/students`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/students`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +155,7 @@ const SchoolProfile = () => {
   const handleSubmitCourse = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/courses`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/courses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +165,7 @@ const SchoolProfile = () => {
       });
       if (!response.ok) throw new Error('Failed to create course');
       const newCourse = await response.json();
-      setCourses([...courses, newCourse]);
+      setBaseCourses((prev) => [...prev, newCourse]);
       setCourseForm({ courseTitle: '', description: '', category: '', startDate: '', endDate: '', 
         capacity: 30, syllabus: '', instructorName: '', instructorEmail: '' });
       setShowForm(false);
@@ -172,7 +179,7 @@ const SchoolProfile = () => {
   const handleSubmitEnrollment = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/enrollments`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/enrollments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +208,7 @@ const SchoolProfile = () => {
   const handleSubmitCertificate = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/certifications`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/certifications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -230,7 +237,7 @@ const SchoolProfile = () => {
   const handleSubmitPartnership = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/partnerships`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/partnerships`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +261,7 @@ const SchoolProfile = () => {
   const handleSubmitVolunteer = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/schools/${schoolData.id}/volunteers`, {
+      const response = await fetch(`${API_BASE}/schools/${schoolData.id}/volunteers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -278,7 +285,7 @@ const SchoolProfile = () => {
   const deleteStudent = async (studentId) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
-        await fetch(`/api/schools/students/${studentId}`, {
+        await fetch(`${API_BASE}/schools/students/${studentId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -292,11 +299,11 @@ const SchoolProfile = () => {
   const deleteCourse = async (courseId) => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       try {
-        await fetch(`/api/schools/courses/${courseId}`, {
+        await fetch(`${API_BASE}/schools/courses/${courseId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        setCourses(courses.filter(c => c.id !== courseId));
+        setBaseCourses((prev) => prev.filter(c => c.id !== courseId));
       } catch (err) {
         setError(err.message);
       }
@@ -306,7 +313,7 @@ const SchoolProfile = () => {
   const deletePartnership = async (partnershipId) => {
     if (window.confirm('Are you sure you want to delete this partnership?')) {
       try {
-        await fetch(`/api/schools/partnerships/${partnershipId}`, {
+        await fetch(`${API_BASE}/schools/partnerships/${partnershipId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -320,7 +327,7 @@ const SchoolProfile = () => {
   const deleteVolunteer = async (volunteerId) => {
     if (window.confirm('Are you sure you want to delete this volunteer?')) {
       try {
-        await fetch(`/api/schools/volunteers/${volunteerId}`, {
+        await fetch(`${API_BASE}/schools/volunteers/${volunteerId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });

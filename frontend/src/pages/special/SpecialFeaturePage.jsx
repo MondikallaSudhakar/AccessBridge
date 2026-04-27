@@ -5,8 +5,6 @@ const BASE = 'http://localhost:8081/api'
 const G = '#16a34a'
 const B = '#1A8FD1'
 const NAVY = '#0f172a'
-const SPECIAL_TRAINING_ENROLLMENTS_KEY = 'special_training_enrollments_v1'
-
 const hdr = { 'Content-Type': 'application/json' }
 const authHdr = () => {
   const t = localStorage.getItem('token')
@@ -20,18 +18,8 @@ const chip = (c) => ({ display: 'inline-block', fontSize: 10, fontWeight: 700, c
 const btn = (bg, color = '#fff') => ({ background: bg, color, border: 'none', borderRadius: 9, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer' })
 const outBtn = (c) => ({ background: 'none', border: `1px solid ${c}`, color: c, borderRadius: 9, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer' })
 
-const loadTrainingEnrollments = () => {
-  try {
-    const raw = localStorage.getItem(SPECIAL_TRAINING_ENROLLMENTS_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const saveTrainingEnrollments = (rows) => {
-  localStorage.setItem(SPECIAL_TRAINING_ENROLLMENTS_KEY, JSON.stringify(rows))
+const countEnrollmentsForCourse = (rows, courseId) => {
+  return rows.filter((row) => String(row.courseId) === String(courseId)).length
 }
 
 function Spinner() {
@@ -100,7 +88,7 @@ function TrainingTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [enrollingCourse, setEnrollingCourse] = useState(null)
-  const [enrollments, setEnrollments] = useState(loadTrainingEnrollments)
+  const [enrollments, setEnrollments] = useState([])
   const [enrollMsg, setEnrollMsg] = useState(null)
   const [enrollForm, setEnrollForm] = useState({ name: '', email: '', notes: '' })
 
@@ -124,26 +112,35 @@ function TrainingTab() {
       try {
         const schools = await get(`${BASE}/schools`)
         const safeSchools = Array.isArray(schools) ? schools : []
-        const groups = await Promise.all(
-          safeSchools.map(async (school) => {
-            const rows = await get(`${BASE}/schools/${school.id}/courses`)
-            const safeRows = Array.isArray(rows) ? rows : []
-            return safeRows.map((course) => ({
-              ...course,
-              schoolId: school.id,
-              schoolName: school.name,
-              schoolCity: school.city,
-              schoolState: school.state,
-            }))
-          })
-        )
+        const [courseGroups, enrollmentGroups] = await Promise.all([
+          Promise.all(
+            safeSchools.map(async (school) => {
+              const rows = await get(`${BASE}/schools/${school.id}/courses`)
+              const safeRows = Array.isArray(rows) ? rows : []
+              return safeRows.map((course) => ({
+                ...course,
+                schoolId: school.id,
+                schoolName: school.name,
+                schoolCity: school.city,
+                schoolState: school.state,
+              }))
+            })
+          ),
+          Promise.all(
+            safeSchools.map(async (school) => {
+              const rows = await get(`${BASE}/schools/${school.id}/special-enrollments`)
+              return Array.isArray(rows) ? rows : []
+            })
+          )
+        ])
 
-        const allCourses = groups
+        const allCourses = courseGroups
           .flat()
           .filter((course) => Boolean(course?.courseTitle))
           .sort((a, b) => (b.id || 0) - (a.id || 0))
 
         setCourses(allCourses)
+        setEnrollments(enrollmentGroups.flat())
       } finally {
         setLoading(false)
       }
@@ -165,7 +162,7 @@ function TrainingTab() {
     return enrollments.some((item) => String(item.courseId) === String(courseId) && item.email?.toLowerCase() === email.toLowerCase())
   }
 
-  const submitEnrollment = (e) => {
+  const submitEnrollment = async (e) => {
     e.preventDefault()
     if (!enrollingCourse) return
 
@@ -180,29 +177,40 @@ function TrainingTab() {
       return
     }
 
-    const row = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      schoolId: enrollingCourse.schoolId,
-      schoolName: enrollingCourse.schoolName,
-      courseId: enrollingCourse.id,
-      courseTitle: enrollingCourse.courseTitle,
-      email,
-      name,
-      notes: enrollForm.notes.trim(),
-      enrolledAt: new Date().toISOString(),
-      source: 'special-training-page',
-      status: 'PENDING'
-    }
+    try {
+      const response = await fetch(`${BASE}/schools/courses/${enrollingCourse.id}/special-enrollments`, {
+        method: 'POST',
+        headers: authHdr(),
+        body: JSON.stringify({
+          name,
+          email,
+          notes: enrollForm.notes.trim()
+        })
+      })
 
-    const next = [row, ...enrollments]
-    setEnrollments(next)
-    saveTrainingEnrollments(next)
-    setEnrollMsg({ type: 'ok', text: 'Enrollment submitted successfully.' })
-    setTimeout(() => {
-      setEnrollingCourse(null)
-      setEnrollMsg(null)
-      setEnrollForm((prev) => ({ ...prev, notes: '' }))
-    }, 1200)
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody?.message || 'Failed to submit enrollment')
+      }
+
+      const savedRow = await response.json()
+      const next = [savedRow, ...enrollments]
+      setEnrollments(next)
+      setCourses((prev) => prev.map((course) => (
+        String(course.id) === String(enrollingCourse.id)
+          ? { ...course, enrolled: (Number(course.enrolled) || 0) + 1 }
+          : course
+      )))
+      window.dispatchEvent(new CustomEvent('special-training-enrollments-updated'))
+      setEnrollMsg({ type: 'ok', text: 'Enrollment submitted successfully.' })
+      setTimeout(() => {
+        setEnrollingCourse(null)
+        setEnrollMsg(null)
+        setEnrollForm((prev) => ({ ...prev, notes: '' }))
+      }, 1200)
+    } catch (error) {
+      setEnrollMsg({ type: 'err', text: error.message || 'Failed to submit enrollment.' })
+    }
   }
 
   return (

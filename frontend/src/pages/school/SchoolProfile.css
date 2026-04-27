@@ -1,21 +1,33 @@
+:root {
+  --school-primary: #16a34a;
+  --school-primary-dark: #15803d;
+  --school-accent: #1a8fd1;
+  --school-bg: #f8fafc;
+  --school-surface: #ffffff;
+  --school-border: #e2e8f0;
+  --school-text: #0f172a;
+  --school-muted: #64748b;
+  --school-danger: #ef4444;
+}
+
 .school-profile-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(22, 163, 74, 0.12), transparent 35%),
+    radial-gradient(circle at top left, rgba(26, 143, 209, 0.1), transparent 30%),
+    var(--school-bg);
 }
 
 /* Sidebar Styling */
 .school-sidebar {
   width: 260px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 45%, #0b1220 100%);
+  color: #f8fafc;
   padding: 30px 20px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
   position: fixed;
   height: 100vh;
   overflow-y: auto;
@@ -27,13 +39,13 @@
   gap: 15px;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .school-brand h2 {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .school-brand img {
@@ -41,19 +53,20 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid white;
+  border: 2px solid rgba(255, 255, 255, 0.85);
 }
 
 .school-role-badge {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(22, 163, 74, 0.2);
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 30px;
   text-align: center;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(74, 222, 128, 0.35);
 }
 
 .school-nav-tabs {
@@ -65,31 +78,32 @@
 }
 
 .nav-tab {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
   border: none;
-  color: white;
+  color: #e2e8f0;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
   transition: all 0.3s ease;
   text-align: left;
 }
 
 .nav-tab:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.16);
   transform: translateX(4px);
 }
 
 .nav-tab.active {
-  background: rgba(255, 255, 255, 0.3);
-  border-left: 4px solid white;
+  background: linear-gradient(90deg, rgba(22, 163, 74, 0.22), rgba(26, 143, 209, 0.2));
+  border-left: 4px solid var(--school-primary);
+  color: #ffffff;
   padding-left: 12px;
 }
 
 .logout-btn {
-  background: #ff6b6b;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   border: none;
   color: white;
   padding: 10px 16px;
@@ -101,7 +115,7 @@
 }
 
 .logout-btn:hover {
-  background: #ff5252;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   transform: scale(1.02);
 }
 
@@ -118,57 +132,61 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid var(--school-border);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
 }
 
 .school-topbar h3 {
   margin: 0;
   font-size: 24px;
-  color: #333;
-  font-weight: 600;
+  color: var(--school-text);
+  font-weight: 800;
 }
 
 .error-toast,
 .success-toast {
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .error-toast {
-  background: #ffe0e0;
-  color: #d32f2f;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .success-toast {
-  background: #e0ffe0;
-  color: #388e3c;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
 }
 
 /* Tab Content */
 .school-tab-content {
-  background: white;
-  border-radius: 12px;
+  background: var(--school-surface);
+  border-radius: 16px;
   padding: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--school-border);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
 }
 
 .overview-section {
-  background: white;
+  background: var(--school-surface);
   border-radius: 8px;
-  padding: 20px;
+  padding: 4px;
 }
 
 .overview-section h4 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--school-text);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .profile-grid {
@@ -179,16 +197,17 @@
 }
 
 .profile-grid > div {
-  background: #f9f9f9;
+  background: #f8fafc;
   padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-radius: 10px;
+  border: 1px solid var(--school-border);
+  border-left: 4px solid var(--school-accent);
 }
 
 .profile-grid label {
   display: block;
-  font-weight: 600;
-  color: #667eea;
+  font-weight: 700;
+  color: var(--school-accent);
   margin-bottom: 8px;
   font-size: 12px;
   text-transform: uppercase;
@@ -196,12 +215,12 @@
 
 .profile-grid p {
   margin: 0;
-  color: #555;
+  color: var(--school-muted);
   font-size: 14px;
 }
 
 .profile-grid a {
-  color: #667eea;
+  color: var(--school-accent);
   text-decoration: none;
 }
 
@@ -211,13 +230,13 @@
 
 /* Add Button */
 .add-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--school-primary) 0%, var(--school-accent) 100%);
   border: none;
   color: white;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   margin-bottom: 20px;
   transition: all 0.3s ease;
@@ -225,16 +244,17 @@
 
 .add-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 22px rgba(22, 163, 74, 0.28);
 }
 
 /* Forms */
 .form-container {
-  background: #f9f9f9;
+  background: #f8fafc;
   padding: 25px;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 25px;
-  border-left: 4px solid #667eea;
+  border: 1px solid var(--school-border);
+  border-left: 4px solid var(--school-primary);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -244,19 +264,20 @@
 .form-container textarea,
 .form-container select {
   padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.3s ease;
+  background: #fff;
 }
 
 .form-container input:focus,
 .form-container textarea:focus,
 .form-container select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--school-accent);
+  box-shadow: 0 0 0 3px rgba(26, 143, 209, 0.14);
 }
 
 .form-container textarea {
@@ -267,30 +288,30 @@
 .form-container button {
   padding: 12px 24px;
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  border-radius: 9px;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .form-container button[type="submit"] {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--school-primary) 0%, var(--school-accent) 100%);
   color: white;
 }
 
 .form-container button[type="submit"]:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.24);
 }
 
 .form-container button[type="button"] {
-  background: #f0f0f0;
-  color: #666;
+  background: #eef2f7;
+  color: #475569;
 }
 
 .form-container button[type="button"]:hover {
-  background: #e0e0e0;
+  background: #e2e8f0;
 }
 
 /* Grid Layouts */
@@ -308,9 +329,9 @@
 .cert-card,
 .volunteer-card,
 .partnership-card {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--school-border);
+  border-radius: 12px;
   padding: 20px;
   transition: all 0.3s ease;
   position: relative;
@@ -322,8 +343,8 @@
 .volunteer-card:hover,
 .partnership-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
+  border-color: rgba(26, 143, 209, 0.45);
 }
 
 .student-card h5,
@@ -333,9 +354,9 @@
 .partnership-card h5 {
   margin-top: 0;
   margin-bottom: 15px;
-  color: #333;
+  color: var(--school-text);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .student-card p,
@@ -344,7 +365,7 @@
 .volunteer-card p,
 .partnership-card p {
   margin: 8px 0;
-  color: #666;
+  color: var(--school-muted);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -354,7 +375,7 @@
 .cert-card strong,
 .volunteer-card strong,
 .partnership-card strong {
-  color: #667eea;
+  color: var(--school-accent);
 }
 
 .volunteer-img {
@@ -367,13 +388,13 @@
 
 /* Delete Button */
 .delete-btn {
-  background: #ff6b6b;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   border: none;
   color: white;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 12px;
   transition: all 0.3s ease;
   margin-top: 10px;
@@ -381,7 +402,7 @@
 }
 
 .delete-btn:hover {
-  background: #ff5252;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   transform: scale(1.02);
 }
 
@@ -395,23 +416,23 @@
 }
 
 .status-badge.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: #fef9c3;
+  color: #854d0e;
 }
 
 .status-badge.active {
-  background: #d4edda;
-  color: #155724;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .status-badge.completed {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* Enrollments List */
@@ -422,15 +443,16 @@
 }
 
 .enrollment-card {
-  background: #f9f9f9;
-  border-left: 4px solid #667eea;
+  background: #ffffff;
+  border: 1px solid var(--school-border);
+  border-left: 4px solid var(--school-primary);
   padding: 18px;
-  border-radius: 8px;
+  border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .enrollment-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
 }
 
 .partnerships-list {
@@ -452,6 +474,7 @@
     padding: 20px;
     flex-direction: row;
     flex-wrap: wrap;
+    border-radius: 0 0 16px 16px;
   }
 
   .school-brand {

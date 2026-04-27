@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/schools")
@@ -28,6 +29,7 @@ public class SchoolController {
     private final SchoolPartnershipRepository partnershipRepository;
     private final SchoolVolunteerRepository volunteerRepository;
     private final SchoolRepository schoolRepository;
+    private final SpecialCourseEnrollmentRepository specialCourseEnrollmentRepository;
 
     // ── School CRUD ──────────────────────────────────────────────────────────
 
@@ -267,6 +269,49 @@ public class SchoolController {
     public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId) {
         courseRepository.deleteById(courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/special-enrollments")
+    public ResponseEntity<List<SpecialCourseEnrollment>> getSpecialCourseEnrollments(@PathVariable Long id) {
+        return ResponseEntity.ok(specialCourseEnrollmentRepository.findBySchoolIdOrderByEnrolledAtDesc(id));
+    }
+
+    @PostMapping("/courses/{courseId}/special-enrollments")
+    public ResponseEntity<?> createSpecialCourseEnrollment(
+            @PathVariable Long courseId,
+            @RequestBody Map<String, String> payload) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        String name = payload.getOrDefault("name", "").trim();
+        String email = payload.getOrDefault("email", "").trim();
+        String notes = payload.getOrDefault("notes", "").trim();
+
+        if (name.isEmpty() || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Name and email are required"));
+        }
+
+        if (specialCourseEnrollmentRepository.existsByCourseIdAndEmailIgnoreCase(courseId, email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "You already enrolled in this course"));
+        }
+
+        SpecialCourseEnrollment enrollment = new SpecialCourseEnrollment();
+        enrollment.setSchoolId(course.getSchool().getId());
+        enrollment.setSchoolName(course.getSchool().getName());
+        enrollment.setCourseId(course.getId());
+        enrollment.setCourseTitle(course.getCourseTitle());
+        enrollment.setName(name);
+        enrollment.setEmail(email);
+        enrollment.setNotes(notes);
+        enrollment.setStatus("PENDING");
+        enrollment.setSource("special-training-page");
+
+        SpecialCourseEnrollment saved = specialCourseEnrollmentRepository.save(enrollment);
+
+        course.setEnrolled(course.getEnrolled() + 1);
+        courseRepository.save(course);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     // ── Enrollments Endpoints ────────────────────────────────────────────────
