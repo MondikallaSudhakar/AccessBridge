@@ -56,7 +56,7 @@ export const USER_TYPE_GUIDES = [
     role: 'GUARDIAN_CAREGIVER',
     label: 'Guardian / Caregiver',
     loginPurpose: 'Join to support and manage opportunities for a dependent person through jobs, care, learning, and support services.',
-    dashboardPath: '/guardian/profile',
+    dashboardPath: '/guardian',
     canView: [
       'Suitable jobs for dependent persons, special schools, therapy centers, NGOs, and support services',
       'Learning resources, events, awareness programs, and future progress tracking',

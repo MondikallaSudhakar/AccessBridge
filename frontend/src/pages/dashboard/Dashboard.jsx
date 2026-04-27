@@ -64,7 +64,7 @@ const NAV_GROUPS = [
     items: [
       { id: 'school',     label: 'School Dashboard',  icon: 'school',  role: 'SCHOOL_ADMIN',  path: '/school/profile'  },
       { id: 'special',    label: 'Special Workspace', icon: 'info',    role: 'SPECIAL_ABLED_PERSON', path: '/special' },
-      { id: 'guardian',   label: 'Guardian Workspace', icon: 'info',   role: 'GUARDIAN_CAREGIVER', path: '/guardian/profile' },
+      { id: 'guardian',   label: 'Guardian Workspace', icon: 'info',   role: 'GUARDIAN_CAREGIVER', path: '/guardian' },
       { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo/profile'     },
       { id: 'startup',    label: 'Startup Dashboard', icon: 'startup', role: 'STARTUP_ADMIN', path: '/startup/profile' },
       { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/admin/approvals' },
@@ -108,7 +108,7 @@ const CARDS = [
     icon: 'info',
     color: '#10b981',
     bg: '#ecfdf5',
-    path: '/guardian/profile',
+    path: '/guardian',
     cta: 'Open Workspace',
   },
   {
@@ -262,7 +262,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
     if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special', { replace: true })
-    if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian/profile', { replace: true })
+    if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian', { replace: true })
   }, [navigate, user])
 
   const handleLogout = () => { logout(); navigate('/login') }
@@ -284,7 +284,7 @@ export default function Dashboard() {
     { id: 'marketplace', label: 'Market', icon: 'shop' },
     ...(user?.role === 'SCHOOL_ADMIN' ? [{ id: 'school', label: 'School', icon: 'school', path: '/school/profile' }] : []),
     ...(user?.role === 'SPECIAL_ABLED_PERSON' ? [{ id: 'special', label: 'Special', icon: 'info', path: '/special' }] : []),
-    ...(user?.role === 'GUARDIAN_CAREGIVER' ? [{ id: 'guardian', label: 'Guardian', icon: 'info', path: '/guardian/profile' }] : []),
+    ...(user?.role === 'GUARDIAN_CAREGIVER' ? [{ id: 'guardian', label: 'Guardian', icon: 'info', path: '/guardian' }] : []),
     ...(user?.role === 'STARTUP_ADMIN' ? [{ id: 'startup', label: 'Startup', icon: 'startup', path: '/startup/profile' }] : []),
     ...(user?.role === 'SUPER_ADMIN' ? [{ id: 'approvals', label: 'Approvals', icon: 'check', path: '/admin/approvals' }] : []),
     { id: 'profile', label: 'Profile', icon: 'user' },
@@ -465,7 +465,7 @@ export default function Dashboard() {
             {/* Role CTA button */}
             {user?.role === 'SCHOOL_ADMIN' && <HeroCta label="Go to School Dashboard" onClick={() => navigate('/school/profile')} />}
             {user?.role === 'SPECIAL_ABLED_PERSON' && <HeroCta label="Open Specially Abled Workspace" onClick={() => navigate('/special')} />}
-            {user?.role === 'GUARDIAN_CAREGIVER' && <HeroCta label="Open Guardian Workspace" onClick={() => navigate('/guardian/profile')} />}
+            {user?.role === 'GUARDIAN_CAREGIVER' && <HeroCta label="Open Guardian Workspace" onClick={() => navigate('/guardian')} />}
             {user?.role === 'STARTUP_ADMIN' && <HeroCta label="Go to Startup Dashboard" onClick={() => navigate('/startup/profile')} />}
             {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => navigate('/admin/approvals')} />}
           </div>

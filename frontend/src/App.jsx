@@ -24,7 +24,14 @@ import SpecialJobsPage from './pages/special/SpecialJobsPage'
 import SpecialFeaturePage from './pages/special/SpecialFeaturePage'
 import SpecialHelpPage from './pages/special/SpecialHelpPage'
 import SpecialSavedPage from './pages/special/SpecialSavedPage'
-import GuardianProfile from './pages/guardian/GuardianProfile'
+import GuardianLayout from './pages/guardian/GuardianLayout'
+import GuardianHome from './pages/guardian/GuardianHome'
+import GuardianProfilePage from './pages/guardian/GuardianProfilePage'
+import GuardianJobsPage from './pages/guardian/GuardianJobsPage'
+import GuardianFeaturePage from './pages/guardian/GuardianFeaturePage'
+import GuardianHelpPage from './pages/guardian/GuardianHelpPage'
+import GuardianSavedPage from './pages/guardian/GuardianSavedPage'
+import GuardianProgressPage from './pages/guardian/GuardianProgressPage'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 
 function App() {
@@ -39,7 +46,7 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
-        <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON']}><UserMessages /></RoleRoute>} />
+        <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON', 'GUARDIAN_CAREGIVER']}><UserMessages /></RoleRoute>} />
         <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerDashboard /></RoleRoute>} />
         <Route path="/special" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialLayout /></RoleRoute>}>
           <Route index element={<SpecialHome />} />
@@ -54,7 +61,19 @@ function App() {
           <Route path="help" element={<SpecialHelpPage />} />
           <Route path="saved" element={<SpecialSavedPage />} />
         </Route>
-        <Route path="/guardian/profile" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianProfile /></RoleRoute>} />
+        <Route path="/guardian" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianLayout /></RoleRoute>}>
+          <Route index element={<GuardianHome />} />
+          <Route path="profile" element={<GuardianProfilePage />} />
+          <Route path="jobs" element={<GuardianJobsPage />} />
+          <Route path="schools" element={<GuardianFeaturePage type="schools" />} />
+          <Route path="ngos" element={<GuardianFeaturePage type="ngos" />} />
+          <Route path="learning" element={<GuardianFeaturePage type="learning" />} />
+          <Route path="events" element={<GuardianFeaturePage type="events" />} />
+          <Route path="therapy" element={<GuardianFeaturePage type="therapy" />} />
+          <Route path="help" element={<GuardianHelpPage />} />
+          <Route path="saved" element={<GuardianSavedPage />} />
+          <Route path="progress" element={<GuardianProgressPage />} />
+        </Route>
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />

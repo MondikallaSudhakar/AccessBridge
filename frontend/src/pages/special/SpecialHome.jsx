@@ -26,15 +26,13 @@ export default function SpecialHome() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-sky-700 p-6 text-white shadow-lg">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">Welcome</p>
-        <h2 className="mt-2 text-2xl font-black">Choose a feature page</h2>
-        <p className="mt-2 text-sm text-white/85">Each feature is now on a separate page with its own route.</p>
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Welcome</p>
         <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
           {stats.map((item) => (
-            <div key={item.label} className="rounded-2xl bg-white/10 p-3">
-              <p className="text-xs text-white/80">{item.label}</p>
-              <p className="text-2xl font-black">{item.count}</p>
+            <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs text-slate-500">{item.label}</p>
+              <p className="text-2xl font-black text-slate-900">{item.count}</p>
             </div>
           ))}
         </div>

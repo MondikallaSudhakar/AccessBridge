@@ -69,7 +69,7 @@ export default function UserMessages() {
       navigate('/login')
       return
     }
-    if (!['USER', 'SPECIAL_ABLED_PERSON'].includes(user.role)) {
+    if (!['USER', 'SPECIAL_ABLED_PERSON', 'GUARDIAN_CAREGIVER'].includes(user.role)) {
       navigate('/dashboard')
       return
     }
