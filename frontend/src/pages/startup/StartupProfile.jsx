@@ -150,7 +150,7 @@ export default function StartupProfile() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400 hidden md:block">{user?.email}</span>
-            <button onClick={() => { logout(); navigate('/login') }}
+            <button onClick={() => { logout(); navigate('/') }}
               className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
               Logout
             </button>

@@ -108,7 +108,7 @@ export default function AdminApproval() {
             <button onClick={fetchPendingUsers} className="text-xs font-semibold hover:opacity-70 transition-opacity" style={{ color: '#1A8FD1' }}>
               Refresh
             </button>
-            <button onClick={() => { logout(); window.location.href = '/login' }} className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
+            <button onClick={() => { logout(); window.location.href = '/' }} className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
               Logout
             </button>
           </div>

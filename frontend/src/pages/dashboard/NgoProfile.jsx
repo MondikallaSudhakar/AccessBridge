@@ -811,7 +811,7 @@ export default function NgoProfile() {
 
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const handleLogout = () => { logout(); navigate('/') }
   const pi = e => { const v=e.target.type==='checkbox'?e.target.checked:e.target.value; setForm(p=>({...p,[e.target.name]:v})) }
 
   const saveProfile = async e => {

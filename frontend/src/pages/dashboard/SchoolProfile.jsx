@@ -306,7 +306,7 @@ export default function SchoolProfile() {
                 Special School
               </span>
             )}
-            <button onClick={() => { logout(); navigate('/login') }}
+            <button onClick={() => { logout(); navigate('/') }}
               className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
               Logout
             </button>

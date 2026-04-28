@@ -265,7 +265,7 @@ export default function Dashboard() {
     if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian', { replace: true })
   }, [navigate, user])
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const handleLogout = () => { logout(); navigate('/') }
 
   const roleInfo = ROLE_MAP[user?.role] || { label: user?.role, icon: 'user', color: '#64748b' }
 

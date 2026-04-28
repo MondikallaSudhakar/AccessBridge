@@ -37,9 +37,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = (redirectTo = '/') => {
         authService.logout();
         setUser(null);
+        window.location.assign(redirectTo);
     };
 
     return (
