@@ -25,6 +25,12 @@ export async function loadGuardianOpportunities() {
     api.get('/schools/courses/all'),
   ])
 
+  const schoolsRaw = asArray(schoolsResult.status === 'fulfilled' ? schoolsResult.value : [])
+  const coursesRaw = asArray(coursesResult.status === 'fulfilled' ? coursesResult.value : [])
+  const schoolNameById = new Map(
+    schoolsRaw.map((school) => [String(school.id), text(school.name, 'School / Training Center')])
+  )
+
   const jobs = asArray(jobsResult.status === 'fulfilled' ? jobsResult.value : [])
     .filter((job) => text(job?.status, 'OPEN').toUpperCase() !== 'CLOSED')
     .map((job) => ({
@@ -35,13 +41,15 @@ export async function loadGuardianOpportunities() {
       summary: text(job.description, 'No job details provided yet.'),
     }))
 
-  const schools = asArray(schoolsResult.status === 'fulfilled' ? schoolsResult.value : [])
-    .map((school) => ({
-      id: `schools-${school.id}`,
-      title: text(school.name, 'Special School'),
-      org: text(school.websiteUrl, 'School Directory'),
-      place: joinLocation(school.city, school.state) || 'Location not specified',
-      summary: text(school.description, 'Specialized school and support services.'),
+  const schools = coursesRaw
+    .filter((course) => text(course?.status, 'ACTIVE').toUpperCase() !== 'CANCELLED')
+    .map((course) => ({
+      id: `schools-${course.id}`,
+      sourceId: course.id,
+      title: text(course.courseTitle, 'School course'),
+      org: schoolNameById.get(String(course.schoolId)) || 'School / Training Center',
+      place: text(course.category, 'School Program'),
+      summary: text(course.description, 'Course details will be shared during enrollment.'),
     }))
 
   const ngos = asArray(ngosResult.status === 'fulfilled' ? ngosResult.value : [])
@@ -74,13 +82,23 @@ export async function loadGuardianOpportunities() {
       summary: text(event.description, 'Event details available on event page.'),
     }))
 
-  const therapy = asArray(coursesResult.status === 'fulfilled' ? coursesResult.value : [])
+  const therapy = coursesRaw
     .filter((course) => text(course?.status, 'ACTIVE').toUpperCase() !== 'CANCELLED')
+    .filter((course) => {
+      const category = text(course?.category).toUpperCase()
+      const title = text(course?.courseTitle).toUpperCase()
+      const description = text(course?.description).toUpperCase()
+      return category.includes('THERAPY')
+        || category.includes('SPECIAL')
+        || title.includes('THERAPY')
+        || description.includes('THERAPY')
+    })
     .map((course) => ({
       id: `therapy-${course.id}`,
+      sourceId: course.id,
       title: text(course.courseTitle, 'Therapy / training program'),
-      org: text(course.category, 'School Program'),
-      place: text(course.instructorName, 'Instructor details available'),
+      org: schoolNameById.get(String(course.schoolId)) || 'School / Training Center',
+      place: text(course.category, 'Therapy Program'),
       summary: text(course.description, 'Therapy or training course.'),
     }))
 
@@ -100,11 +118,11 @@ export const GUARDIAN_NAV = [
   { to: '/guardian', label: 'Home' },
   { to: '/guardian/profile', label: 'Dependent Profile' },
   { to: '/guardian/jobs', label: 'Jobs' },
-  { to: '/guardian/schools', label: 'Schools & Therapy' },
+  { to: '/guardian/schools', label: 'Schools' },
   { to: '/guardian/ngos', label: 'NGO Support' },
   { to: '/guardian/learning', label: 'Learning' },
   { to: '/guardian/events', label: 'Events' },
-  { to: '/guardian/therapy', label: 'Book Therapy' },
+  { to: '/guardian/therapy', label: 'Therapy' },
   { to: '/guardian/help', label: 'Request Help' },
   { to: '/guardian/requests', label: 'Request History' },
   { to: '/guardian/saved', label: 'Saved' },

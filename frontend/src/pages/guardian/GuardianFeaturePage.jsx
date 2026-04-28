@@ -7,10 +7,10 @@ import api from '../../services/api'
 
 const CONFIG = {
   schools: {
-    title: 'Special schools and therapy centers',
-    subtitle: 'Enroll dependent in schools, training, and therapy centers.',
+    title: 'School courses',
+    subtitle: 'View special courses from schools and training centers only.',
     primaryLabel: 'Enroll now',
-    secondaryLabel: 'Save school',
+    secondaryLabel: 'Save course',
     path: '/search',
   },
   ngos: {
@@ -35,8 +35,8 @@ const CONFIG = {
     path: '/search',
   },
   therapy: {
-    title: 'Book therapy or training',
-    subtitle: 'Book therapy and training appointments for the dependent.',
+    title: 'Therapy programs',
+    subtitle: 'Book therapy-focused courses and sessions for the dependent.',
     primaryLabel: 'Book now',
     secondaryLabel: 'Save booking',
     path: '/search',

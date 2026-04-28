@@ -4,11 +4,11 @@ import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 const FEATURES = [
   { title: 'Dependent Profile', desc: 'Create and manage dependent profile details.', to: '/guardian/profile' },
   { title: 'Jobs', desc: 'Apply for suitable jobs on behalf of dependent.', to: '/guardian/jobs' },
-  { title: 'Schools & Therapy', desc: 'Enroll in special schools and therapy programs.', to: '/guardian/schools' },
+  { title: 'Schools', desc: 'Browse special courses from schools and training centers.', to: '/guardian/schools' },
   { title: 'NGO Support', desc: 'Find NGOs and support services.', to: '/guardian/ngos' },
   { title: 'Learning Resources', desc: 'Open resources and adaptive learning options.', to: '/guardian/learning' },
   { title: 'Events', desc: 'Join events and awareness programs.', to: '/guardian/events' },
-  { title: 'Book Therapy', desc: 'Book therapy and training sessions.', to: '/guardian/therapy' },
+  { title: 'Therapy', desc: 'Find therapy-focused programs and sessions.', to: '/guardian/therapy' },
   { title: 'Request Help', desc: 'Send NGO support requests.', to: '/guardian/help' },
   { title: 'Request History', desc: 'Track submitted NGO requests and responses.', to: '/guardian/requests' },
   { title: 'Saved', desc: 'Open saved opportunities.', to: '/guardian/saved' },
@@ -17,7 +17,7 @@ const FEATURES = [
 
 const CAN_VIEW = [
   'Suitable jobs for dependent',
-  'Special schools and therapy centers',
+  'School courses and therapy programs',
   'NGOs and support services',
   'Learning resources',
   'Events and awareness programs',
