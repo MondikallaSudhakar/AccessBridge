@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface NGOCampaignRepository extends JpaRepository<NGOCampaign, Long> {
-    List<NGOCampaign> findByNgoIdOrderByCreatedAtDesc(Long ngoId);
+    List<NGOCampaign> findByNgoIdOrderByIdDesc(Long ngoId);
 }

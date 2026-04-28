@@ -225,9 +225,8 @@ public class NGOController {
     // ── Campaigns Endpoints ────────────────────────────────────────────────
 
     @GetMapping("/{id}/campaigns")
-    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<NGOCampaign>> getCampaigns(@PathVariable Long id) {
-        return ResponseEntity.ok(ngoCampaignRepository.findByNgoIdOrderByCreatedAtDesc(id));
+        return ResponseEntity.ok(ngoCampaignRepository.findByNgoIdOrderByIdDesc(id));
     }
 
     @PostMapping("/{id}/campaigns")
