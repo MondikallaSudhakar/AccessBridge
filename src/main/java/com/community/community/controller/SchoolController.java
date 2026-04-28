@@ -44,7 +44,12 @@ public class SchoolController {
         return ResponseEntity.ok(schoolService.getAllSchools());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/needs")
+    public ResponseEntity<List<Need>> getAllSchoolNeeds() {
+        return ResponseEntity.ok(needRepository.findBySchoolIsNotNull());
+    }
+
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<School> getSchoolById(@PathVariable Long id) {
         return ResponseEntity.ok(schoolService.getSchoolById(id));
     }
@@ -69,19 +74,19 @@ public class SchoolController {
         return ResponseEntity.ok(schoolService.getSchoolsByState(state));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<School> updateSchool(@PathVariable Long id, @RequestBody School school) {
         return ResponseEntity.ok(schoolService.updateSchool(id, school));
     }
 
-    @PatchMapping("/{id}/verify")
+    @PatchMapping("/{id:\\d+}/verify")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<School> verifySchool(@PathVariable Long id) {
         return ResponseEntity.ok(schoolService.verifySchool(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteSchool(@PathVariable Long id) {
         schoolService.deleteSchool(id);
@@ -90,12 +95,12 @@ public class SchoolController {
 
     // ── Requirements (Needs) Endpoints ──────────────────────────────────────
 
-    @GetMapping("/{id}/needs")
+    @GetMapping("/{id:\\d+}/needs")
     public ResponseEntity<List<Need>> getSchoolNeeds(@PathVariable Long id) {
         return ResponseEntity.ok(needRepository.findBySchoolId(id));
     }
 
-    @PostMapping("/{id}/needs")
+    @PostMapping("/{id:\\d+}/needs")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> postSchoolNeed(@PathVariable Long id, @RequestBody Need req) {
         School school = schoolService.getSchoolById(id);
@@ -130,13 +135,13 @@ public class SchoolController {
     // ── Achievements Endpoints ───────────────────────────────────────────────
 
     /** Public – list all achievements for a school */
-    @GetMapping("/{id}/achievements")
+    @GetMapping("/{id:\\d+}/achievements")
     public ResponseEntity<List<SchoolAchievement>> getAchievements(@PathVariable Long id) {
         return ResponseEntity.ok(achievementRepository.findBySchoolIdOrderByYearDescCreatedAtDesc(id));
     }
 
     /** Protected – create a new achievement */
-    @PostMapping("/{id}/achievements")
+    @PostMapping("/{id:\\d+}/achievements")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<SchoolAchievement> postAchievement(
             @PathVariable Long id,
@@ -178,13 +183,13 @@ public class SchoolController {
 
     // ── Students Endpoints ───────────────────────────────────────────────────
 
-    @GetMapping("/{id}/students")
+    @GetMapping("/{id:\\d+}/students")
     public ResponseEntity<List<Student>> getSchoolStudents(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         return ResponseEntity.ok(studentRepository.findBySchool(school));
     }
 
-    @PostMapping("/{id}/students")
+    @PostMapping("/{id:\\d+}/students")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Student> createStudent(@PathVariable Long id, @RequestBody Student student) {
         School school = schoolService.getSchoolById(id);
@@ -231,13 +236,13 @@ public class SchoolController {
         return ResponseEntity.ok(courseRepository.findAll());
     }
 
-    @GetMapping("/{id}/courses")
+    @GetMapping("/{id:\\d+}/courses")
     public ResponseEntity<List<Course>> getSchoolCourses(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         return ResponseEntity.ok(courseRepository.findBySchool(school));
     }
 
-    @PostMapping("/{id}/courses")
+    @PostMapping("/{id:\\d+}/courses")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Course> createCourse(@PathVariable Long id, @RequestBody Course course) {
         School school = schoolService.getSchoolById(id);
@@ -276,7 +281,7 @@ public class SchoolController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/special-enrollments")
+    @GetMapping("/{id:\\d+}/special-enrollments")
     public ResponseEntity<List<SpecialCourseEnrollment>> getSpecialCourseEnrollments(@PathVariable Long id) {
         return ResponseEntity.ok(specialCourseEnrollmentRepository.findBySchoolIdOrderByEnrolledAtDesc(id));
     }
@@ -321,7 +326,7 @@ public class SchoolController {
 
     // ── Enrollments Endpoints ────────────────────────────────────────────────
 
-    @GetMapping("/{id}/enrollments")
+    @GetMapping("/{id:\\d+}/enrollments")
     public ResponseEntity<List<Enrollment>> getSchoolEnrollments(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         List<Course> courses = courseRepository.findBySchool(school);
@@ -332,7 +337,7 @@ public class SchoolController {
         return ResponseEntity.ok(enrollments);
     }
 
-    @PostMapping("/{id}/enrollments")
+    @PostMapping("/{id:\\d+}/enrollments")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Enrollment> createEnrollment(@PathVariable Long id, @RequestBody Enrollment enrollment) {
         School school = schoolService.getSchoolById(id);
@@ -385,13 +390,13 @@ public class SchoolController {
 
     // ── Certifications Endpoints ─────────────────────────────────────────────
 
-    @GetMapping("/{id}/certifications")
+    @GetMapping("/{id:\\d+}/certifications")
     public ResponseEntity<List<Certification>> getSchoolCertifications(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         return ResponseEntity.ok(certificationRepository.findBySchool(school));
     }
 
-    @PostMapping("/{id}/certifications")
+    @PostMapping("/{id:\\d+}/certifications")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Certification> issueCertification(@PathVariable Long id, @RequestBody Certification certification) {
         School school = schoolService.getSchoolById(id);
@@ -424,13 +429,13 @@ public class SchoolController {
 
     // ── Partnerships Endpoints ───────────────────────────────────────────────
 
-    @GetMapping("/{id}/partnerships")
+    @GetMapping("/{id:\\d+}/partnerships")
     public ResponseEntity<List<SchoolPartnership>> getSchoolPartnerships(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         return ResponseEntity.ok(partnershipRepository.findBySchool(school));
     }
 
-    @PostMapping("/{id}/partnerships")
+    @PostMapping("/{id:\\d+}/partnerships")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<SchoolPartnership> createPartnership(@PathVariable Long id, @RequestBody SchoolPartnership partnership) {
         School school = schoolService.getSchoolById(id);
@@ -482,13 +487,13 @@ public class SchoolController {
 
     // ── Volunteers Endpoints ─────────────────────────────────────────────────
 
-    @GetMapping("/{id}/volunteers")
+    @GetMapping("/{id:\\d+}/volunteers")
     public ResponseEntity<List<SchoolVolunteer>> getSchoolVolunteers(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);
         return ResponseEntity.ok(volunteerRepository.findBySchool(school));
     }
 
-    @PostMapping("/{id}/volunteers")
+    @PostMapping("/{id:\\d+}/volunteers")
     @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<SchoolVolunteer> createVolunteer(@PathVariable Long id, @RequestBody SchoolVolunteer volunteer) {
         School school = schoolService.getSchoolById(id);

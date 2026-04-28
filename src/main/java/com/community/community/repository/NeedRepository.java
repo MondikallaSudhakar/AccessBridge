@@ -24,4 +24,6 @@ public interface NeedRepository extends JpaRepository<Need, Long> {
     List<Need> findByCategory(String category);
     
     List<Need> findByUrgentTrue();
+
+    List<Need> findBySchoolIsNotNull();
 }

@@ -17,7 +17,7 @@ function Card({ item, onApply, applied, config, primaryLabel }) {
           <p className="mt-1 text-xs font-semibold text-slate-500">{item.org || item.organizationName || 'Organization'}</p>
         </div>
         {applied && (
-          <span className="rounded-full border border-teal-300 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700">Applied</span>
+          <span className="rounded-full border border-teal-300 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700">Interested</span>
         )}
       </div>
       <p className="mt-3 text-sm text-slate-600">{item.summary || item.description || 'Opportunity details available.'}</p>
@@ -34,7 +34,7 @@ function Card({ item, onApply, applied, config, primaryLabel }) {
           className="rounded-lg px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
           style={{ backgroundColor: applied ? '#cbd5e1' : TEAL }}
         >
-          {applied ? 'Already Applied' : primaryLabel || 'Apply Now'}
+          {applied ? 'Already Interested' : primaryLabel || 'Show Interest'}
         </button>
       </div>
     </article>
@@ -59,7 +59,7 @@ export default function VolunteerFeaturePage({ type }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedOpportunity, setSelectedOpportunity] = useState(null)
-  const [applyForm, setApplyForm] = useState({ motivationLetter: '', availability: '', skills: '' })
+  const [applyForm, setApplyForm] = useState({ availability: '', note: '' })
   const [applyMsg, setApplyMsg] = useState('')
   const [applying, setApplying] = useState(false)
 
@@ -157,7 +157,7 @@ export default function VolunteerFeaturePage({ type }) {
 
   const handleApply = async (item) => {
     setSelectedOpportunity(item)
-    setApplyForm({ motivationLetter: '', availability: '', skills: '' })
+    setApplyForm({ availability: '', note: '' })
     setApplyMsg('')
   }
 
@@ -179,9 +179,8 @@ export default function VolunteerFeaturePage({ type }) {
         interestType: 'VOLUNTEER_ROLE',
         preferredCause: selectedOpportunity.org,
         targetOrganization: selectedOpportunity.org,
-        motivationLetter: applyForm.motivationLetter.trim(),
         availability: applyForm.availability.trim(),
-        skills: applyForm.skills.trim(),
+        message: applyForm.note.trim(),
       })
 
       setApplications((prev) => [...prev, {
@@ -190,7 +189,7 @@ export default function VolunteerFeaturePage({ type }) {
         status: 'PENDING',
       }])
 
-      setApplyMsg('Application submitted successfully!')
+      setApplyMsg('Interest submitted successfully!')
       setTimeout(() => {
         setSelectedOpportunity(null)
         setApplyMsg('')
@@ -226,7 +225,7 @@ export default function VolunteerFeaturePage({ type }) {
               key={item.id}
               item={item}
               applied={applied}
-              primaryLabel={type === 'stories' ? 'Read Story' : 'Apply Now'}
+              primaryLabel={type === 'stories' ? 'Read Story' : 'Interest'}
               onApply={() => {
                 if (type === 'stories') {
                   window.open(`/achievements/${item.sourceId}`, '_blank')
@@ -243,21 +242,10 @@ export default function VolunteerFeaturePage({ type }) {
       {selectedOpportunity && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 px-4" onClick={() => setSelectedOpportunity(null)}>
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: TEAL }}>Volunteer Application</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: TEAL }}>Volunteer Interest</p>
             <h3 className="mt-1 text-lg font-black text-slate-900">{selectedOpportunity.title}</h3>
             <p className="mt-1 text-xs text-slate-500">{selectedOpportunity.org}</p>
             <form onSubmit={submitApplication} className="mt-4 space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerSkills">Your Skills</label>
-                <input
-                  id="volunteerSkills"
-                  type="text"
-                  value={applyForm.skills}
-                  onChange={(event) => setApplyForm((current) => ({ ...current, skills: event.target.value }))}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
-                  placeholder="e.g. Teaching, Healthcare, Community engagement"
-                />
-              </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerAvail">Availability</label>
                 <input
@@ -270,14 +258,14 @@ export default function VolunteerFeaturePage({ type }) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerLetter">Motivation Letter</label>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerNote">Interest Note</label>
                 <textarea
-                  id="volunteerLetter"
+                  id="volunteerNote"
                   rows={3}
-                  value={applyForm.motivationLetter}
-                  onChange={(event) => setApplyForm((current) => ({ ...current, motivationLetter: event.target.value }))}
+                  value={applyForm.note}
+                  onChange={(event) => setApplyForm((current) => ({ ...current, note: event.target.value }))}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
-                  placeholder="Tell us why you're interested in this opportunity..."
+                  placeholder="Any short note about your availability or preferred role."
                 />
               </div>
               {!!applyMsg && (
@@ -288,7 +276,7 @@ export default function VolunteerFeaturePage({ type }) {
               <div className="flex gap-2">
                 <button type="button" onClick={() => setSelectedOpportunity(null)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700">Cancel</button>
                 <button type="submit" disabled={applying} className="rounded-lg text-white px-3 py-2 text-xs font-bold disabled:opacity-60" style={{ backgroundColor: TEAL }}>
-                  {applying ? 'Submitting...' : 'Submit Application'}
+                  {applying ? 'Submitting...' : 'Submit Interest'}
                 </button>
               </div>
             </form>

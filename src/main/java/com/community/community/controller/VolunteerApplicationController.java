@@ -50,7 +50,7 @@ public class VolunteerApplicationController {
         }
 
         if (application.getFullName() == null || application.getFullName().isBlank() || application.getEmail() == null || application.getEmail().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "fullName and email are required"));
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(volunteerApplicationRepository.save(application));
