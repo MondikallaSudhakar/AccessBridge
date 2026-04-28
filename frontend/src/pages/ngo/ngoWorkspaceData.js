@@ -17,7 +17,7 @@ export const NGO_WORKSPACE_NAV = [
   { to: '/ngo/products', label: 'Products' },
   { to: '/ngo/services', label: 'Services' },
   { to: '/ngo/achievements', label: 'Achievements' },
-  { to: '/ngo/messages', label: 'Messages' },
+  // { to: '/ngo/messages', label: 'Messages' },
   { to: '/ngo/csr', label: 'Corporate CSR' },
 ]
 
@@ -81,11 +81,11 @@ export const NGO_FEATURES = {
     subtitle: 'Showcase impact milestones and stories.',
     tab: 'achievements',
   },
-  messages: {
-    title: 'Messages',
-    subtitle: 'Open and manage conversations with users.',
-    tab: 'messages',
-  },
+  // messages: {
+  //   title: 'Messages',
+  //   subtitle: 'Open and manage conversations with users.',
+  //   tab: 'messages',
+  // },
   csr: {
     title: 'Corporate CSR',
     subtitle: 'Track CSR collaboration opportunities and partnership flow.',

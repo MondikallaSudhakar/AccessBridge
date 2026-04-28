@@ -103,7 +103,7 @@ const TABS = [
   { id:'products',      label:'Products',     icon:'box'       },
   { id:'services',      label:'Services',     icon:'users'     },
   { id:'achievements',  label:'Achievements', icon:'star'      },
-  { id:'messages',      label:'Messages',     icon:'inbox'     },
+  // { id:'messages',      label:'Messages',     icon:'inbox'     },
 ]
 
 /* ─────────────────────────── design tokens ──────────────────────────── */

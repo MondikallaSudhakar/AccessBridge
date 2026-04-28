@@ -16,7 +16,7 @@ export const SCHOOL_WORKSPACE_NAV = [
   { to: '/school-workspace/events', label: 'Events' },
   { to: '/school-workspace/achievements', label: 'Achievements' },
   { to: '/school-workspace/ngo-partners', label: 'NGO Partners' },
-  { to: '/school-workspace/messages', label: 'Messages' },
+  // { to: '/school-workspace/messages', label: 'Messages' },
 ]
 
 export const SCHOOL_CAPABILITIES_VIEW = [
@@ -114,14 +114,14 @@ export const SCHOOL_FEATURES = {
       'Coordinate joint programs and community events',
     ],
   },
-  messages: {
-    title: 'Messages',
-    subtitle: 'Manage communications with parents, NGOs, and community members.',
-    tab: 'messages',
-    tips: [
-      'Respond to parent and guardian inquiries',
-      'Coordinate with NGO and volunteer partners',
-      'Send announcements and updates to your network',
-    ],
-  },
+  // messages: {
+  //   title: 'Messages',
+  //   subtitle: 'Manage communications with parents, NGOs, and community members.',
+  //   tab: 'messages',
+  //   tips: [
+  //     'Respond to parent and guardian inquiries',
+  //     'Coordinate with NGO and volunteer partners',
+  //     'Send announcements and updates to your network',
+  //   ],
+  // },
 }
