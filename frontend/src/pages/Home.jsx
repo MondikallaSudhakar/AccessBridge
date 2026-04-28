@@ -5,14 +5,19 @@ const API = 'http://localhost:8081/api'
 
 const COLORS = {
   green: '#5BCB2B',
-  greenSoft: '#eaf6ef',
-  greenBorder: '#c8e6d2',
+  greenSoft: '#f0f8e8',
+  greenBorder: '#d4e6c1',
   blue: '#0197B2',
-  blueSoft: '#e7f7fb',
-  blueBorder: '#b8e7f1',
+  blueSoft: '#f0f8fc',
+  blueBorder: '#c8e6f0',
   blueDark: '#0a4b5a',
-  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #5BCB2B 100%)',
+  heroGradient: '#0197B2',
   white: '#ffffff',
+  slate50: '#f9fafb',
+  slate100: '#f3f4f6',
+  slate200: '#e5e7eb',
+  slate700: '#374151',
+  slate900: '#111827',
 }
 
 async function fetchPublic(path) {
@@ -538,35 +543,43 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #e7f7fb 0%, #f4fbef 35%, #ffffff 100%)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#ffffff' }}>
       <TopNav user={user} activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
 
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
-        <section className="rounded-3xl border p-6 shadow-md md:p-8" style={{ borderColor: COLORS.blueBorder, background: COLORS.heroGradient }}>
+        <section className="rounded-2xl border-0 p-8 shadow-lg md:p-12" style={{ backgroundColor: COLORS.blue }}>
           <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">General User / Viewer</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-white md:text-5xl">Browse the ecosystem without logging in.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-white/90 md:text-lg">
-              Explore platform updates, success stories, public products, events, and awareness content.
-              No posting required. Upgrade later if you want to volunteer, buy, or join as an organization user.
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/80" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.green }}></span>
+              Welcome to Inclusive Connect
+            </div>
+            <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-5xl lg:text-6xl">Explore & Connect with Purpose</h1>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-white/90 md:text-lg">
+              Discover opportunities, success stories, innovative products, and meaningful events in our inclusive community. Browse freely or join as an active member to make a real impact.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href="/register" className="inline-flex rounded-xl px-5 py-3 text-sm font-bold text-white" style={{ backgroundColor: COLORS.blueDark }}>Upgrade to Active User</a>
-              <a href="/login" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.75)' }}>Login</a>
-              <a href="/marketplace" className="inline-flex rounded-xl border px-5 py-3 text-sm font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.75)' }}>Browse Marketplace</a>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="/register" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style={{ backgroundColor: COLORS.green }}>
+                Join the Community
+              </a>
+              <a href="/marketplace" className="inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
+                Browse Marketplace
+              </a>
+              <a href="/login" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10">
+                Sign In
+              </a>
             </div>
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border bg-white p-4" style={{ borderColor: COLORS.blueBorder }}>
+        <section className="mt-8 rounded-xl border shadow-sm p-4" style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.white }}>
           <label className="relative block">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Icons.Search /></span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               type="text"
-              placeholder="Search public updates, stories, and products"
-              className="h-11 w-full rounded-xl border bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500"
+              placeholder="Search opportunities, stories, and products"
+              className="h-12 w-full rounded-lg border bg-white pl-11 pr-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
               style={{ borderColor: COLORS.blueBorder }}
             />
           </label>
