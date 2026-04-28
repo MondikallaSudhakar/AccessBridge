@@ -30,6 +30,7 @@ export default function VolunteerApplicationsPage() {
   const getStatusColor = (status) => {
     const colors = {
       PENDING: { bg: '#FEF3C7', text: '#92400E' },
+      ACCEPTED: { bg: '#DCFCE7', text: '#166534' },
       APPROVED: { bg: '#DBEAFE', text: '#1E40AF' },
       REJECTED: { bg: '#FEE2E2', text: '#991B1B' },
       WITHDRAWN: { bg: '#F3E8FF', text: '#6B21A8' },

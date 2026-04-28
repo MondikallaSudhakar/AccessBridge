@@ -31,8 +31,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -272,6 +274,34 @@ public class NGOController {
     }
 
     // ── Requirements (Needs) Endpoints ──────────────────────────────────────
+
+    @GetMapping("/volunteer-needs")
+    public ResponseEntity<List<Map<String, Object>>> getAllVolunteerNeeds() {
+        List<Map<String, Object>> data = needRepository.findByCategory("VOLUNTEER_NEED").stream()
+                .filter(need -> "ACTIVE".equalsIgnoreCase(need.getStatus()))
+                .map(need -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", need.getId());
+                    item.put("title", need.getTitle());
+                    item.put("description", need.getDescription());
+                    item.put("category", need.getCategory());
+                    item.put("status", need.getStatus());
+                    item.put("urgent", need.getUrgent());
+                    item.put("createdAt", need.getCreatedAt());
+                    item.put("deadline", need.getDeadline());
+                    item.put("volunteersNeeded", need.getTargetAmount() == null ? 0 : need.getTargetAmount().intValue());
+
+                    NGO ngo = need.getNgo();
+                    item.put("ngoId", ngo == null ? null : ngo.getId());
+                    item.put("ngoName", ngo == null ? "NGO" : ngo.getName());
+                    item.put("ngoCity", ngo == null ? null : ngo.getCity());
+
+                    return item;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(data);
+    }
 
     @GetMapping("/{id}/needs")
     public ResponseEntity<List<Need>> getNGONeeds(@PathVariable Long id) {

@@ -71,33 +71,30 @@ export default function VolunteerFeaturePage({ type }) {
       setLoading(true)
       setError('')
       try {
-        const [oppRes, ngoRes, evtRes, schRes, storRes] = await Promise.allSettled([
-          api.get('/volunteer-opportunities'),
-          api.get('/ngos/needs'),
+        const [needsRes, evtRes, schRes, storRes] = await Promise.allSettled([
+          api.get('/ngos/volunteer-needs'),
           api.get('/events/public'),
           api.get('/schools/needs'),
           api.get('/achievements'),
         ])
 
-        const opps = oppRes.status === 'fulfilled' ? Array.isArray(oppRes.value) ? oppRes.value.map((o, i) => ({
-          id: `opp-${i}`,
-          sourceId: o.id,
-          title: o.title || 'Volunteer Role',
-          org: o.organizationName || o.ngoName || 'NGO',
-          place: o.location || 'Flexible',
-          summary: o.description,
-          type: 'OPPORTUNITY',
-        })) : [] : []
-
-        const needs = ngoRes.status === 'fulfilled' ? Array.isArray(ngoRes.value) ? ngoRes.value.map((n, i) => ({
+        const needs = needsRes.status === 'fulfilled' ? Array.isArray(needsRes.value) ? needsRes.value.map((n, i) => ({
           id: `need-${i}`,
           sourceId: n.id,
+          ngoId: n.ngoId,
           title: n.title || 'NGO Need',
-          org: n.organizationName || 'NGO',
-          place: n.location || 'On-site',
+          org: n.ngoName || 'NGO',
+          place: n.ngoCity || 'On-site',
           summary: n.description,
+          volunteersNeeded: n.volunteersNeeded,
           type: 'NGO_NEED',
         })) : [] : []
+
+        const opps = needs.map((need) => ({
+          ...need,
+          id: `opp-${need.sourceId}`,
+          type: 'OPPORTUNITY',
+        }))
 
         const evt = evtRes.status === 'fulfilled' ? Array.isArray(evtRes.value) ? evtRes.value.map((e, i) => ({
           id: `evt-${i}`,
@@ -172,15 +169,19 @@ export default function VolunteerFeaturePage({ type }) {
     setApplyMsg('')
     try {
       await api.post('/volunteer-applications', {
-        volunteerId: user?.userId || user?.id,
-        volunteerName: user?.name,
-        volunteerEmail: user?.email,
-        opportunityType: selectedOpportunity.type,
+        fullName: user?.name,
+        email: user?.email,
+        ngoId: selectedOpportunity.ngoId,
         sourceId: selectedOpportunity.sourceId,
+        opportunityType: selectedOpportunity.type,
+        opportunityTitle: selectedOpportunity.title,
+        organizationName: selectedOpportunity.org,
+        interestType: 'VOLUNTEER_ROLE',
+        preferredCause: selectedOpportunity.org,
+        targetOrganization: selectedOpportunity.org,
         motivationLetter: applyForm.motivationLetter.trim(),
         availability: applyForm.availability.trim(),
         skills: applyForm.skills.trim(),
-        status: 'PENDING',
       })
 
       setApplications((prev) => [...prev, {

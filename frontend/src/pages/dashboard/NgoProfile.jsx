@@ -21,7 +21,7 @@ const EVENT_TYPES = ['WORKSHOP', 'SEMINAR', 'FUNDRAISER', 'AWARENESS', 'COMMUNIT
 const blankProduct     = { name:'', description:'', category:'', price:'', stockQuantity:'', available:true }
 const blankService     = { title:'', description:'', category:'', contactInfo:'', availability:'', status:'ACTIVE' }
 const blankAchievement = { title:'', description:'', category:'', achievementDate:'', imageUrl:'' }
-const blankVolunteer   = { fullName:'', email:'', phone:'', skills:'', availability:'', preferredCity:'', status:'PENDING', note:'' }
+const blankVolunteerNeed = { title:'', purpose:'', neededCount:'' }
 const blankCampaign    = { title:'', objective:'', startDate:'', endDate:'', targetBeneficiaries:'', volunteerTarget:'', spentAmount:'', status:'PLANNED', impactSummary:'' }
 
 /* ─────────────────────────── helpers ────────────────────────────────── */
@@ -636,8 +636,9 @@ export default function NgoProfile() {
   const [showServiceForm, setShowServiceForm] = useState(false)
   const [achievementForm, setAchievementForm] = useState(blankAchievement)
   const [showAchievementForm, setShowAchievementForm] = useState(false)
-  const [volunteerForm, setVolunteerForm] = useState(blankVolunteer)
-  const [showVolunteerForm, setShowVolunteerForm] = useState(false)
+  const [volunteerNeedForm, setVolunteerNeedForm] = useState(blankVolunteerNeed)
+  const [showVolunteerNeedForm, setShowVolunteerNeedForm] = useState(false)
+  const [volunteerUpdatingId, setVolunteerUpdatingId] = useState(null)
   const [campaignForm, setCampaignForm] = useState(blankCampaign)
   const [showCampaignForm, setShowCampaignForm] = useState(false)
   const [needForm, setNeedForm]               = useState(blankNeed)
@@ -752,7 +753,7 @@ export default function NgoProfile() {
       api.get(`/ngos/${id}/services`).catch(()=>[]),
       api.get(`/ngos/${id}/achievements`).catch(()=>[]),
       api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
-      api.get(`/ngos/${id}/volunteers`).catch(()=>[]),
+      api.get(`/volunteer-applications/ngo/${id}`).catch(()=>[]),
       api.get(`/ngos/${id}/campaigns`).catch(()=>[]),
       fetch(`${BASE}/events/ngo/${id}`,{headers:{Authorization:`Bearer ${localStorage.getItem('token')}`}}).then(r=>r.ok?r.json():[]).catch(()=>[]),
     ])
@@ -864,7 +865,44 @@ export default function NgoProfile() {
   const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
   const createService = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
   const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
-  const createVolunteer = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/volunteers`, volunteerForm); setVolunteerForm(blankVolunteer); loadData(ngo.id); flash('Volunteer profile added!')}catch(err){setError(err.message||'Error')} }
+  const createVolunteerNeed = async e => {
+    e.preventDefault()
+    if(!ngo?.id) return
+    if(!volunteerNeedForm.title.trim() || !volunteerNeedForm.purpose.trim()) return
+    try {
+      await fetch(`${BASE}/ngos/${ngo.id}/needs`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},
+        body:JSON.stringify({
+          title: volunteerNeedForm.title.trim(),
+          description: volunteerNeedForm.purpose.trim(),
+          category: 'VOLUNTEER_NEED',
+          targetAmount: volunteerNeedForm.neededCount ? parseFloat(volunteerNeedForm.neededCount) : 0,
+          urgent: false,
+        })
+      })
+      setVolunteerNeedForm(blankVolunteerNeed)
+      setShowVolunteerNeedForm(false)
+      loadData(ngo.id)
+      flash('Volunteer need posted!')
+    } catch(err) {
+      setError(err.message||'Error')
+    }
+  }
+
+  const updateVolunteerInterestStatus = async (applicationId, status) => {
+    if(!ngo?.id) return
+    setVolunteerUpdatingId(applicationId)
+    try {
+      await api.patch(`/volunteer-applications/${applicationId}/status?status=${encodeURIComponent(status)}`, {})
+      await loadData(ngo.id)
+      flash(`Volunteer marked as ${status}.`)
+    } catch (err) {
+      setError(err.message || 'Failed to update volunteer status')
+    } finally {
+      setVolunteerUpdatingId(null)
+    }
+  }
   const createCampaign = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/campaigns`, {...campaignForm, targetBeneficiaries: campaignForm.targetBeneficiaries ? Number(campaignForm.targetBeneficiaries) : null, volunteerTarget: campaignForm.volunteerTarget ? Number(campaignForm.volunteerTarget) : null, spentAmount: campaignForm.spentAmount ? Number(campaignForm.spentAmount) : null}); setCampaignForm(blankCampaign); loadData(ngo.id); flash('Campaign added!')}catch(err){setError(err.message||'Error')} }
   const updateSupportRequestStatus = async (requestId, status) => {
     if (!ngo?.id) return
@@ -883,6 +921,8 @@ export default function NgoProfile() {
     if (supportRequestFilter === 'ALL') return supportRequests
     return supportRequests.filter((request) => request.status === supportRequestFilter)
   }, [supportRequests, supportRequestFilter])
+
+  const volunteerNeeds = useMemo(() => needs.filter((need) => (need.category || '').toUpperCase() === 'VOLUNTEER_NEED'), [needs])
 
   const sendMsg = async e => {
     e.preventDefault(); if(!ngo?.id)return
@@ -1066,7 +1106,7 @@ export default function NgoProfile() {
               tab==='overview'       ? 'Manage your NGO information' :
               tab==='requirements'   ? 'Post and manage requirements' :
               tab==='supportRequests'? 'Review and respond to user help requests' :
-              tab==='volunteers'     ? 'Track volunteer profiles and readiness' :
+              tab==='volunteers'     ? 'Post volunteer needs and review interested volunteers' :
               tab==='campaigns'      ? 'Plan and track campaign outcomes' :
               tab==='events'         ? 'Create and manage community events' :
               tab==='jobs'           ? 'Manage job listings' :
@@ -1231,52 +1271,77 @@ export default function NgoProfile() {
           {tab === 'volunteers' && (
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
-                <PanelHeader title="Add Volunteer Profile" subtitle="Dedicated volunteer records for CSR reporting." action={
-                  <PrimaryBtn iconName={showVolunteerForm?'x':'plus'} onClick={()=>setShowVolunteerForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
-                    {showVolunteerForm?'Cancel':'+ Add Volunteer'}
+                <PanelHeader title="Post Volunteer Need" subtitle="Set role purpose and how many volunteers are needed." action={
+                  <PrimaryBtn iconName={showVolunteerNeedForm?'x':'plus'} onClick={()=>setShowVolunteerNeedForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showVolunteerNeedForm?'Cancel':'+ Add Volunteer Need'}
                   </PrimaryBtn>
                 }/>
-                {showVolunteerForm && (
-                  <form onSubmit={e=>{createVolunteer(e);setShowVolunteerForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
-                  <div><FieldLabel required>Full Name</FieldLabel><TextInput required value={volunteerForm.fullName} onChange={e=>setVolunteerForm(p=>({...p,fullName:e.target.value}))} /></div>
-                  <div><FieldLabel required>Email</FieldLabel><TextInput required type="email" value={volunteerForm.email} onChange={e=>setVolunteerForm(p=>({...p,email:e.target.value}))} /></div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Phone</FieldLabel><TextInput value={volunteerForm.phone} onChange={e=>setVolunteerForm(p=>({...p,phone:e.target.value}))} /></div>
-                    <div><FieldLabel>Preferred City</FieldLabel><TextInput value={volunteerForm.preferredCity} onChange={e=>setVolunteerForm(p=>({...p,preferredCity:e.target.value}))} /></div>
-                  </div>
-                  <div><FieldLabel>Availability</FieldLabel><TextInput value={volunteerForm.availability} onChange={e=>setVolunteerForm(p=>({...p,availability:e.target.value}))} placeholder="Weekends / evenings"/></div>
-                  <div><FieldLabel>Skills</FieldLabel><TextArea rows={3} value={volunteerForm.skills} onChange={e=>setVolunteerForm(p=>({...p,skills:e.target.value}))} /></div>
-                  <PrimaryBtn type="submit" iconName="plus">Add Volunteer</PrimaryBtn>
+                {showVolunteerNeedForm && (
+                  <form onSubmit={createVolunteerNeed} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                  <div><FieldLabel required>Need Title</FieldLabel><TextInput required value={volunteerNeedForm.title} onChange={e=>setVolunteerNeedForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Weekend mentorship support" /></div>
+                  <div><FieldLabel required>Purpose</FieldLabel><TextArea rows={3} required value={volunteerNeedForm.purpose} onChange={e=>setVolunteerNeedForm(p=>({...p,purpose:e.target.value}))} placeholder="Describe why volunteers are needed and what they will do." /></div>
+                  <div><FieldLabel>How Many Volunteers Needed</FieldLabel><TextInput type="number" min="1" value={volunteerNeedForm.neededCount} onChange={e=>setVolunteerNeedForm(p=>({...p,neededCount:e.target.value}))} placeholder="e.g. 10" /></div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Add Volunteer</PrimaryBtn>
-                      <GhostBtn type="button" onClick={()=>setShowVolunteerForm(false)} color="#64748b">Cancel</GhostBtn>
+                      <PrimaryBtn type="submit" iconName="plus">Post Need</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowVolunteerNeedForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
                 )}
               </Panel>
               <Panel>
-                <PanelHeader title="Volunteer Profiles" subtitle={`${volunteers.length} records`} />
-                {volunteers.length === 0 ? <EmptyPane iconName="users" title="No volunteers yet" body="Add volunteer profiles to track CSR participation."/> : (
+                <PanelHeader title="Volunteer Interests" subtitle={`${volunteers.length} interested volunteers`} />
+                {volunteerNeeds.length === 0 ? <EmptyPane iconName="users" title="No volunteer needs posted" body="Post volunteer needs first so volunteers can submit interest."/> : (
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                    {volunteers.map((volunteer) => (
-                      <ListItem key={volunteer.id}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
-                          <div style={{flex:1,minWidth:0}}>
-                            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:6}}>
-                              <p style={{margin:0,fontSize:14,fontWeight:700,color:NAVY}}>{volunteer.fullName}</p>
-                              <Chip color={volunteer.status === 'APPROVED' ? G : volunteer.status === 'REJECTED' ? '#ef4444' : '#f59e0b'}>{volunteer.status}</Chip>
+                    {volunteerNeeds.map((need) => {
+                      const interested = volunteers.filter((app) => Number(app.sourceId) === Number(need.id))
+                      return (
+                        <ListItem key={need.id}>
+                          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                              <div>
+                                <p style={{margin:0,fontSize:14,fontWeight:800,color:NAVY}}>{need.title}</p>
+                                <p style={{margin:'4px 0 0',fontSize:12,color:'#64748b'}}>{need.description}</p>
+                              </div>
+                              <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                                <Chip color={need.status === 'ACTIVE' ? G : '#ef4444'}>{need.status || 'ACTIVE'}</Chip>
+                                <Chip color={TEAL}>Needed: {Number(need.targetAmount || 0)}</Chip>
+                                <Chip color={B}>Interested: {interested.length}</Chip>
+                              </div>
                             </div>
-                            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                              <MetaItem iconName="mail">{volunteer.email}</MetaItem>
-                              {volunteer.phone && <MetaItem iconName="chat">{volunteer.phone}</MetaItem>}
-                              {volunteer.preferredCity && <MetaItem iconName="location">{volunteer.preferredCity}</MetaItem>}
-                            </div>
-                            {volunteer.skills && <p style={{margin:'8px 0 0',fontSize:13,color:'#64748b'}}>{volunteer.skills}</p>}
+
+                            {interested.length === 0 ? (
+                              <p style={{margin:0,fontSize:12,color:'#94a3b8'}}>No volunteer interest submitted yet.</p>
+                            ) : (
+                              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                                {interested.map((volunteer) => (
+                                  <div key={volunteer.id} style={{border:'1px solid #e2e8f0',borderRadius:10,padding:10,background:'#f8fafc'}}>
+                                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,flexWrap:'wrap'}}>
+                                      <div style={{flex:1,minWidth:0}}>
+                                        <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:6}}>
+                                          <p style={{margin:0,fontSize:13,fontWeight:700,color:NAVY}}>{volunteer.fullName}</p>
+                                          <Chip color={volunteer.status === 'ACCEPTED' ? G : volunteer.status === 'REJECTED' ? '#ef4444' : '#f59e0b'}>{volunteer.status || 'PENDING'}</Chip>
+                                        </div>
+                                        <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                                          <MetaItem iconName="mail">{volunteer.email}</MetaItem>
+                                          {volunteer.phone && <MetaItem iconName="chat">{volunteer.phone}</MetaItem>}
+                                        </div>
+                                        {volunteer.skills && <p style={{margin:'8px 0 0',fontSize:12,color:'#64748b'}}>Skills: {volunteer.skills}</p>}
+                                        {(volunteer.motivationLetter || volunteer.message) && <p style={{margin:'6px 0 0',fontSize:12,color:'#64748b'}}>Note: {volunteer.motivationLetter || volunteer.message}</p>}
+                                      </div>
+                                      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                                        <GhostBtn onClick={() => updateVolunteerInterestStatus(volunteer.id, 'ACCEPTED')} color={G} iconName="check" disabled={volunteerUpdatingId===volunteer.id}>Accept</GhostBtn>
+                                        <GhostBtn onClick={() => updateVolunteerInterestStatus(volunteer.id, 'REJECTED')} color="#ef4444" iconName="x" disabled={volunteerUpdatingId===volunteer.id}>Reject</GhostBtn>
+                                        <GhostBtn onClick={() => updateVolunteerInterestStatus(volunteer.id, 'PENDING')} color="#64748b" iconName="clock" disabled={volunteerUpdatingId===volunteer.id}>Pending</GhostBtn>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          <GhostBtn onClick={() => del(`/ngos/volunteers/${volunteer.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
-                        </div>
-                      </ListItem>
-                    ))}
+                        </ListItem>
+                      )
+                    })}
                   </div>
                 )}
               </Panel>

@@ -1232,11 +1232,13 @@ function EventsSection() {
 function VolunteersSection() {
   const { user } = useAuth()
   const [ngoId, setNgoId] = useState(null)
-  const [opportunities, setOpportunities] = useState([])
+  const [volunteerNeeds, setVolunteerNeeds] = useState([])
+  const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ title: '', description: '', volunteerType: 'FIELD_WORK', location: '', commitmentHours: '', startDate: '' })
+  const [updatingId, setUpdatingId] = useState(null)
+  const [form, setForm] = useState({ title: '', purpose: '', neededCount: '' })
 
   useEffect(() => {
     if (!user?.email) return
@@ -1248,130 +1250,164 @@ function VolunteersSection() {
       .catch(() => {})
   }, [user])
 
-  const loadOpportunities = () => {
+  const loadVolunteerNeeds = () => {
     if (!ngoId) return
     setLoading(true)
-    fetch(`${API}/ngos/${ngoId}/volunteer-opportunities`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    })
-      .then((r) => r.ok ? r.json() : [])
-      .then((data) => { setOpportunities(Array.isArray(data) ? data : []); setLoading(false) })
+    Promise.all([
+      fetch(`${API}/ngos/${ngoId}/needs`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => r.ok ? r.json() : []),
+      fetch(`${API}/volunteer-applications/ngo/${ngoId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => r.ok ? r.json() : []),
+    ])
+      .then(([needsData, appData]) => {
+        const needs = Array.isArray(needsData)
+          ? needsData.filter((need) => (need.category || '').toUpperCase() === 'VOLUNTEER_NEED')
+          : []
+        setVolunteerNeeds(needs)
+        setApplications(Array.isArray(appData) ? appData : [])
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }
 
-  useEffect(loadOpportunities, [ngoId])
+  useEffect(loadVolunteerNeeds, [ngoId])
 
-  const postOpportunity = async () => {
-    if (!form.title.trim() || !form.description.trim()) return
+  const postVolunteerNeed = async () => {
+    if (!form.title.trim() || !form.purpose.trim()) return
     setSaving(true)
-    const res = await fetch(`${API}/ngos/${ngoId}/volunteer-opportunities`, {
+    const volunteersNeeded = Number(form.neededCount)
+    const res = await fetch(`${API}/ngos/${ngoId}/needs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-      body: JSON.stringify({ ...form, status: 'OPEN' }),
+      body: JSON.stringify({
+        title: form.title.trim(),
+        description: form.purpose.trim(),
+        category: 'VOLUNTEER_NEED',
+        targetAmount: Number.isFinite(volunteersNeeded) && volunteersNeeded > 0 ? volunteersNeeded : 0,
+        urgent: false,
+      }),
     })
     if (res.ok) {
       setShowForm(false)
-      setForm({ title: '', description: '', volunteerType: 'FIELD_WORK', location: '', commitmentHours: '', startDate: '' })
-      loadOpportunities()
+      setForm({ title: '', purpose: '', neededCount: '' })
+      loadVolunteerNeeds()
     }
     setSaving(false)
   }
 
-  const closeOpportunity = async (opportunityId) => {
-    await fetch(`${API}/volunteer-opportunities/${opportunityId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-      body: JSON.stringify({ status: 'CLOSED' }),
+  const closeVolunteerNeed = async (needId) => {
+    await fetch(`${API}/ngos/needs/${needId}/close`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
-    loadOpportunities()
+    loadVolunteerNeeds()
   }
 
-  const VOL_TYPES = { FIELD_WORK: 'Field Work', MENTORSHIP: 'Mentorship', TRAINING: 'Training Support', EVENT_SUPPORT: 'Event Support', CAMPAIGN_SUPPORT: 'Campaign Support', REMOTE: 'Remote Support' }
-
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+  const updateApplicationStatus = async (applicationId, status) => {
+    setUpdatingId(applicationId)
+    await fetch(`${API}/volunteer-applications/${applicationId}/status?status=${encodeURIComponent(status)}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+    setUpdatingId(null)
+    loadVolunteerNeeds()
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-extrabold text-slate-900">Volunteer Opportunities</h3>
+        <h3 className="text-base font-extrabold text-slate-900">Volunteer Needs</h3>
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
           className="rounded-xl px-4 py-2 text-xs font-bold text-white"
           style={{ backgroundColor: GREEN }}
         >
-          {showForm ? '✕ Cancel' : '+ Post Opportunity'}
+          {showForm ? '✕ Cancel' : '+ Post Volunteer Need'}
         </button>
       </div>
 
       {showForm && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Volunteer Opportunity</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Volunteer Need</p>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="block md:col-span-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Opportunity Title *</span>
-              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Community Outreach Coordinator" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Need Title *</span>
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Weekend mentors for digital skills" />
             </label>
             <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Volunteer Type</span>
-              <select value={form.volunteerType} onChange={(e) => setForm((f) => ({ ...f, volunteerType: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
-                {Object.entries(VOL_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</span>
-              <input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Field / Remote / Hybrid" />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Commitment Hours / Week</span>
-              <input value={form.commitmentHours} onChange={(e) => setForm((f) => ({ ...f, commitmentHours: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. 10-15 hours" />
-            </label>
-            <label className="block md:col-span-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Start Date</span>
-              <input value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">How Many Volunteers Needed</span>
+              <input value={form.neededCount} onChange={(e) => setForm((f) => ({ ...f, neededCount: e.target.value }))} type="number" min="1" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. 12" />
             </label>
           </div>
           <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
-            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe the role, responsibilities, and what volunteers will contribute…" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Purpose *</span>
+            <textarea value={form.purpose} onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Explain why this volunteer need is important and what volunteers will do." />
           </label>
-          <button type="button" onClick={postOpportunity} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
-            {saving ? 'Posting…' : 'Post Opportunity'}
+          <button type="button" onClick={postVolunteerNeed} disabled={saving || !form.title || !form.purpose} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Posting…' : 'Post Volunteer Need'}
           </button>
         </div>
       )}
 
       {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
 
-      {!loading && opportunities.length === 0 && (
+      {!loading && volunteerNeeds.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
-          <p className="text-sm font-bold text-slate-700">No volunteer opportunities posted yet.</p>
-          <p className="mt-1 text-xs text-slate-500">Click "Post Opportunity" to attract volunteers to your cause.</p>
+          <p className="text-sm font-bold text-slate-700">No volunteer needs posted yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Post your volunteer need so volunteers can submit interest.</p>
         </div>
       )}
 
-      {opportunities.map((opp) => (
-        <div key={opp.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      {volunteerNeeds.map((need) => {
+        const interested = applications.filter((app) => Number(app.sourceId) === Number(need.id))
+        return (
+        <div key={need.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={{ backgroundColor: opp.status === 'OPEN' ? '#dcfce7' : '#fee2e2', color: opp.status === 'OPEN' ? '#16a34a' : '#dc2626' }}>
-                  {opp.status}
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={{ backgroundColor: need.status === 'ACTIVE' ? '#dcfce7' : '#fee2e2', color: need.status === 'ACTIVE' ? '#16a34a' : '#dc2626' }}>
+                  {need.status}
                 </span>
-                {opp.volunteerType && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">{VOL_TYPES[opp.volunteerType] || opp.volunteerType}</span>}
+                <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[10px] font-semibold text-teal-700">Interested: {interested.length}</span>
               </div>
-              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{opp.title}</h4>
-              <p className="text-xs text-slate-500">{opp.location || 'Location TBD'} • {opp.commitmentHours || 'Flexible hours'} • Starts: {fmtDate(opp.startDate)}</p>
+              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{need.title}</h4>
+              <p className="text-xs text-slate-500">Needed: {Number(need.targetAmount || 0)} volunteers • Posted: {fmtDate(need.createdAt)}</p>
             </div>
-            {opp.status === 'OPEN' && (
-              <button type="button" onClick={() => closeOpportunity(opp.id)} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100">
-                Close Opportunity
+            {need.status === 'ACTIVE' && (
+              <button type="button" onClick={() => closeVolunteerNeed(need.id)} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100">
+                Close Need
               </button>
             )}
           </div>
-          <p className="mt-2 line-clamp-2 text-sm text-slate-600">{opp.description}</p>
+          <p className="mt-2 text-sm text-slate-600">{need.description}</p>
+
+          {interested.length > 0 && (
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Interested Volunteers</p>
+              <div className="mt-2 space-y-2">
+                {interested.map((app) => (
+                  <div key={app.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{app.fullName}</p>
+                        <p className="text-xs text-slate-500">{app.email}{app.phone ? ` • ${app.phone}` : ''}</p>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700">{app.status || 'PENDING'}</span>
+                    </div>
+                    {(app.motivationLetter || app.message) && <p className="mt-2 text-xs text-slate-600">{app.motivationLetter || app.message}</p>}
+                    <div className="mt-2 flex gap-2">
+                      <button type="button" disabled={updatingId === app.id} onClick={() => updateApplicationStatus(app.id, 'ACCEPTED')} className="rounded-lg bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700 disabled:opacity-50">Accept</button>
+                      <button type="button" disabled={updatingId === app.id} onClick={() => updateApplicationStatus(app.id, 'REJECTED')} className="rounded-lg bg-rose-100 px-2.5 py-1 text-[11px] font-bold text-rose-700 disabled:opacity-50">Reject</button>
+                      <button type="button" disabled={updatingId === app.id} onClick={() => updateApplicationStatus(app.id, 'PENDING')} className="rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 disabled:opacity-50">Mark Pending</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      ))}
+      )})}
     </div>
   )
 }
