@@ -32,6 +32,7 @@ const NAV_ICON = {
   Events: 'calendar',
   'Book Therapy': 'plus',
   'Request Help': 'ngo',
+  'Request History': 'chart',
   Saved: 'star',
   'Track Progress': 'chart',
 }

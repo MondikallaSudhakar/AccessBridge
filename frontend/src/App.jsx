@@ -36,6 +36,7 @@ import GuardianFeaturePage from './pages/guardian/GuardianFeaturePage'
 import GuardianHelpPage from './pages/guardian/GuardianHelpPage'
 import GuardianSavedPage from './pages/guardian/GuardianSavedPage'
 import GuardianProgressPage from './pages/guardian/GuardianProgressPage'
+import GuardianRequestsHistoryPage from './pages/guardian/GuardianRequestsHistoryPage'
 import SchoolWorkspaceLayout from './pages/school-workspace/SchoolWorkspaceLayout'
 import SchoolWorkspaceHome from './pages/school-workspace/SchoolWorkspaceHome'
 import SchoolWorkspaceFeaturePage from './pages/school-workspace/SchoolWorkspaceFeaturePage'
@@ -79,6 +80,7 @@ function App() {
           <Route path="events" element={<GuardianFeaturePage type="events" />} />
           <Route path="therapy" element={<GuardianFeaturePage type="therapy" />} />
           <Route path="help" element={<GuardianHelpPage />} />
+          <Route path="requests" element={<GuardianRequestsHistoryPage />} />
           <Route path="saved" element={<GuardianSavedPage />} />
           <Route path="progress" element={<GuardianProgressPage />} />
         </Route>

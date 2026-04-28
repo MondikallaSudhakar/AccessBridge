@@ -67,6 +67,7 @@ export async function loadGuardianOpportunities() {
     .filter((event) => text(event?.status, 'UPCOMING').toUpperCase() !== 'CANCELLED')
     .map((event) => ({
       id: `events-${event.id}`,
+      sourceId: event.id,
       title: text(event.title, 'Community event'),
       org: text(event.eventType, 'Community Event'),
       place: joinLocation(event.location, event.city, event.state) || 'Venue to be announced',
@@ -105,6 +106,7 @@ export const GUARDIAN_NAV = [
   { to: '/guardian/events', label: 'Events' },
   { to: '/guardian/therapy', label: 'Book Therapy' },
   { to: '/guardian/help', label: 'Request Help' },
+  { to: '/guardian/requests', label: 'Request History' },
   { to: '/guardian/saved', label: 'Saved' },
   { to: '/guardian/progress', label: 'Track Progress' },
 ]

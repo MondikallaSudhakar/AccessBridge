@@ -10,6 +10,7 @@ const FEATURES = [
   { title: 'Events', desc: 'Join events and awareness programs.', to: '/guardian/events' },
   { title: 'Book Therapy', desc: 'Book therapy and training sessions.', to: '/guardian/therapy' },
   { title: 'Request Help', desc: 'Send NGO support requests.', to: '/guardian/help' },
+  { title: 'Request History', desc: 'Track submitted NGO requests and responses.', to: '/guardian/requests' },
   { title: 'Saved', desc: 'Open saved opportunities.', to: '/guardian/saved' },
   { title: 'Track Progress', desc: 'Future progress tracking dashboard.', to: '/guardian/progress' },
 ]
