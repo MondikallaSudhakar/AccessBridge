@@ -79,6 +79,7 @@ export default function GuardianFeaturePage({ type }) {
   const [enrollForm, setEnrollForm] = useState({ name: '', email: '', notes: '' })
   const [enrollMsg, setEnrollMsg] = useState('')
   const [submittingEnroll, setSubmittingEnroll] = useState(false)
+  const [enrollments, setEnrollments] = useState([])
   const [registeringEvent, setRegisteringEvent] = useState(null)
   const [regForm, setRegForm] = useState({ notes: '' })
   const [regMsg, setRegMsg] = useState('')
@@ -116,6 +117,39 @@ export default function GuardianFeaturePage({ type }) {
     loadMyEventApplications()
   }, [type, user?.email, items])
 
+  // Prefill enroll form from logged-in user and refresh enrollments for schools
+  useEffect(() => {
+    if (user) {
+      setEnrollForm((prev) => ({ ...prev, name: (user.name || '').trim(), email: (user.email || '').trim() }))
+    }
+
+    const loadEnrollments = async () => {
+      if (type !== 'schools') return
+      try {
+        const schools = await api.get('/schools')
+        if (!Array.isArray(schools) || schools.length === 0) {
+          setEnrollments([])
+          return
+        }
+
+        const groups = await Promise.all(schools.map(async (s) => {
+          try {
+            const rows = await api.get(`/schools/${s.id}/special-enrollments`)
+            return Array.isArray(rows) ? rows : []
+          } catch {
+            return []
+          }
+        }))
+
+        setEnrollments(groups.flat())
+      } catch {
+        setEnrollments([])
+      }
+    }
+
+    loadEnrollments()
+  }, [type, user])
+
   const openEnrollmentModal = (item) => {
     setEnrollingCourse(item)
     setEnrollMsg('')
@@ -140,11 +174,19 @@ export default function GuardianFeaturePage({ type }) {
     setSubmittingEnroll(true)
     setEnrollMsg('')
     try {
-      await api.post(`/schools/courses/${enrollingCourse.sourceId}/special-enrollments`, {
+      const saved = await api.post(`/schools/courses/${enrollingCourse.sourceId}/special-enrollments`, {
         name,
         email,
         notes: enrollForm.notes.trim(),
       })
+
+      // update local enrollments list so UI shows enrolled state immediately
+      try {
+        setEnrollments((prev) => [saved, ...prev])
+      } catch {
+        // ignore errors updating local state
+      }
+
       setEnrollMsg('Enrollment submitted successfully.')
       setTimeout(() => {
         setEnrollingCourse(null)
@@ -156,6 +198,11 @@ export default function GuardianFeaturePage({ type }) {
       setSubmittingEnroll(false)
     }
   }
+
+    const alreadyEnrolled = (courseSourceId, email) => {
+      if (!email) return false
+      return enrollments.some((row) => String(row.courseId) === String(courseSourceId) && row.email && String(row.email).toLowerCase() === String(email).toLowerCase())
+    }
 
   const handleEventApply = async (event) => {
     event.preventDefault()
@@ -194,31 +241,38 @@ export default function GuardianFeaturePage({ type }) {
       )}
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {items.map((item) => (
-          <Card
-            key={item.id}
-            item={item}
-            saved={savedSet.has(item.id)}
-            primaryLabel={type === 'events' && myApplications[item.sourceId] ? 'Applied' : config.primaryLabel}
-            primaryDisabled={type === 'events' && Boolean(myApplications[item.sourceId])}
-            statusLabel={type === 'events' && myApplications[item.sourceId] ? (myApplications[item.sourceId].status || 'PENDING') : ''}
-            onPrimary={() => {
-              if (type === 'events') {
-                setRegisteringEvent(item)
-                setRegMsg('')
-                setRegForm({ notes: '' })
-                return
-              }
-              if (type === 'schools') {
-                openEnrollmentModal(item)
-                return
-              }
-              navigate(config.path)
-            }}
-            onBookmark={() => setBookmarks((current) => toggleGuardianBookmark(current, item.id))}
-            config={config}
-          />
-        ))}
+        {items.map((item) => {
+          const isEnrolled = type === 'schools' && alreadyEnrolled(item.sourceId, user?.email)
+          const eventApp = type === 'events' ? myApplications[item.sourceId] : null
+          const primaryLabelFor = type === 'events' && eventApp ? 'Applied' : (type === 'schools' && isEnrolled ? 'Enrolled' : null)
+          const primaryDisabledFor = (type === 'events' && Boolean(eventApp)) || (type === 'schools' && isEnrolled)
+
+          return (
+            <Card
+              key={item.id}
+              item={item}
+              saved={savedSet.has(item.id)}
+              primaryLabel={primaryLabelFor || config.primaryLabel}
+              primaryDisabled={primaryDisabledFor}
+              statusLabel={type === 'events' && eventApp ? (eventApp.status || 'PENDING') : (type === 'schools' && isEnrolled ? 'ENROLLED' : '')}
+              onPrimary={() => {
+                if (type === 'events') {
+                  setRegisteringEvent(item)
+                  setRegMsg('')
+                  setRegForm({ notes: '' })
+                  return
+                }
+                if (type === 'schools') {
+                  openEnrollmentModal(item)
+                  return
+                }
+                navigate(config.path)
+              }}
+              onBookmark={() => setBookmarks((current) => toggleGuardianBookmark(current, item.id))}
+              config={config}
+            />
+          )
+        })}
       </div>
 
       {enrollingCourse && (
