@@ -21,6 +21,30 @@ const card  = { background:'#fff', borderRadius:16, border:'1px solid #e9ecef', 
 const chip  = (color, bg) => ({ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:700,
   color, background: bg || color+'18', padding:'3px 10px', borderRadius:20, letterSpacing:'0.04em' })
 
+/* ── SVG Icons ── */
+const Icons = {
+  Briefcase: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+    </svg>
+  ),
+  Heart: () => (
+    <svg viewBox="0 0 24 24" fill="currentColor" strokeWidth="2" className="w-6 h-6">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ),
+  Package: () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+      <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+      <line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>
+  ),
+}
+
+
 export default function NgoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -182,20 +206,22 @@ export default function NgoDetail() {
           <div style={{ padding:'28px 32px 32px', display:'flex', gap:28, alignItems:'flex-start', flexWrap:'wrap' }}>
             <div style={{ flex:1, minWidth:240 }}>
               <h1 style={{ margin:0, fontSize:28, fontWeight:900, color:NAVY }}>{ngo.name}</h1>
-              <p style={{ margin:'6px 0 12px', fontSize:14, color:'#64748b', fontWeight:600 }}>📍 {[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
+              <p style={{ margin:'6px 0 12px', fontSize:14, color:'#64748b', fontWeight:600 }}>{[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
               {(ngo.category||ngo.focusArea) && <span style={{ ...chip(B), display:'inline-block', marginBottom:12 }}>{ngo.category||ngo.focusArea}</span>}
               <p style={{ margin:'12px 0 0', fontSize:15, color:'#475569', lineHeight:1.8, maxWidth:620 }}>{ngo.description||ngo.mission||'Committed to inclusive growth and accessibility.'}</p>
             </div>
             {/* Stat cards - horizontal */}
             <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'flex-end' }}>
               {[
-                { label:'Jobs', value: openJobs.length, icon:'💼', color: G },
-                { label:'Needs', value: activeNeeds.length, icon:'🤝', color: B },
-                { label:'Products', value: products.length, icon:'📦', color:'#6366f1' },
+                { label:'Jobs', Icon: Icons.Briefcase, color: G },
+                { label:'Needs', Icon: Icons.Heart, color: B },
+                { label:'Products', Icon: Icons.Package, color:'#6366f1' },
               ].map(s => (
                 <div key={s.label} style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:14, padding:'16px 20px', textAlign:'center', minWidth:110, boxShadow:'0 2px 8px rgba(0,0,0,.04)', transition:'all .2s' }}>
-                  <p style={{ margin:0, fontSize:24, marginBottom:6 }}>{s.icon}</p>
-                  <p style={{ margin:'0 0 4px', fontSize:20, fontWeight:900, color:s.color }}>{s.value}</p>
+                  <div style={{ margin:0, marginBottom:8, display:'flex', justifyContent:'center', width:24, height:24, marginLeft:'auto', marginRight:'auto', color:s.color }}>
+                    <s.Icon />
+                  </div>
+                  <p style={{ margin:'0 0 4px', fontSize:20, fontWeight:900, color:s.color }}>{s.label === 'Jobs' ? openJobs.length : s.label === 'Needs' ? activeNeeds.length : products.length}</p>
                   <p style={{ margin:0, fontSize:12, color:'#64748b', fontWeight:600 }}>{s.label}</p>
                 </div>
               ))}
@@ -241,8 +267,8 @@ export default function NgoDetail() {
                   </div>
                   <h3 style={{ margin:'0 0 8px', fontSize:17, fontWeight:900, color:NAVY }}>{j.title}</h3>
                   <div style={{ display:'flex', gap:16, flexWrap:'wrap', marginBottom:12, fontSize:13, color:'#64748b', fontWeight:600 }}>
-                    {j.location && <span>📍 {j.location}</span>}
-                    {j.salaryRange && <span style={{ color:G, fontWeight:800 }}>💰 {j.salaryRange}</span>}
+                    {j.location && <span>{j.location}</span>}
+                    {j.salaryRange && <span style={{ color:G, fontWeight:800 }}>{j.salaryRange}</span>}
                   </div>
                   <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{j.description}</p>
                 </div>
@@ -252,10 +278,6 @@ export default function NgoDetail() {
                     onClick={() => { setApplyJob(j); setApplyMsg(null) }}
                     style={{ padding:'11px 24px', background:G, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', boxShadow:`0 2px 10px ${G}40`, transition:'all .2s' }}
                   >Apply Now</button>
-                  <button
-                    onClick={() => openChat('hiring', j.title)}
-                    style={{ padding:'11px 24px', background:'#fff', color:B, border:`2px solid ${B}`, borderRadius:10, fontWeight:700, fontSize:14, cursor:'pointer', transition:'all .2s' }}
-                  >Chat</button>
                 </div>
               </div>
             ))}
@@ -273,7 +295,7 @@ export default function NgoDetail() {
                     <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{n.title}</h3>
                     <span style={{ ...chip(B, `${B}12`), display:'inline-block', marginBottom:12, fontWeight:700 }}>{n.category}</span>
                     <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{n.description}</p>
-                    {n.targetAmount > 0 && <p style={{ margin:0, fontSize:14, fontWeight:800, color:G }}>🎯 Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
+                    {n.targetAmount > 0 && <p style={{ margin:0, fontSize:14, fontWeight:800, color:G }}>Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
                   </div>
                   <button onClick={() => { setSupportNeed(n); setSupportMsg(null); setSupportForm({ name:'', email:'', message:'' }) }}
                     style={{ whiteSpace:'nowrap', padding:'11px 24px', background:B, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', flexShrink:0, boxShadow:`0 2px 10px ${B}40` }}>
@@ -314,9 +336,8 @@ export default function NgoDetail() {
                     <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{s.title}</h3>
                     <span style={{ ...chip('#6366f1', '#e0e7ff'), display:'inline-block', marginBottom:12, fontWeight:700 }}>{s.category||'Service'}</span>
                     <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{s.description}</p>
-                    {s.contactInfo && <p style={{ margin:0, fontSize:13, color:G, fontWeight:800 }}>📞 Contact: {s.contactInfo}</p>}
+                    {s.contactInfo && <p style={{ margin:0, fontSize:13, color:G, fontWeight:800 }}>Contact: {s.contactInfo}</p>}
                   </div>
-                  <button onClick={() => openChat('service', s.title)} style={{ whiteSpace:'nowrap', padding:'11px 24px', background:'#fff', color:'#6366f1', border:'2px solid #6366f1', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer' }}>Enquire</button>
                 </div>
               </div>
             ))}
@@ -329,11 +350,8 @@ export default function NgoDetail() {
             {achievements.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:48 }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No achievements posted</p><p style={{fontSize:14,margin:0}}>Check back later for success stories.</p></div>}
             {achievements.map(a => (
               <div key={a.id} style={{ ...card, borderTop:`4px solid ${G}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-                <div style={{ display:'flex', gap:3, marginBottom:10 }}>
-                  <span style={{ fontSize:20 }}>⭐</span>
-                </div>
                 <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{a.title}</h3>
-                {a.achievementDate && <p style={{ margin:'0 0 12px', fontSize:12, color:'#64748b', fontWeight:700 }}>📅 {a.achievementDate}</p>}
+                {a.achievementDate && <p style={{ margin:'0 0 12px', fontSize:12, color:'#64748b', fontWeight:700 }}>{a.achievementDate}</p>}
                 <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{a.description}</p>
               </div>
             ))}
