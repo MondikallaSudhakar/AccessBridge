@@ -36,7 +36,7 @@ public class UserTypeGuideController {
                         "VOLUNTEER",
                         "Normal Public / Volunteer",
                         "To contribute time, skills, and support to the community.",
-                        "/volunteer/dashboard",
+                                "/volunteer",
                         List.of(
                                 "NGO needs and requests",
                                 "Volunteer opportunities",

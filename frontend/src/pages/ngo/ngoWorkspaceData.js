@@ -47,8 +47,8 @@ export const NGO_FEATURES = {
     tab: 'supportRequests',
   },
   volunteers: {
-    title: 'Volunteers',
-    subtitle: 'Review volunteers and manage outreach support.',
+    title: 'Volunteer Opportunities',
+    subtitle: 'Post volunteer roles and manage volunteer applications.',
     tab: 'volunteers',
   },
   campaigns: {

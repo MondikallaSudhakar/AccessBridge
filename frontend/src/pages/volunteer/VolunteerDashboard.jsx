@@ -229,6 +229,16 @@ export default function VolunteerDashboard() {
     return <div className="volunteer-shell volunteer-loading">Loading volunteer workspace...</div>
   }
 
+  if (loading) {
+    return (
+      <div className="volunteer-shell volunteer-loading">
+        <div style={{ textAlign: 'center', color: '#e5eef7' }}>
+          <p>Loading your volunteer workspace...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="volunteer-shell">
       <aside className="volunteer-sidebar">

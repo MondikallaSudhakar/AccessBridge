@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 
 // Pages
@@ -17,7 +17,9 @@ import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
 import NgoWorkspaceHome from './pages/ngo/NgoWorkspaceHome'
 import NgoWorkspaceFeaturePage from './pages/ngo/NgoWorkspaceFeaturePage'
-import VolunteerDashboard from './pages/volunteer/VolunteerDashboard'
+import VolunteerLayout from './pages/volunteer/VolunteerLayout'
+import VolunteerHome from './pages/volunteer/VolunteerHome'
+import VolunteerFeaturePage from './pages/volunteer/VolunteerFeaturePage'
 import NgoDetail from './pages/ngo/NgoDetail'
 import UserMessages from './pages/messages/UserMessages'
 import SpecialLayout from './pages/special/SpecialLayout'
@@ -55,7 +57,16 @@ function App() {
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
         <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON', 'GUARDIAN_CAREGIVER']}><UserMessages /></RoleRoute>} />
-        <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerDashboard /></RoleRoute>} />
+        <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><Navigate to="/volunteer" replace /></RoleRoute>} />
+        <Route path="/volunteer" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerLayout /></RoleRoute>}>
+          <Route index element={<VolunteerHome />} />
+          <Route path="opportunities" element={<VolunteerFeaturePage type="opportunities" />} />
+          <Route path="ngo-needs" element={<VolunteerFeaturePage type="ngo-needs" />} />
+          <Route path="events" element={<VolunteerFeaturePage type="events" />} />
+          <Route path="schools" element={<VolunteerFeaturePage type="schools" />} />
+          <Route path="stories" element={<VolunteerFeaturePage type="stories" />} />
+          <Route path="applications" element={<VolunteerFeaturePage type="applications" />} />
+        </Route>
         <Route path="/special" element={<RoleRoute allowedRoles={['SPECIAL_ABLED_PERSON', 'SUPER_ADMIN']}><SpecialLayout /></RoleRoute>}>
           <Route index element={<SpecialHome />} />
           <Route path="profile" element={<SpecialProfilePage />} />

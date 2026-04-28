@@ -19,7 +19,7 @@ export const USER_TYPE_GUIDES = [
     role: 'VOLUNTEER',
     label: 'Normal Public / Volunteer',
     loginPurpose: 'To contribute time, skills, and support to the community.',
-    dashboardPath: '/volunteer/dashboard',
+      dashboardPath: '/volunteer',
     canView: [
       'NGO needs and requests',
       'Volunteer opportunities',
