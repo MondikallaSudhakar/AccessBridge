@@ -152,50 +152,51 @@ export default function NgoDetail() {
   ]
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f1f5f9', fontFamily:"'Inter',sans-serif" }}>
+    <div style={{ minHeight:'100vh', background:'#ffffff', fontFamily:"'Inter',sans-serif" }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .ngo-job-card:hover{border-color:${G} !important; box-shadow:0 4px 24px rgba(22,163,74,.10) !important}
-        .ngo-tab-btn:hover{background:rgba(22,163,74,.08) !important}
+        .ngo-job-card:hover{border-left-color:${G} !important; box-shadow:0 8px 24px rgba(22,163,74,.12) !important}
+        .ngo-tab-btn:hover{background:rgba(22,163,74,.06) !important}
       `}</style>
 
       {/* ── Topbar ── */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e9ecef', padding:'14px 32px', display:'flex', alignItems:'center', gap:12, position:'sticky', top:0, zIndex:50 }}>
-        <button onClick={() => navigate('/')} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight:600, color:'#64748b' }}>
-          ← Back to Home
+      <div style={{ background:'#fff', borderBottom:'1px solid #e2e8f0', padding:'16px 32px', display:'flex', alignItems:'center', gap:12, position:'sticky', top:0, zIndex:50, boxShadow:'0 1px 3px rgba(0,0,0,.06)' }}>
+        <button onClick={() => navigate('/')} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700, color:'#64748b', transition:'color .2s' }}>
+          ← Back
         </button>
         <div style={{ flex:1 }}/>
-        <span style={{ ...chip(G), fontSize:12 }}>{ngo.verified ? '✓ Verified NGO' : '⏳ Pending Verification'}</span>
+        <span style={{ ...chip(G), fontSize:12, fontWeight:800 }}>{ngo.verified ? '✓ Verified NGO' : '⏳ Pending'}</span>
       </div>
 
       <div style={{ maxWidth:1100, margin:'0 auto', padding:'32px 24px 60px' }}>
 
         {/* ── Hero card ── */}
-        <div style={{ ...card, padding:0, overflow:'hidden', animation:'fadeIn .4s ease', marginBottom:24 }}>
-          {/* Gradient banner */}
-          <div style={{ height:120, background:`linear-gradient(135deg, ${G}22 0%, ${B}18 100%)`, position:'relative' }}>
-            <div style={{ position:'absolute', bottom:-30, left:32, width:64, height:64, borderRadius:16, background:'#fff', border:`2px solid ${G}40`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26, fontWeight:900, color:G }}>
+        <div style={{ ...card, padding:0, overflow:'hidden', animation:'fadeIn .4s ease', marginBottom:24, boxShadow:'0 4px 16px rgba(0,0,0,.08)' }}>
+          {/* Solid banner */}
+          <div style={{ height:140, background:B, position:'relative', display:'flex', alignItems:'flex-end', paddingLeft:32, paddingBottom:20 }}>
+            <div style={{ width:80, height:80, borderRadius:20, background:'#fff', border:'3px solid #fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, fontWeight:900, color:B, boxShadow:'0 8px 24px rgba(0,0,0,.15)' }}>
               {ngo.name?.charAt(0).toUpperCase()}
             </div>
           </div>
-          <div style={{ padding:'42px 32px 28px', display:'flex', gap:32, alignItems:'flex-start', flexWrap:'wrap' }}>
-            <div style={{ flex:1, minWidth:220 }}>
-              <h1 style={{ margin:0, fontSize:26, fontWeight:900, color:NAVY }}>{ngo.name}</h1>
-              <p style={{ margin:'4px 0 10px', fontSize:13, color:'#64748b' }}>{[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
-              {(ngo.category||ngo.focusArea) && <span style={chip(B)}>{ngo.category||ngo.focusArea}</span>}
-              <p style={{ margin:'14px 0 0', fontSize:14, color:'#374151', lineHeight:1.7, maxWidth:600 }}>{ngo.description||ngo.mission||'Committed to inclusive growth and accessibility.'}</p>
+          <div style={{ padding:'28px 32px 32px', display:'flex', gap:28, alignItems:'flex-start', flexWrap:'wrap' }}>
+            <div style={{ flex:1, minWidth:240 }}>
+              <h1 style={{ margin:0, fontSize:28, fontWeight:900, color:NAVY }}>{ngo.name}</h1>
+              <p style={{ margin:'6px 0 12px', fontSize:14, color:'#64748b', fontWeight:600 }}>📍 {[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
+              {(ngo.category||ngo.focusArea) && <span style={{ ...chip(B), display:'inline-block', marginBottom:12 }}>{ngo.category||ngo.focusArea}</span>}
+              <p style={{ margin:'12px 0 0', fontSize:15, color:'#475569', lineHeight:1.8, maxWidth:620 }}>{ngo.description||ngo.mission||'Committed to inclusive growth and accessibility.'}</p>
             </div>
-            {/* Stat cards */}
-            <div style={{ display:'flex', gap:14, flexWrap:'wrap' }}>
+            {/* Stat cards - horizontal */}
+            <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'flex-end' }}>
               {[
-                { label:'Open Jobs',    value: openJobs.length,    color: G },
-                { label:'Active Needs', value: activeNeeds.length, color: B },
-                { label:'Last Date',    value: lastDate ? new Date(lastDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—', color:'#f59e0b' },
+                { label:'Jobs', value: openJobs.length, icon:'💼', color: G },
+                { label:'Needs', value: activeNeeds.length, icon:'🤝', color: B },
+                { label:'Products', value: products.length, icon:'📦', color:'#6366f1' },
               ].map(s => (
-                <div key={s.label} style={{ background:`${s.color}0D`, border:`1px solid ${s.color}30`, borderRadius:14, padding:'14px 20px', textAlign:'center', minWidth:100 }}>
-                  <p style={{ margin:'0 0 2px', fontSize:22, fontWeight:900, color:s.color }}>{s.value}</p>
-                  <p style={{ margin:0, fontSize:11, color:'#64748b', fontWeight:600 }}>{s.label}</p>
+                <div key={s.label} style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:14, padding:'16px 20px', textAlign:'center', minWidth:110, boxShadow:'0 2px 8px rgba(0,0,0,.04)', transition:'all .2s' }}>
+                  <p style={{ margin:0, fontSize:24, marginBottom:6 }}>{s.icon}</p>
+                  <p style={{ margin:'0 0 4px', fontSize:20, fontWeight:900, color:s.color }}>{s.value}</p>
+                  <p style={{ margin:0, fontSize:12, color:'#64748b', fontWeight:600 }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -203,18 +204,19 @@ export default function NgoDetail() {
         </div>
 
         {/* ── Tab bar ── */}
-        <div style={{ display:'flex', gap:6, marginBottom:20, overflowX:'auto', paddingBottom:4 }}>
+        <div style={{ display:'flex', gap:8, marginBottom:24, overflowX:'auto', paddingBottom:6, scrollBehavior:'smooth' }}>
           {TABS.map(t => (
             <button key={t.key} className="ngo-tab-btn"
               onClick={() => setTab(t.key)}
-              style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', borderRadius:10, border:'none', cursor:'pointer', fontFamily:"'Inter',sans-serif", fontWeight:tab===t.key?700:500, fontSize:13, transition:'all .15s', whiteSpace:'nowrap',
-                background: tab===t.key ? G : '#fff',
-                color: tab===t.key ? '#fff' : '#374151',
-                boxShadow: tab===t.key ? `0 2px 12px ${G}40` : '0 1px 3px rgba(0,0,0,.06)',
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 20px', borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Inter',sans-serif", fontWeight:tab===t.key?800:600, fontSize:14, transition:'all .2s', whiteSpace:'nowrap',
+                background: tab===t.key ? G : '#f8fafc',
+                color: tab===t.key ? '#fff' : '#64748b',
+                boxShadow: tab===t.key ? `0 4px 12px ${G}30` : 'none',
+                border: tab===t.key ? 'none' : '1px solid #e2e8f0',
               }}
             >
               {t.label}
-              <span style={{ fontSize:11, fontWeight:700, background: tab===t.key?'rgba(255,255,255,.3)':'#f1f5f9', color: tab===t.key?'#fff':'#64748b', padding:'1px 7px', borderRadius:10 }}>{t.count}</span>
+              <span style={{ fontSize:12, fontWeight:800, background: tab===t.key?'rgba(255,255,255,.35)':'#e2e8f0', color: tab===t.key?'#fff':'#64748b', padding:'2px 8px', borderRadius:8 }}>{t.count}</span>
             </button>
           ))}
         </div>
@@ -230,30 +232,29 @@ export default function NgoDetail() {
             )}
             {openJobs.map(j => (
               <div key={j.id} className="ngo-job-card"
-                style={{ ...card, transition:'all .18s', display:'flex', gap:20, alignItems:'flex-start', flexWrap:'wrap' }}>
+                style={{ ...card, transition:'all .18s', display:'flex', gap:24, alignItems:'flex-start', flexWrap:'wrap', borderLeft:`4px solid ${G}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
                 {/* Info */}
-                <div style={{ flex:1, minWidth:200 }}>
-                  <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:6 }}>
-                    <span style={chip(G)}>OPEN</span>
-                    {j.employmentType && <span style={chip(B)}>{EMP_LABELS[j.employmentType]||j.employmentType}</span>}
+                <div style={{ flex:1, minWidth:280 }}>
+                  <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
+                    <span style={{ ...chip(G, `${G}15`), fontWeight:800 }}>✓ HIRING</span>
+                    {j.employmentType && <span style={{ ...chip(B, `${B}12`), fontWeight:700 }}>{EMP_LABELS[j.employmentType]||j.employmentType}</span>}
                   </div>
-                  <h3 style={{ margin:'0 0 4px', fontSize:16, fontWeight:800, color:NAVY }}>{j.title}</h3>
-                  <div style={{ display:'flex', gap:14, flexWrap:'wrap', marginBottom:8 }}>
-                    {j.location && <span style={{ fontSize:12, color:'#64748b' }}>Location: {j.location}</span>}
-                    {j.salaryRange && <span style={{ fontSize:12, color:G, fontWeight:700 }}>Salary: {j.salaryRange}</span>}
-                    {j.lastDateToApply && <span style={{ fontSize:12, color:'#f59e0b', fontWeight:700 }}>Last date: {j.lastDateToApply}</span>}
+                  <h3 style={{ margin:'0 0 8px', fontSize:17, fontWeight:900, color:NAVY }}>{j.title}</h3>
+                  <div style={{ display:'flex', gap:16, flexWrap:'wrap', marginBottom:12, fontSize:13, color:'#64748b', fontWeight:600 }}>
+                    {j.location && <span>📍 {j.location}</span>}
+                    {j.salaryRange && <span style={{ color:G, fontWeight:800 }}>💰 {j.salaryRange}</span>}
                   </div>
-                  <p style={{ margin:0, fontSize:13, color:'#64748b', lineHeight:1.6 }}>{j.description}</p>
+                  <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{j.description}</p>
                 </div>
                 {/* Actions */}
-                <div style={{ display:'flex', flexDirection:'column', gap:8, flexShrink:0 }}>
+                <div style={{ display:'flex', flexDirection:'column', gap:10, flexShrink:0 }}>
                   <button
                     onClick={() => { setApplyJob(j); setApplyMsg(null) }}
-                    style={{ padding:'9px 20px', background:G, color:'#fff', border:'none', borderRadius:10, fontWeight:700, fontSize:13, cursor:'pointer', boxShadow:`0 2px 10px ${G}40` }}
+                    style={{ padding:'11px 24px', background:G, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', boxShadow:`0 2px 10px ${G}40`, transition:'all .2s' }}
                   >Apply Now</button>
                   <button
                     onClick={() => openChat('hiring', j.title)}
-                    style={{ padding:'9px 20px', background:`${B}12`, color:B, border:`1px solid ${B}30`, borderRadius:10, fontWeight:700, fontSize:13, cursor:'pointer' }}
+                    style={{ padding:'11px 24px', background:'#fff', color:B, border:`2px solid ${B}`, borderRadius:10, fontWeight:700, fontSize:14, cursor:'pointer', transition:'all .2s' }}
                   >Chat</button>
                 </div>
               </div>
@@ -263,19 +264,19 @@ export default function NgoDetail() {
 
         {/* ── REQUIREMENTS tab ── */}
         {tab === 'requirements' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:12, animation:'fadeIn .3s ease' }}>
-            {activeNeeds.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', padding:'40px' }}><p style={{fontSize:14}}>No active requirements posted.</p></div>}
+          <div style={{ display:'flex', flexDirection:'column', gap:14, animation:'fadeIn .3s ease' }}>
+            {activeNeeds.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', padding:'48px 24px' }}><p style={{fontSize:15, fontWeight:700, margin:'0 0 4px'}}>No active requirements</p><p style={{fontSize:14, margin:0}}>Check back later for new opportunities.</p></div>}
             {activeNeeds.map(n => (
-              <div key={n.id} style={card}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
+              <div key={n.id} style={{ ...card, borderLeft:`4px solid ${B}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:16 }}>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <h3 style={{ margin:'0 0 4px', fontSize:15, fontWeight:800, color:NAVY }}>{n.title}</h3>
-                    <span style={chip(B)}>{n.category}</span>
-                    <p style={{ margin:'8px 0 0', fontSize:13, color:'#64748b', lineHeight:1.6 }}>{n.description}</p>
-                    {n.targetAmount > 0 && <p style={{ margin:'8px 0 0', fontSize:13, fontWeight:700, color:G }}>Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
+                    <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{n.title}</h3>
+                    <span style={{ ...chip(B, `${B}12`), display:'inline-block', marginBottom:12, fontWeight:700 }}>{n.category}</span>
+                    <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{n.description}</p>
+                    {n.targetAmount > 0 && <p style={{ margin:0, fontSize:14, fontWeight:800, color:G }}>🎯 Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
                   </div>
                   <button onClick={() => { setSupportNeed(n); setSupportMsg(null); setSupportForm({ name:'', email:'', message:'' }) }}
-                    style={{ whiteSpace:'nowrap', padding:'9px 18px', background:G, color:'#fff', border:'none', borderRadius:10, fontWeight:700, fontSize:12, cursor:'pointer', flexShrink:0 }}>
+                    style={{ whiteSpace:'nowrap', padding:'11px 24px', background:B, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', flexShrink:0, boxShadow:`0 2px 10px ${B}40` }}>
                     Support
                   </button>
                 </div>
@@ -286,15 +287,17 @@ export default function NgoDetail() {
 
         {/* ── PRODUCTS tab ── */}
         {tab === 'products' && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16, animation:'fadeIn .3s ease' }}>
-            {products.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:40 }}><p>No products listed.</p></div>}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:18, animation:'fadeIn .3s ease' }}>
+            {products.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:48 }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No products listed</p><p style={{fontSize:14, margin:0}}>Check back later for new products.</p></div>}
             {products.map(p => (
-              <div key={p.id} style={card}>
-                <h3 style={{ margin:'0 0 4px', fontSize:15, fontWeight:800, color:NAVY }}>{p.name}</h3>
-                <span style={chip('#6366f1')}>{p.category||'General'}</span>
-                <p style={{ margin:'8px 0 4px', fontSize:13, color:'#64748b' }}>{p.description}</p>
-                <p style={{ margin:'8px 0 0', fontSize:16, fontWeight:800, color:G }}>₹{Number(p.price||0).toLocaleString('en-IN')}</p>
-                <p style={{ margin:'2px 0 0', fontSize:11, color:'#94a3b8' }}>Stock: {p.stockQuantity}</p>
+              <div key={p.id} style={{ ...card, borderTop:`4px solid #6366f1`, boxShadow:'0 2px 8px rgba(0,0,0,.04)', transition:'all .2s' }}>
+                <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{p.name}</h3>
+                <span style={{ ...chip('#6366f1', '#e0e7ff'), display:'inline-block', marginBottom:12, fontWeight:700 }}>{p.category||'General'}</span>
+                <p style={{ margin:'0 0 12px', fontSize:14, color:'#475569', lineHeight:1.6 }}>{p.description}</p>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:12, borderTop:'1px solid #e2e8f0' }}>
+                  <p style={{ margin:0, fontSize:18, fontWeight:900, color:G }}>₹{Number(p.price||0).toLocaleString('en-IN')}</p>
+                  <p style={{ margin:0, fontSize:12, color:'#64748b', fontWeight:700 }}>📦 Stock: {p.stockQuantity}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -302,18 +305,18 @@ export default function NgoDetail() {
 
         {/* ── SERVICES tab ── */}
         {tab === 'services' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:12, animation:'fadeIn .3s ease' }}>
-            {services.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8' }}><p>No services listed.</p></div>}
+          <div style={{ display:'flex', flexDirection:'column', gap:14, animation:'fadeIn .3s ease' }}>
+            {services.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8' }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No services listed</p><p style={{fontSize:14,margin:0}}>Check back later for new services.</p></div>}
             {services.map(s => (
-              <div key={s.id} style={card}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-                  <div>
-                    <h3 style={{ margin:'0 0 4px', fontSize:15, fontWeight:800, color:NAVY }}>{s.title}</h3>
-                    <span style={chip('#6366f1')}>{s.category||'Service'}</span>
-                    <p style={{ margin:'8px 0', fontSize:13, color:'#64748b' }}>{s.description}</p>
-                    {s.contactInfo && <p style={{ margin:0, fontSize:12, color:G, fontWeight:600 }}>Contact: {s.contactInfo}</p>}
+              <div key={s.id} style={{ ...card, borderLeft:`4px solid #6366f1`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:16 }}>
+                  <div style={{ flex:1 }}>
+                    <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{s.title}</h3>
+                    <span style={{ ...chip('#6366f1', '#e0e7ff'), display:'inline-block', marginBottom:12, fontWeight:700 }}>{s.category||'Service'}</span>
+                    <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{s.description}</p>
+                    {s.contactInfo && <p style={{ margin:0, fontSize:13, color:G, fontWeight:800 }}>📞 Contact: {s.contactInfo}</p>}
                   </div>
-                  <button onClick={() => openChat('service', s.title)} style={{ whiteSpace:'nowrap', padding:'8px 16px', background:`${G}12`, color:G, border:`1px solid ${G}30`, borderRadius:10, fontWeight:700, fontSize:12, cursor:'pointer' }}>Enquire</button>
+                  <button onClick={() => openChat('service', s.title)} style={{ whiteSpace:'nowrap', padding:'11px 24px', background:'#fff', color:'#6366f1', border:'2px solid #6366f1', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer' }}>Enquire</button>
                 </div>
               </div>
             ))}
@@ -322,13 +325,16 @@ export default function NgoDetail() {
 
         {/* ── ACHIEVEMENTS tab ── */}
         {tab === 'achievements' && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:16, animation:'fadeIn .3s ease' }}>
-            {achievements.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:40 }}><p>No achievements posted.</p></div>}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:18, animation:'fadeIn .3s ease' }}>
+            {achievements.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:48 }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No achievements posted</p><p style={{fontSize:14,margin:0}}>Check back later for success stories.</p></div>}
             {achievements.map(a => (
-              <div key={a.id} style={{ ...card, borderLeft:`4px solid ${G}` }}>
-                <h3 style={{ margin:'0 0 4px', fontSize:15, fontWeight:800, color:NAVY }}>{a.title}</h3>
-                {a.achievementDate && <p style={{ margin:'0 0 6px', fontSize:11, color:'#94a3b8' }}>{a.achievementDate}</p>}
-                <p style={{ margin:0, fontSize:13, color:'#64748b', lineHeight:1.6 }}>{a.description}</p>
+              <div key={a.id} style={{ ...card, borderTop:`4px solid ${G}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+                <div style={{ display:'flex', gap:3, marginBottom:10 }}>
+                  <span style={{ fontSize:20 }}>⭐</span>
+                </div>
+                <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{a.title}</h3>
+                {a.achievementDate && <p style={{ margin:'0 0 12px', fontSize:12, color:'#64748b', fontWeight:700 }}>📅 {a.achievementDate}</p>}
+                <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{a.description}</p>
               </div>
             ))}
           </div>
@@ -338,46 +344,46 @@ export default function NgoDetail() {
       {/* ── Apply Modal ── */}
       {applyJob && (
         <div onClick={() => setApplyJob(null)}
-          style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(15,23,42,.52)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20, boxSizing:'border-box', overflowY:'auto' }}>
+          style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(15,23,42,.55)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20, boxSizing:'border-box', overflowY:'auto' }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background:'#fff', borderRadius:20, boxShadow:'0 24px 64px rgba(0,0,0,.25)', width:'100%', maxWidth:540, maxHeight:'90vh', display:'flex', flexDirection:'column', overflow:'hidden', position:'relative' }}>
+            style={{ background:'#fff', borderRadius:16, boxShadow:'0 20px 64px rgba(0,0,0,.20)', width:'100%', maxWidth:540, maxHeight:'90vh', display:'flex', flexDirection:'column', overflow:'hidden', position:'relative' }}>
             <button onClick={() => setApplyJob(null)}
-              style={{ position:'absolute', top:14, right:14, width:32, height:32, borderRadius:'50%', border:'none', background:'#f1f5f9', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, fontSize:15, color:'#64748b', fontWeight:700 }}>x</button>
+              style={{ position:'absolute', top:14, right:14, width:36, height:36, borderRadius:'50%', border:'none', background:'#f1f5f9', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10, fontSize:18, color:'#64748b', fontWeight:700, transition:'all .2s' }}>×</button>
             {/* Header */}
-            <div style={{ padding:'22px 24px 16px', borderBottom:'1px solid #f1f5f9', flexShrink:0 }}>
-              <p style={{ margin:'0 0 2px', fontSize:11, fontWeight:700, color:G, textTransform:'uppercase', letterSpacing:'0.08em' }}>Apply for</p>
-              <h2 style={{ margin:0, fontSize:18, fontWeight:900, color:NAVY }}>{applyJob.title}</h2>
-              <p style={{ margin:'2px 0 0', fontSize:12, color:'#64748b' }}>{ngo.name}</p>
+            <div style={{ padding:'24px 28px 16px', borderBottom:'1px solid #e2e8f0', flexShrink:0, background:'#fff' }}>
+              <p style={{ margin:'0 0 6px', fontSize:12, fontWeight:800, color:G, textTransform:'uppercase', letterSpacing:'0.08em' }}>Apply Now</p>
+              <h2 style={{ margin:0, fontSize:20, fontWeight:900, color:NAVY }}>{applyJob.title}</h2>
+              <p style={{ margin:'4px 0 0', fontSize:13, color:'#64748b', fontWeight:600 }}>{ngo.name}</p>
             </div>
             {/* Form */}
-            <form onSubmit={handleApply} style={{ flex:1, overflowY:'auto', padding:'18px 24px', display:'flex', flexDirection:'column', gap:13 }}>
+            <form onSubmit={handleApply} style={{ flex:1, overflowY:'auto', padding:'20px 28px', display:'flex', flexDirection:'column', gap:14 }}>
               {[['name','Full Name','text',true],['email','Email','email',true],['phone','Phone Number','tel',false]].map(([f,l,t,req])=>(
                 <div key={f}>
-                  <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>{l}{req&&' *'}</label>
+                  <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>{l}{req&&' *'}</label>
                   <input required={req} type={t} value={form[f]} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))}
-                    style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif" }}/>
+                    style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", transition:'border .2s' }}/>
                 </div>
               ))}
               <div>
-                <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>Disability Type</label>
+                <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>Disability Type</label>
                 <select value={form.disabilityType} onChange={e=>setForm(p=>({...p,disabilityType:e.target.value}))}
-                  style={{ width:'100%', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", background:'#fff' }}>
+                  style={{ width:'100%', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", background:'#fff' }}>
                   <option value="">Select (optional)</option>
                   {['visual','hearing','mobility','cognitive','speech','other'].map(d=><option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>Cover Letter *</label>
+                <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>Cover Letter *</label>
                 <textarea required rows={4} value={form.coverLetter} onChange={e=>setForm(p=>({...p,coverLetter:e.target.value}))} placeholder="Why are you interested in this role?"
-                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
+                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
               </div>
               <div>
-                <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>Resume / Skills *</label>
+                <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>Resume / Skills *</label>
                 <textarea required rows={3} value={form.resumeText} onChange={e=>setForm(p=>({...p,resumeText:e.target.value}))} placeholder="Brief summary of your skills and experience"
-                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
+                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
               </div>
               {applyMsg && (
-                <div style={{ padding:'10px 14px', borderRadius:10, fontSize:13, fontWeight:600,
+                <div style={{ padding:'12px 16px', borderRadius:10, fontSize:13, fontWeight:600,
                   background: applyMsg.type==='ok'?'#f0fdf4':applyMsg.type==='warn'?'#fffbeb':'#fef2f2',
                   color: applyMsg.type==='ok'?G:applyMsg.type==='warn'?'#b45309':'#dc2626',
                   border: `1px solid ${applyMsg.type==='ok'?'#bbf7d0':applyMsg.type==='warn'?'#fde68a':'#fecaca'}` }}>
@@ -385,7 +391,7 @@ export default function NgoDetail() {
                 </div>
               )}
               <button type="submit" disabled={submitting}
-                style={{ padding:'12px', background: submitting?'#94a3b8':G, color:'#fff', border:'none', borderRadius:12, fontWeight:800, fontSize:15, cursor: submitting?'not-allowed':'pointer', transition:'background .15s' }}>
+                style={{ padding:'13px', background: submitting?'#94a3b8':G, color:'#fff', border:'none', borderRadius:12, fontWeight:800, fontSize:15, cursor: submitting?'not-allowed':'pointer', transition:'background .2s' }}>
                 {submitting ? 'Submitting...' : 'Submit Application'}
               </button>
             </form>
@@ -396,32 +402,32 @@ export default function NgoDetail() {
       {/* ── Support Request Modal ── */}
       {supportNeed && (
         <div onClick={() => setSupportNeed(null)}
-          style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(15,23,42,.52)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20, boxSizing:'border-box' }}>
+          style={{ position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(15,23,42,.55)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20, boxSizing:'border-box' }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background:'#fff', borderRadius:20, boxShadow:'0 24px 64px rgba(0,0,0,.22)', width:'100%', maxWidth:480, position:'relative', overflow:'hidden' }}>
+            style={{ background:'#fff', borderRadius:16, boxShadow:'0 20px 64px rgba(0,0,0,.20)', width:'100%', maxWidth:480, position:'relative', overflow:'hidden' }}>
             <button onClick={() => setSupportNeed(null)}
-              style={{ position:'absolute', top:14, right:14, width:32, height:32, borderRadius:'50%', border:'none', background:'#f1f5f9', cursor:'pointer', fontSize:15, fontWeight:700, color:'#64748b', display:'flex', alignItems:'center', justifyContent:'center' }}>x</button>
-            <div style={{ padding:'22px 24px 16px', borderBottom:'1px solid #f1f5f9' }}>
-              <p style={{ margin:'0 0 2px', fontSize:11, fontWeight:700, color:B, textTransform:'uppercase', letterSpacing:'0.08em' }}>Support Request</p>
-              <h2 style={{ margin:0, fontSize:17, fontWeight:900, color:NAVY }}>{supportNeed.title}</h2>
-              <p style={{ margin:'2px 0 0', fontSize:12, color:'#64748b' }}>{ngo.name}</p>
+              style={{ position:'absolute', top:14, right:14, width:36, height:36, borderRadius:'50%', border:'none', background:'#f1f5f9', cursor:'pointer', fontSize:18, fontWeight:700, color:'#64748b', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .2s' }}>×</button>
+            <div style={{ padding:'24px 28px 16px', borderBottom:'1px solid #e2e8f0', background:'#fff' }}>
+              <p style={{ margin:'0 0 6px', fontSize:12, fontWeight:800, color:B, textTransform:'uppercase', letterSpacing:'0.08em' }}>Support Request</p>
+              <h2 style={{ margin:0, fontSize:19, fontWeight:900, color:NAVY }}>{supportNeed.title}</h2>
+              <p style={{ margin:'4px 0 0', fontSize:13, color:'#64748b', fontWeight:600 }}>{ngo.name}</p>
             </div>
-            <form onSubmit={handleSupport} style={{ padding:'18px 24px', display:'flex', flexDirection:'column', gap:13 }}>
+            <form onSubmit={handleSupport} style={{ padding:'20px 28px', display:'flex', flexDirection:'column', gap:14 }}>
               {[['name','Your Name','text',true],['email','Your Email','email',true]].map(([f,l,t,req]) => (
                 <div key={f}>
-                  <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>{l} {req?'*':''}</label>
+                  <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>{l} {req?'*':''}</label>
                   <input required={req} type={t} value={supportForm[f]} onChange={e => setSupportForm(p => ({...p,[f]:e.target.value}))}
-                    style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif" }}/>
+                    style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:14, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", transition:'border .2s' }}/>
                 </div>
               ))}
               <div>
-                <label style={{ display:'block', fontSize:12, fontWeight:700, color:'#64748b', marginBottom:5 }}>How can you help / what do you need? *</label>
+                <label style={{ display:'block', fontSize:13, fontWeight:700, color:'#374151', marginBottom:6 }}>How can you help? *</label>
                 <textarea required rows={4} value={supportForm.message} onChange={e => setSupportForm(p => ({...p,message:e.target.value}))}
-                  placeholder={`Describe how you want to support "${supportNeed.title}" or what help you need...`}
-                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'9px 13px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
+                  placeholder={`Describe how you want to support "${supportNeed.title}"...`}
+                  style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e2e8f0', borderRadius:10, padding:'10px 14px', fontSize:13, color:NAVY, outline:'none', fontFamily:"'Inter',sans-serif", resize:'vertical' }}/>
               </div>
               {supportMsg && (
-                <div style={{ padding:'10px 14px', borderRadius:10, fontSize:13, fontWeight:600,
+                <div style={{ padding:'12px 16px', borderRadius:10, fontSize:13, fontWeight:600,
                   background: supportMsg.type==='ok'?'#f0fdf4':'#fffbeb',
                   color: supportMsg.type==='ok'?G:'#b45309',
                   border: `1px solid ${supportMsg.type==='ok'?'#bbf7d0':'#fde68a'}` }}>
@@ -429,7 +435,7 @@ export default function NgoDetail() {
                 </div>
               )}
               <button type="submit" disabled={supportSubmitting}
-                style={{ padding:'12px', background: supportSubmitting?'#94a3b8':G, color:'#fff', border:'none', borderRadius:12, fontWeight:800, fontSize:15, cursor: supportSubmitting?'not-allowed':'pointer' }}>
+                style={{ padding:'13px', background: supportSubmitting?'#94a3b8':B, color:'#fff', border:'none', borderRadius:12, fontWeight:800, fontSize:15, cursor: supportSubmitting?'not-allowed':'pointer', transition:'background .2s' }}>
                 {supportSubmitting ? 'Sending...' : 'Send Support Request'}
               </button>
             </form>
