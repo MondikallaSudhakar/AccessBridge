@@ -75,6 +75,10 @@ export default function GuardianFeaturePage({ type }) {
   const { user } = useAuth()
   const [bookmarks, setBookmarks] = useState(readGuardianBookmarks())
   const { opportunities, loading, error } = useGuardianOpportunities()
+  const [enrollingCourse, setEnrollingCourse] = useState(null)
+  const [enrollForm, setEnrollForm] = useState({ name: '', email: '', notes: '' })
+  const [enrollMsg, setEnrollMsg] = useState('')
+  const [submittingEnroll, setSubmittingEnroll] = useState(false)
   const [registeringEvent, setRegisteringEvent] = useState(null)
   const [regForm, setRegForm] = useState({ notes: '' })
   const [regMsg, setRegMsg] = useState('')
@@ -111,6 +115,47 @@ export default function GuardianFeaturePage({ type }) {
 
     loadMyEventApplications()
   }, [type, user?.email, items])
+
+  const openEnrollmentModal = (item) => {
+    setEnrollingCourse(item)
+    setEnrollMsg('')
+    setEnrollForm({
+      name: (user?.name || '').trim(),
+      email: (user?.email || '').trim(),
+      notes: '',
+    })
+  }
+
+  const handleCourseEnrollment = async (event) => {
+    event.preventDefault()
+    if (!enrollingCourse?.sourceId) return
+
+    const name = enrollForm.name.trim()
+    const email = enrollForm.email.trim()
+    if (!name || !email) {
+      setEnrollMsg('Name and email are required.')
+      return
+    }
+
+    setSubmittingEnroll(true)
+    setEnrollMsg('')
+    try {
+      await api.post(`/schools/courses/${enrollingCourse.sourceId}/special-enrollments`, {
+        name,
+        email,
+        notes: enrollForm.notes.trim(),
+      })
+      setEnrollMsg('Enrollment submitted successfully.')
+      setTimeout(() => {
+        setEnrollingCourse(null)
+        setEnrollMsg('')
+      }, 900)
+    } catch (err) {
+      setEnrollMsg(err.message || 'Failed to submit enrollment.')
+    } finally {
+      setSubmittingEnroll(false)
+    }
+  }
 
   const handleEventApply = async (event) => {
     event.preventDefault()
@@ -164,6 +209,10 @@ export default function GuardianFeaturePage({ type }) {
                 setRegForm({ notes: '' })
                 return
               }
+              if (type === 'schools') {
+                openEnrollmentModal(item)
+                return
+              }
               navigate(config.path)
             }}
             onBookmark={() => setBookmarks((current) => toggleGuardianBookmark(current, item.id))}
@@ -171,6 +220,62 @@ export default function GuardianFeaturePage({ type }) {
           />
         ))}
       </div>
+
+      {enrollingCourse && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 px-4" onClick={() => setEnrollingCourse(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">Course Enrollment</p>
+            <h3 className="mt-1 text-lg font-black text-slate-900">{enrollingCourse.title}</h3>
+            <p className="mt-1 text-xs text-slate-500">{enrollingCourse.org}</p>
+            <form onSubmit={handleCourseEnrollment} className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="guardianEnrollName">Your Name</label>
+                <input
+                  id="guardianEnrollName"
+                  type="text"
+                  required
+                  value={enrollForm.name}
+                  onChange={(event) => setEnrollForm((current) => ({ ...current, name: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="guardianEnrollEmail">Email</label>
+                <input
+                  id="guardianEnrollEmail"
+                  type="email"
+                  required
+                  value={enrollForm.email}
+                  onChange={(event) => setEnrollForm((current) => ({ ...current, email: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="guardianEnrollNotes">Notes (optional)</label>
+                <textarea
+                  id="guardianEnrollNotes"
+                  rows={3}
+                  value={enrollForm.notes}
+                  onChange={(event) => setEnrollForm((current) => ({ ...current, notes: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  placeholder="Mention learner support needs..."
+                />
+              </div>
+              {!!enrollMsg && (
+                <p className={`rounded-lg px-3 py-2 text-xs font-semibold ${enrollMsg.toLowerCase().includes('success') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                  {enrollMsg}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setEnrollingCourse(null)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700">Cancel</button>
+                <button type="submit" disabled={submittingEnroll} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-60">
+                  {submittingEnroll ? 'Submitting...' : 'Submit Enrollment'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {registeringEvent && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 px-4" onClick={() => setRegisteringEvent(null)}>
