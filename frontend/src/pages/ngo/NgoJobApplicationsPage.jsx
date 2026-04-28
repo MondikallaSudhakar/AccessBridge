@@ -10,7 +10,7 @@ const STATUS_STYLE = {
   REJECTED: { bg: '#fee2e2', color: '#dc2626', label: 'Rejected' },
 }
 
-const INDIGO = '#4f46e5'
+const GREEN = '#5BCB2B'
 
 function fmt(dateStr) {
   if (!dateStr) return '—'
@@ -49,7 +49,7 @@ function ApplicationCard({ app, onStatusChange }) {
           <p className="text-base font-extrabold text-slate-900">{app.applicantName}</p>
           <p className="mt-0.5 text-xs font-semibold text-slate-500">{app.applicantEmail} {app.applicantPhone ? `• ${app.applicantPhone}` : ''}</p>
           {app.disabilityType && (
-            <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+            <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
               {app.disabilityType}
             </span>
           )}
@@ -66,7 +66,7 @@ function ApplicationCard({ app, onStatusChange }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="mt-3 text-xs font-bold"
-        style={{ color: INDIGO }}
+        style={{ color: GREEN }}
       >
         {open ? '▲ Hide details' : '▼ View application'}
       </button>
@@ -86,8 +86,8 @@ function ApplicationCard({ app, onStatusChange }) {
             </div>
           )}
           {app.audioNoteFileName && (
-            <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Audio Note Attached</p>
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Audio Note Attached</p>
               <p className="mt-1 text-xs font-semibold text-slate-700">{app.audioNoteFileName}</p>
             </div>
           )}
@@ -99,7 +99,7 @@ function ApplicationCard({ app, onStatusChange }) {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400"
               placeholder="Add a note for internal tracking…"
             />
             <div className="mt-2 flex flex-wrap gap-2">
@@ -161,10 +161,10 @@ export default function NgoJobApplicationsPage({ jobId, jobTitle, ngoId }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: INDIGO }}>Job Applications</p>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: GREEN }}>Job Applications</p>
           <h3 className="mt-0.5 text-lg font-extrabold text-slate-900">{jobTitle || 'Applications'}</h3>
         </div>
-        <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: '#eef2ff', color: INDIGO }}>
+        <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: '#f0f9e7', color: GREEN }}>
           {applications.length} total
         </span>
       </div>
@@ -172,7 +172,7 @@ export default function NgoJobApplicationsPage({ jobId, jobTitle, ngoId }) {
       {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTS.map((f) => {
-          const st = f === 'all' ? { bg: INDIGO, color: '#fff' } : STATUS_STYLE[f]
+          const st = f === 'all' ? { bg: GREEN, color: '#fff' } : STATUS_STYLE[f]
           const active = filter === f
           return (
             <button
@@ -181,7 +181,7 @@ export default function NgoJobApplicationsPage({ jobId, jobTitle, ngoId }) {
               onClick={() => setFilter(f)}
               className="rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
               style={{
-                backgroundColor: active ? (f === 'all' ? INDIGO : st.bg) : '#f1f5f9',
+                backgroundColor: active ? (f === 'all' ? GREEN : st.bg) : '#f1f5f9',
                 color: active ? (f === 'all' ? '#fff' : st.color) : '#64748b',
               }}
             >

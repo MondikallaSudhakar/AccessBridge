@@ -627,15 +627,21 @@ export default function NgoProfile() {
   const [msgText, setMsgText]     = useState('')
   const [sending, setSending]     = useState(false)
 
-  const [needForm, setNeedForm]               = useState(blankNeed)
   const [jobForm, setJobForm]                 = useState(blankJob)
   const [eventForm, setEventForm]             = useState(blankEvent)
   const [showEventForm, setShowEventForm]     = useState(false)
   const [productForm, setProductForm]         = useState(blankProduct)
+  const [showProductForm, setShowProductForm] = useState(false)
   const [serviceForm, setServiceForm]         = useState(blankService)
+  const [showServiceForm, setShowServiceForm] = useState(false)
   const [achievementForm, setAchievementForm] = useState(blankAchievement)
+  const [showAchievementForm, setShowAchievementForm] = useState(false)
   const [volunteerForm, setVolunteerForm] = useState(blankVolunteer)
+  const [showVolunteerForm, setShowVolunteerForm] = useState(false)
   const [campaignForm, setCampaignForm] = useState(blankCampaign)
+  const [showCampaignForm, setShowCampaignForm] = useState(false)
+  const [needForm, setNeedForm]               = useState(blankNeed)
+  const [showNeedForm, setShowNeedForm]       = useState(false)
   const [supportRequestFilter, setSupportRequestFilter] = useState('PENDING')
   const [selectedJobApps, setSelectedJobApps] = useState(null) // { job, apps[] }
   const [loadingApps, setLoadingApps] = useState(false)
@@ -1225,8 +1231,13 @@ export default function NgoProfile() {
           {tab === 'volunteers' && (
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
-                <PanelHeader title="Add Volunteer Profile" subtitle="Dedicated volunteer records for CSR reporting."/>
-                <form onSubmit={createVolunteer} style={{display:'flex',flexDirection:'column',gap:14}}>
+                <PanelHeader title="Add Volunteer Profile" subtitle="Dedicated volunteer records for CSR reporting." action={
+                  <PrimaryBtn iconName={showVolunteerForm?'x':'plus'} onClick={()=>setShowVolunteerForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showVolunteerForm?'Cancel':'+ Add Volunteer'}
+                  </PrimaryBtn>
+                }/>
+                {showVolunteerForm && (
+                  <form onSubmit={e=>{createVolunteer(e);setShowVolunteerForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
                   <div><FieldLabel required>Full Name</FieldLabel><TextInput required value={volunteerForm.fullName} onChange={e=>setVolunteerForm(p=>({...p,fullName:e.target.value}))} /></div>
                   <div><FieldLabel required>Email</FieldLabel><TextInput required type="email" value={volunteerForm.email} onChange={e=>setVolunteerForm(p=>({...p,email:e.target.value}))} /></div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
@@ -1236,7 +1247,12 @@ export default function NgoProfile() {
                   <div><FieldLabel>Availability</FieldLabel><TextInput value={volunteerForm.availability} onChange={e=>setVolunteerForm(p=>({...p,availability:e.target.value}))} placeholder="Weekends / evenings"/></div>
                   <div><FieldLabel>Skills</FieldLabel><TextArea rows={3} value={volunteerForm.skills} onChange={e=>setVolunteerForm(p=>({...p,skills:e.target.value}))} /></div>
                   <PrimaryBtn type="submit" iconName="plus">Add Volunteer</PrimaryBtn>
-                </form>
+                    <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <PrimaryBtn type="submit" iconName="plus">Add Volunteer</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowVolunteerForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </form>
+                )}
               </Panel>
               <Panel>
                 <PanelHeader title="Volunteer Profiles" subtitle={`${volunteers.length} records`} />
@@ -1271,22 +1287,31 @@ export default function NgoProfile() {
           {tab === 'campaigns' && (
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
-                <PanelHeader title="Add Campaign" subtitle="Track campaign outcomes separate from needs and achievements."/>
-                <form onSubmit={createCampaign} style={{display:'flex',flexDirection:'column',gap:14}}>
-                  <div><FieldLabel required>Campaign Title</FieldLabel><TextInput required value={campaignForm.title} onChange={e=>setCampaignForm(p=>({...p,title:e.target.value}))} /></div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Start Date</FieldLabel><TextInput type="date" value={campaignForm.startDate} onChange={e=>setCampaignForm(p=>({...p,startDate:e.target.value}))} /></div>
-                    <div><FieldLabel>End Date</FieldLabel><TextInput type="date" value={campaignForm.endDate} onChange={e=>setCampaignForm(p=>({...p,endDate:e.target.value}))} /></div>
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Target Beneficiaries</FieldLabel><TextInput type="number" value={campaignForm.targetBeneficiaries} onChange={e=>setCampaignForm(p=>({...p,targetBeneficiaries:e.target.value}))} /></div>
-                    <div><FieldLabel>Volunteer Target</FieldLabel><TextInput type="number" value={campaignForm.volunteerTarget} onChange={e=>setCampaignForm(p=>({...p,volunteerTarget:e.target.value}))} /></div>
-                  </div>
-                  <div><FieldLabel>Spent Amount (INR)</FieldLabel><TextInput type="number" value={campaignForm.spentAmount} onChange={e=>setCampaignForm(p=>({...p,spentAmount:e.target.value}))} /></div>
-                  <div><FieldLabel>Objective</FieldLabel><TextArea rows={3} value={campaignForm.objective} onChange={e=>setCampaignForm(p=>({...p,objective:e.target.value}))} /></div>
-                  <div><FieldLabel>Impact Summary</FieldLabel><TextArea rows={3} value={campaignForm.impactSummary} onChange={e=>setCampaignForm(p=>({...p,impactSummary:e.target.value}))} /></div>
-                  <PrimaryBtn type="submit" iconName="plus">Add Campaign</PrimaryBtn>
-                </form>
+                <PanelHeader title="Add Campaign" subtitle="Track campaign outcomes separate from needs and achievements." action={
+                  <PrimaryBtn iconName={showCampaignForm?'x':'plus'} onClick={()=>setShowCampaignForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showCampaignForm?'Cancel':'+ Add Campaign'}
+                  </PrimaryBtn>
+                }/>
+                {showCampaignForm && (
+                  <form onSubmit={e=>{createCampaign(e);setShowCampaignForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Campaign Title</FieldLabel><TextInput required value={campaignForm.title} onChange={e=>setCampaignForm(p=>({...p,title:e.target.value}))} /></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Start Date</FieldLabel><TextInput type="date" value={campaignForm.startDate} onChange={e=>setCampaignForm(p=>({...p,startDate:e.target.value}))} /></div>
+                      <div><FieldLabel>End Date</FieldLabel><TextInput type="date" value={campaignForm.endDate} onChange={e=>setCampaignForm(p=>({...p,endDate:e.target.value}))} /></div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Target Beneficiaries</FieldLabel><TextInput type="number" value={campaignForm.targetBeneficiaries} onChange={e=>setCampaignForm(p=>({...p,targetBeneficiaries:e.target.value}))} /></div>
+                      <div><FieldLabel>Volunteer Target</FieldLabel><TextInput type="number" value={campaignForm.volunteerTarget} onChange={e=>setCampaignForm(p=>({...p,volunteerTarget:e.target.value}))} /></div>
+                    </div>
+                    <div><FieldLabel>Spent Amount (INR)</FieldLabel><TextInput type="number" value={campaignForm.spentAmount} onChange={e=>setCampaignForm(p=>({...p,spentAmount:e.target.value}))} /></div>
+                    <div><FieldLabel>Objective</FieldLabel><TextArea rows={3} value={campaignForm.objective} onChange={e=>setCampaignForm(p=>({...p,objective:e.target.value}))} /></div>
+                    <div><FieldLabel>Impact Summary</FieldLabel><TextArea rows={3} value={campaignForm.impactSummary} onChange={e=>setCampaignForm(p=>({...p,impactSummary:e.target.value}))} /></div>
+                    <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <PrimaryBtn type="submit" iconName="plus">Add Campaign</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowCampaignForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </form>
+                )}
               </Panel>
               <Panel>
                 <PanelHeader title="Campaigns" subtitle={`${campaigns.length} campaigns`} />
@@ -1321,20 +1346,29 @@ export default function NgoProfile() {
           {tab === 'requirements' && (
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
-                <PanelHeader title="Post a Requirement" subtitle="Describe what your NGO needs from the community."/>
-                <form onSubmit={createNeed} style={{display:'flex',flexDirection:'column',gap:14}}>
-                  <div><FieldLabel required>Title</FieldLabel><TextInput value={needForm.title} onChange={e=>setNeedForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Laptops for students" required/></div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Target Amount (₹)</FieldLabel><TextInput type="number" value={needForm.targetAmount} onChange={e=>setNeedForm(p=>({...p,targetAmount:e.target.value}))} placeholder="0"/></div>
-                    <div><FieldLabel>Category</FieldLabel><TextInput value={needForm.category} onChange={e=>setNeedForm(p=>({...p,category:e.target.value}))} placeholder="SUPPORT"/></div>
-                  </div>
-                  <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'10px 12px',background:'#fff8e1',borderRadius:radius.md,border:'1px solid #fde68a'}}>
-                    <input type="checkbox" checked={needForm.urgent} onChange={e=>setNeedForm(p=>({...p,urgent:e.target.checked}))} style={{width:15,height:15,accentColor:'#f59e0b'}}/>
-                    <span style={{fontSize:13,fontWeight:600,color:'#92400e'}}>Mark as Urgent</span>
-                  </label>
-                  <div><FieldLabel required>Description</FieldLabel><TextArea value={needForm.description} onChange={e=>setNeedForm(p=>({...p,description:e.target.value}))} placeholder="Provide details…" rows={4} required/></div>
-                  <PrimaryBtn type="submit" iconName="plus">Post Requirement</PrimaryBtn>
-                </form>
+                <PanelHeader title="Post a Requirement" subtitle="Describe what your NGO needs from the community." action={
+                  <PrimaryBtn iconName={showNeedForm?'x':'plus'} onClick={()=>setShowNeedForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showNeedForm?'Cancel':'+ Add Requirement'}
+                  </PrimaryBtn>
+                }/>
+                {showNeedForm && (
+                  <form onSubmit={e=>{createNeed(e);setShowNeedForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Title</FieldLabel><TextInput value={needForm.title} onChange={e=>setNeedForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Laptops for students" required/></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Target Amount (₹)</FieldLabel><TextInput type="number" value={needForm.targetAmount} onChange={e=>setNeedForm(p=>({...p,targetAmount:e.target.value}))} placeholder="0"/></div>
+                      <div><FieldLabel>Category</FieldLabel><TextInput value={needForm.category} onChange={e=>setNeedForm(p=>({...p,category:e.target.value}))} placeholder="SUPPORT"/></div>
+                    </div>
+                    <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',padding:'10px 12px',background:'#fff8e1',borderRadius:radius.md,border:'1px solid #fde68a'}}>
+                      <input type="checkbox" checked={needForm.urgent} onChange={e=>setNeedForm(p=>({...p,urgent:e.target.checked}))} style={{width:15,height:15,accentColor:'#f59e0b'}}/>
+                      <span style={{fontSize:13,fontWeight:600,color:'#92400e'}}>Mark as Urgent</span>
+                    </label>
+                    <div><FieldLabel required>Description</FieldLabel><TextArea value={needForm.description} onChange={e=>setNeedForm(p=>({...p,description:e.target.value}))} placeholder="Provide details…" rows={4} required/></div>
+                    <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <PrimaryBtn type="submit" iconName="plus">Post Requirement</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowNeedForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </form>
+                )}
               </Panel>
 
               <Panel>
@@ -1382,21 +1416,28 @@ export default function NgoProfile() {
           {tab === 'products' && (
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
               <Panel>
-                <PanelHeader title="Post a Product" subtitle="List assistive products for the community marketplace."/>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
-                  <div><FieldLabel required>Product Name</FieldLabel><TextInput value={productForm.name} onChange={e=>setProductForm(p=>({...p,name:e.target.value}))} placeholder="e.g. Hearing Aid Kit" required/></div>
-                  <div><FieldLabel>Category</FieldLabel><TextInput value={productForm.category} onChange={e=>setProductForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Assistive Device"/></div>
-                  <div><FieldLabel required>Price (₹)</FieldLabel><TextInput type="number" value={productForm.price} onChange={e=>setProductForm(p=>({...p,price:e.target.value}))} placeholder="0" required/></div>
-                  <div><FieldLabel>Stock Quantity</FieldLabel><TextInput type="number" value={productForm.stockQuantity} onChange={e=>setProductForm(p=>({...p,stockQuantity:e.target.value}))} placeholder="0"/></div>
-                  <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea value={productForm.description} onChange={e=>setProductForm(p=>({...p,description:e.target.value}))} placeholder="Describe the product…" rows={3}/></div>
-                  <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
-                    <input type="checkbox" checked={productForm.available} onChange={e=>setProductForm(p=>({...p,available:e.target.checked}))} style={{width:15,height:15,accentColor:G}}/>
-                    <span style={{fontSize:13,fontWeight:600,color:'#475569'}}>Currently Available</span>
-                  </label>
-                </div>
-                <div style={{marginTop:20,paddingTop:16,borderTop:'1px solid #f1f5f9'}}>
-                  <PrimaryBtn onClick={createProduct} iconName="plus">Post Product</PrimaryBtn>
-                </div>
+                <PanelHeader title="Post a Product" subtitle="List assistive products for the community marketplace." action={
+                  <PrimaryBtn iconName={showProductForm?'x':'plus'} onClick={()=>setShowProductForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showProductForm?'Cancel':'+ Add Product'}
+                  </PrimaryBtn>
+                }/>
+                {showProductForm && (
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Product Name</FieldLabel><TextInput value={productForm.name} onChange={e=>setProductForm(p=>({...p,name:e.target.value}))} placeholder="e.g. Hearing Aid Kit" required/></div>
+                    <div><FieldLabel>Category</FieldLabel><TextInput value={productForm.category} onChange={e=>setProductForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Assistive Device"/></div>
+                    <div><FieldLabel required>Price (₹)</FieldLabel><TextInput type="number" value={productForm.price} onChange={e=>setProductForm(p=>({...p,price:e.target.value}))} placeholder="0" required/></div>
+                    <div><FieldLabel>Stock Quantity</FieldLabel><TextInput type="number" value={productForm.stockQuantity} onChange={e=>setProductForm(p=>({...p,stockQuantity:e.target.value}))} placeholder="0"/></div>
+                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea value={productForm.description} onChange={e=>setProductForm(p=>({...p,description:e.target.value}))} placeholder="Describe the product…" rows={3}/></div>
+                    <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+                      <input type="checkbox" checked={productForm.available} onChange={e=>setProductForm(p=>({...p,available:e.target.checked}))} style={{width:15,height:15,accentColor:G}}/>
+                      <span style={{fontSize:13,fontWeight:600,color:'#475569'}}>Currently Available</span>
+                    </label>
+                    <div style={{gridColumn:'1/-1',display:'flex',gap:10,alignItems:'center',marginTop:8}}>
+                      <PrimaryBtn onClick={e=>{createProduct(e);setShowProductForm(false)}} iconName="plus">Post Product</PrimaryBtn>
+                      <GhostBtn onClick={()=>setShowProductForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </div>
+                )}
               </Panel>
 
               <Panel>
@@ -1427,17 +1468,26 @@ export default function NgoProfile() {
           {tab === 'services' && (
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
-                <PanelHeader title="Post a Service" subtitle="Services appear on your public NGO profile."/>
-                <form onSubmit={createService} style={{display:'flex',flexDirection:'column',gap:14}}>
-                  <div><FieldLabel required>Service Title</FieldLabel><TextInput value={serviceForm.title} onChange={e=>setServiceForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Counselling Support" required/></div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                    <div><FieldLabel>Category</FieldLabel><TextInput value={serviceForm.category} onChange={e=>setServiceForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Mental Health"/></div>
-                    <div><FieldLabel>Availability</FieldLabel><TextInput value={serviceForm.availability} onChange={e=>setServiceForm(p=>({...p,availability:e.target.value}))} placeholder="Mon–Fri, 9am–5pm"/></div>
-                  </div>
-                  <div><FieldLabel>Contact Info</FieldLabel><TextInput value={serviceForm.contactInfo} onChange={e=>setServiceForm(p=>({...p,contactInfo:e.target.value}))} placeholder="Phone or email"/></div>
-                  <div><FieldLabel required>Description</FieldLabel><TextArea value={serviceForm.description} onChange={e=>setServiceForm(p=>({...p,description:e.target.value}))} placeholder="Describe the service…" rows={4} required/></div>
-                  <PrimaryBtn type="submit" iconName="plus">Post Service</PrimaryBtn>
-                </form>
+                <PanelHeader title="Post a Service" subtitle="Services appear on your public NGO profile." action={
+                  <PrimaryBtn iconName={showServiceForm?'x':'plus'} onClick={()=>setShowServiceForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showServiceForm?'Cancel':'+ Add Service'}
+                  </PrimaryBtn>
+                }/>
+                {showServiceForm && (
+                  <form onSubmit={e=>{createService(e);setShowServiceForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Service Title</FieldLabel><TextInput value={serviceForm.title} onChange={e=>setServiceForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Counselling Support" required/></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Category</FieldLabel><TextInput value={serviceForm.category} onChange={e=>setServiceForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Mental Health"/></div>
+                      <div><FieldLabel>Availability</FieldLabel><TextInput value={serviceForm.availability} onChange={e=>setServiceForm(p=>({...p,availability:e.target.value}))} placeholder="Mon–Fri, 9am–5pm"/></div>
+                    </div>
+                    <div><FieldLabel>Contact Info</FieldLabel><TextInput value={serviceForm.contactInfo} onChange={e=>setServiceForm(p=>({...p,contactInfo:e.target.value}))} placeholder="Phone or email"/></div>
+                    <div><FieldLabel required>Description</FieldLabel><TextArea value={serviceForm.description} onChange={e=>setServiceForm(p=>({...p,description:e.target.value}))} placeholder="Describe the service…" rows={4} required/></div>
+                    <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <PrimaryBtn type="submit" iconName="plus">Post Service</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowServiceForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </form>
+                )}
               </Panel>
 
               <Panel>
@@ -1470,17 +1520,24 @@ export default function NgoProfile() {
           {tab === 'achievements' && (
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
               <Panel>
-                <PanelHeader title="Post an Achievement" subtitle="Achievements are shown prominently on your public profile."/>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
-                  <div><FieldLabel required>Achievement Title</FieldLabel><TextInput value={achievementForm.title} onChange={e=>setAchievementForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Served 10,000 families" required/></div>
-                  <div><FieldLabel>Category</FieldLabel><TextInput value={achievementForm.category} onChange={e=>setAchievementForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Outreach"/></div>
-                  <div><FieldLabel>Achievement Date</FieldLabel><TextInput type="date" value={achievementForm.achievementDate} onChange={e=>setAchievementForm(p=>({...p,achievementDate:e.target.value}))}/></div>
-                  <div><FieldLabel>Image URL</FieldLabel><TextInput value={achievementForm.imageUrl} onChange={e=>setAchievementForm(p=>({...p,imageUrl:e.target.value}))} placeholder="https://…"/></div>
-                  <div style={{gridColumn:'1/-1'}}><FieldLabel required>Description</FieldLabel><TextArea value={achievementForm.description} onChange={e=>setAchievementForm(p=>({...p,description:e.target.value}))} placeholder="Tell the story of this achievement…" rows={3} required/></div>
-                </div>
-                <div style={{marginTop:20,paddingTop:16,borderTop:'1px solid #f1f5f9'}}>
-                  <PrimaryBtn onClick={createAchievement} iconName="plus">Post Achievement</PrimaryBtn>
-                </div>
+                <PanelHeader title="Post an Achievement" subtitle="Achievements are shown prominently on your public profile." action={
+                  <PrimaryBtn iconName={showAchievementForm?'x':'plus'} onClick={()=>setShowAchievementForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showAchievementForm?'Cancel':'+ Add Achievement'}
+                  </PrimaryBtn>
+                }/>
+                {showAchievementForm && (
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:18,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Achievement Title</FieldLabel><TextInput value={achievementForm.title} onChange={e=>setAchievementForm(p=>({...p,title:e.target.value}))} placeholder="e.g. Served 10,000 families" required/></div>
+                    <div><FieldLabel>Category</FieldLabel><TextInput value={achievementForm.category} onChange={e=>setAchievementForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Outreach"/></div>
+                    <div><FieldLabel>Achievement Date</FieldLabel><TextInput type="date" value={achievementForm.achievementDate} onChange={e=>setAchievementForm(p=>({...p,achievementDate:e.target.value}))}/></div>
+                    <div><FieldLabel>Image URL</FieldLabel><TextInput value={achievementForm.imageUrl} onChange={e=>setAchievementForm(p=>({...p,imageUrl:e.target.value}))} placeholder="https://…"/></div>
+                    <div style={{gridColumn:'1/-1'}}><FieldLabel required>Description</FieldLabel><TextArea value={achievementForm.description} onChange={e=>setAchievementForm(p=>({...p,description:e.target.value}))} placeholder="Tell the story of this achievement…" rows={3} required/></div>
+                    <div style={{gridColumn:'1/-1',display:'flex',gap:10,alignItems:'center',marginTop:8}}>
+                      <PrimaryBtn onClick={e=>{createAchievement(e);setShowAchievementForm(false)}} iconName="plus">Post Achievement</PrimaryBtn>
+                      <GhostBtn onClick={()=>setShowAchievementForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </div>
+                )}
               </Panel>
 
               <Panel>

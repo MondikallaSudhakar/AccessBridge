@@ -27,6 +27,7 @@ import SpecialJobsPage from './pages/special/SpecialJobsPage'
 import SpecialFeaturePage from './pages/special/SpecialFeaturePage'
 import SpecialHelpPage from './pages/special/SpecialHelpPage'
 import SpecialSavedPage from './pages/special/SpecialSavedPage'
+import SpecialRequestsHistoryPage from './pages/special/SpecialRequestsHistoryPage'
 import GuardianLayout from './pages/guardian/GuardianLayout'
 import GuardianHome from './pages/guardian/GuardianHome'
 import GuardianProfilePage from './pages/guardian/GuardianProfilePage'
@@ -66,6 +67,7 @@ function App() {
           <Route path="schemes" element={<SpecialFeaturePage type="schemes" />} />
           <Route path="help" element={<SpecialHelpPage />} />
           <Route path="saved" element={<SpecialSavedPage />} />
+          <Route path="requests" element={<SpecialRequestsHistoryPage />} />
         </Route>
         <Route path="/guardian" element={<RoleRoute allowedRoles={['GUARDIAN_CAREGIVER', 'SUPER_ADMIN']}><GuardianLayout /></RoleRoute>}>
           <Route index element={<GuardianHome />} />

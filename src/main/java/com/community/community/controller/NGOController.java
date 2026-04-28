@@ -166,6 +166,14 @@ public class NGOController {
         return ResponseEntity.ok(ngoSupportRequestRepository.save(request));
     }
 
+    @GetMapping("/support-requests/history")
+    public ResponseEntity<List<NGOSupportRequest>> getMyRequestHistory(@RequestParam String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(ngoSupportRequestRepository.findByRequesterEmailOrderByCreatedAtDesc(email.trim()));
+    }
+
     // ── Volunteer Profiles Endpoints ───────────────────────────────────────
 
     @GetMapping("/{id}/volunteers")

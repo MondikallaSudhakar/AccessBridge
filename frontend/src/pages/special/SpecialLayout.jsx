@@ -33,6 +33,7 @@ const NAV_ICON = {
   Campaigns: 'shield',
   Schemes: 'star',
   'Request Help': 'help',
+  'Request History': 'help',
   Saved: 'star',
 }
 

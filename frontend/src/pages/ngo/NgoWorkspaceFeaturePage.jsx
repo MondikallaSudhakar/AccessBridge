@@ -5,7 +5,7 @@ import NgoJobApplicationsPage from './NgoJobApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
 
 const API = 'http://localhost:8081/api'
-const INDIGO = '#4f46e5'
+const GREEN = '#5BCB2B'
 
 const FEATURE_ACTIONS = {
   requirements: { tips: ['Post what your NGO needs from volunteers or sponsors', 'Specify urgency and required expertise', 'Review responses from the support requests tab'] },
@@ -84,7 +84,7 @@ function JobsSection() {
   if (selectedJob) {
     return (
       <div>
-        <button type="button" onClick={() => setSelectedJob(null)} className="mb-4 flex items-center gap-2 text-sm font-bold" style={{ color: INDIGO }}>
+        <button type="button" onClick={() => setSelectedJob(null)} className="mb-4 flex items-center gap-2 text-sm font-bold" style={{ color: GREEN }}>
           ← Back to Jobs
         </button>
         <NgoJobApplicationsPage jobId={selectedJob.id} jobTitle={selectedJob.title} ngoId={ngoId} />
@@ -100,7 +100,7 @@ function JobsSection() {
           type="button"
           onClick={() => setShowForm((v) => !v)}
           className="rounded-xl px-4 py-2 text-xs font-bold text-white"
-          style={{ backgroundColor: INDIGO }}
+          style={{ backgroundColor: GREEN }}
         >
           {showForm ? '✕ Cancel' : '+ Post New Job'}
         </button>
@@ -108,37 +108,37 @@ function JobsSection() {
 
       {/* Post job form */}
       {showForm && (
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">New Job Posting</p>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Job Posting</p>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Job Title *</span>
-              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400" placeholder="e.g. Community Health Worker" />
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Community Health Worker" />
             </label>
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Employment Type</span>
-              <select value={form.employmentType} onChange={(e) => setForm((f) => ({ ...f, employmentType: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400">
+              <select value={form.employmentType} onChange={(e) => setForm((f) => ({ ...f, employmentType: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
                 {Object.entries(EMP_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </label>
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Location</span>
-              <input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400" placeholder="City / Remote" />
+              <input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="City / Remote" />
             </label>
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Salary Range</span>
-              <input value={form.salaryRange} onChange={(e) => setForm((f) => ({ ...f, salaryRange: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400" placeholder="e.g. ₹15,000–₹20,000/mo" />
+              <input value={form.salaryRange} onChange={(e) => setForm((f) => ({ ...f, salaryRange: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. ₹15,000–₹20,000/mo" />
             </label>
             <label className="block md:col-span-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Last Date to Apply</span>
-              <input value={form.lastDateToApply} onChange={(e) => setForm((f) => ({ ...f, lastDateToApply: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400" />
+              <input value={form.lastDateToApply} onChange={(e) => setForm((f) => ({ ...f, lastDateToApply: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
             </label>
           </div>
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Job Description *</span>
-            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400" placeholder="Describe responsibilities, requirements, and accessibility support offered…" />
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe responsibilities, requirements, and accessibility support offered…" />
           </label>
-          <button type="button" onClick={post} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: INDIGO }}>
+          <button type="button" onClick={post} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
             {saving ? 'Posting…' : 'Post Job'}
           </button>
         </div>
@@ -167,7 +167,7 @@ function JobsSection() {
               <p className="text-xs text-slate-500">{job.location ? `${job.location} • ` : ''}Last date: {fmtDate(job.lastDateToApply)}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => setSelectedJob(job)} className="rounded-xl px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: INDIGO }}>
+              <button type="button" onClick={() => setSelectedJob(job)} className="rounded-xl px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: GREEN }}>
                 View Applications
               </button>
               {job.status === 'OPEN' && (
@@ -178,6 +178,690 @@ function JobsSection() {
             </div>
           </div>
           <p className="mt-2 line-clamp-2 text-sm text-slate-600">{job.description}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Requirements sub-section: list and create requirements ── */
+function RequirementsSection() {
+  const { user } = useAuth()
+  const [ngoId, setNgoId] = useState(null)
+  const [requirements, setRequirements] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', description: '', requiredBy: '', urgency: 'MEDIUM' })
+
+  useEffect(() => {
+    if (!user?.email) return
+    fetch(`${API}/ngos/email/${encodeURIComponent(user.email)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((ngo) => { if (ngo?.id) setNgoId(ngo.id) })
+      .catch(() => {})
+  }, [user])
+
+  const loadRequirements = () => {
+    if (!ngoId) return
+    setLoading(true)
+    fetch(`${API}/ngos/${ngoId}/requirements`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setRequirements(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(loadRequirements, [ngoId])
+
+  const postRequirement = async () => {
+    if (!form.title.trim() || !form.description.trim()) return
+    setSaving(true)
+    const res = await fetch(`${API}/ngos/${ngoId}/requirements`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(form),
+    })
+    if (res.ok) {
+      setShowForm(false)
+      setForm({ title: '', description: '', requiredBy: '', urgency: 'MEDIUM' })
+      loadRequirements()
+    }
+    setSaving(false)
+  }
+
+  const urgencyColor = (u) => ({
+    LOW: { bg: '#dbeafe', color: '#1d4ed8' },
+    MEDIUM: { bg: '#fef3c7', color: '#92400e' },
+    HIGH: { bg: '#fee2e2', color: '#dc2626' },
+  })[u] || { bg: '#f1f5f9', color: '#64748b' }
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-900">NGO Requirements</h3>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
+          style={{ backgroundColor: GREEN }}
+        >
+          {showForm ? '✕ Cancel' : '+ Post Requirement'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Requirement</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block md:col-span-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Title *</span>
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Volunteer Support for Community Drive" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Urgency</span>
+              <select value={form.urgency} onChange={(e) => setForm((f) => ({ ...f, urgency: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Required By</span>
+              <input value={form.requiredBy} onChange={(e) => setForm((f) => ({ ...f, requiredBy: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe your requirement in detail..." />
+          </label>
+          <button type="button" onClick={postRequirement} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Posting…' : 'Post Requirement'}
+          </button>
+        </div>
+      )}
+
+      {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
+
+      {!loading && requirements.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+          <p className="text-sm font-bold text-slate-700">No requirements posted yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Click "Post Requirement" to post your first requirement.</p>
+        </div>
+      )}
+
+      {requirements.map((req) => (
+        <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1">
+              {req.urgency && <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={urgencyColor(req.urgency)}>{req.urgency}</span>}
+              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{req.title}</h4>
+              <p className="text-xs text-slate-500">Required by: {fmtDate(req.requiredBy)}</p>
+              <p className="mt-2 text-sm text-slate-600">{req.description}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Campaigns sub-section: list and create campaigns ── */
+function CampaignsSection() {
+  const { user } = useAuth()
+  const [ngoId, setNgoId] = useState(null)
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ 
+    title: '', 
+    startDate: '', 
+    endDate: '', 
+    targetBeneficiaries: '',
+    volunteerTarget: '',
+    spentAmount: '',
+    objective: '',
+    impactSummary: ''
+  })
+
+  useEffect(() => {
+    if (!user?.email) return
+    fetch(`${API}/ngos/email/${encodeURIComponent(user.email)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((ngo) => { if (ngo?.id) setNgoId(ngo.id) })
+      .catch(() => {})
+  }, [user])
+
+  const loadCampaigns = () => {
+    if (!ngoId) return
+    setLoading(true)
+    fetch(`${API}/ngos/${ngoId}/campaigns`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setCampaigns(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(loadCampaigns, [ngoId])
+
+  const postCampaign = async () => {
+    if (!form.title.trim() || !form.objective.trim()) return
+    setSaving(true)
+    const res = await fetch(`${API}/ngos/${ngoId}/campaigns`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify({
+        ...form,
+        spentAmount: form.spentAmount ? parseFloat(form.spentAmount) : 0,
+        targetBeneficiaries: form.targetBeneficiaries ? parseInt(form.targetBeneficiaries) : 0,
+        volunteerTarget: form.volunteerTarget ? parseInt(form.volunteerTarget) : 0
+      }),
+    })
+    if (res.ok) {
+      setShowForm(false)
+      setForm({ 
+        title: '', 
+        startDate: '', 
+        endDate: '', 
+        targetBeneficiaries: '',
+        volunteerTarget: '',
+        spentAmount: '',
+        objective: '',
+        impactSummary: ''
+      })
+      loadCampaigns()
+    }
+    setSaving(false)
+  }
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-900">Campaigns</h3>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
+          style={{ backgroundColor: GREEN }}
+        >
+          {showForm ? '✕ Cancel' : '+ Add Campaign'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <div>
+            <p className="text-base font-extrabold text-slate-900">Add Campaign</p>
+            <p className="text-xs text-slate-600 mt-1">Track campaign outcomes separate from needs and achievements.</p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-1">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Campaign Title *</span>
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Community Awareness Drive 2025" />
+            </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Start Date</span>
+                <input value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">End Date</span>
+                <input value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
+              </label>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Target Beneficiaries</span>
+                <input value={form.targetBeneficiaries} onChange={(e) => setForm((f) => ({ ...f, targetBeneficiaries: e.target.value }))} type="number" min="0" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. 500" />
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Volunteer Target</span>
+                <input value={form.volunteerTarget} onChange={(e) => setForm((f) => ({ ...f, volunteerTarget: e.target.value }))} type="number" min="0" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. 50" />
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Spent Amount (INR)</span>
+              <input value={form.spentAmount} onChange={(e) => setForm((f) => ({ ...f, spentAmount: e.target.value }))} type="number" min="0" step="0.01" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. 50000" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Objective *</span>
+              <textarea value={form.objective} onChange={(e) => setForm((f) => ({ ...f, objective: e.target.value }))} rows={3} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe the campaign objective..." />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Impact Summary</span>
+              <textarea value={form.impactSummary} onChange={(e) => setForm((f) => ({ ...f, impactSummary: e.target.value }))} rows={3} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe the campaign's impact and outcomes..." />
+            </label>
+          </div>
+          <button type="button" onClick={postCampaign} disabled={saving || !form.title || !form.objective} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Adding…' : 'Add Campaign'}
+          </button>
+        </div>
+      )}
+
+      {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
+
+      {!loading && campaigns.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+          <p className="text-sm font-bold text-slate-700">No campaigns created yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Click "Add Campaign" to track your first campaign.</p>
+        </div>
+      )}
+
+      {campaigns.map((camp) => (
+        <div key={camp.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1">
+              <h4 className="text-base font-extrabold text-slate-900">{camp.title}</h4>
+              <p className="text-xs text-slate-500 mt-1">{fmtDate(camp.startDate)} to {fmtDate(camp.endDate)}</p>
+              {(camp.targetBeneficiaries || camp.volunteerTarget) && (
+                <p className="text-xs text-slate-600 mt-1">
+                  {camp.targetBeneficiaries ? `${camp.targetBeneficiaries} Beneficiaries` : ''} 
+                  {camp.targetBeneficiaries && camp.volunteerTarget ? ' • ' : ''}
+                  {camp.volunteerTarget ? `${camp.volunteerTarget} Volunteers` : ''}
+                </p>
+              )}
+              {camp.spentAmount && <p className="text-xs font-semibold text-emerald-600 mt-1">Spent: ₹{parseFloat(camp.spentAmount).toLocaleString('en-IN')}</p>}
+              {camp.objective && <p className="mt-2 text-sm text-slate-600"><strong>Objective:</strong> {camp.objective}</p>}
+              {camp.impactSummary && <p className="mt-1 text-sm text-slate-600"><strong>Impact:</strong> {camp.impactSummary}</p>}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Products sub-section: list and create products ── */
+function ProductsSection() {
+  const { user } = useAuth()
+  const [ngoId, setNgoId] = useState(null)
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ name: '', description: '', price: '', stock: '', category: 'ASSISTIVE' })
+
+  useEffect(() => {
+    if (!user?.email) return
+    fetch(`${API}/ngos/email/${encodeURIComponent(user.email)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((ngo) => { if (ngo?.id) setNgoId(ngo.id) })
+      .catch(() => {})
+  }, [user])
+
+  const loadProducts = () => {
+    if (!ngoId) return
+    setLoading(true)
+    fetch(`${API}/ngos/${ngoId}/products`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setProducts(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(loadProducts, [ngoId])
+
+  const postProduct = async () => {
+    if (!form.name.trim() || !form.description.trim() || !form.price) return
+    setSaving(true)
+    const res = await fetch(`${API}/ngos/${ngoId}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock) || 0 }),
+    })
+    if (res.ok) {
+      setShowForm(false)
+      setForm({ name: '', description: '', price: '', stock: '', category: 'ASSISTIVE' })
+      loadProducts()
+    }
+    setSaving(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-900">Products</h3>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
+          style={{ backgroundColor: GREEN }}
+        >
+          {showForm ? '✕ Cancel' : '+ Add Product'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Product</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Product Name *</span>
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Assistive Hearing Device" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Category</span>
+              <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
+                <option value="ASSISTIVE">Assistive Device</option>
+                <option value="RESOURCE">Resource</option>
+                <option value="TOOLKIT">Toolkit</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Price (₹) *</span>
+              <input value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} type="number" min="0" step="0.01" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Stock</span>
+              <input value={form.stock} onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))} type="number" min="0" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0" />
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe your product and its features..." />
+          </label>
+          <button type="button" onClick={postProduct} disabled={saving || !form.name || !form.description || !form.price} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Adding…' : 'Add Product'}
+          </button>
+        </div>
+      )}
+
+      {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
+
+      {!loading && products.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+          <p className="text-sm font-bold text-slate-700">No products added yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Click "Add Product" to publish your first product.</p>
+        </div>
+      )}
+
+      {products.map((product) => (
+        <div key={product.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1">
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">{product.category}</span>
+              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{product.name}</h4>
+              <p className="text-sm font-semibold text-emerald-600">₹{parseFloat(product.price).toFixed(2)} • Stock: {product.stock || 0}</p>
+              <p className="mt-2 text-sm text-slate-600">{product.description}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Services sub-section: list and create services ── */
+function ServicesSection() {
+  const { user } = useAuth()
+  const [ngoId, setNgoId] = useState(null)
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ name: '', description: '', serviceType: 'SUPPORT', availability: 'AVAILABLE' })
+
+  useEffect(() => {
+    if (!user?.email) return
+    fetch(`${API}/ngos/email/${encodeURIComponent(user.email)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((ngo) => { if (ngo?.id) setNgoId(ngo.id) })
+      .catch(() => {})
+  }, [user])
+
+  const loadServices = () => {
+    if (!ngoId) return
+    setLoading(true)
+    fetch(`${API}/ngos/${ngoId}/services`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setServices(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(loadServices, [ngoId])
+
+  const postService = async () => {
+    if (!form.name.trim() || !form.description.trim()) return
+    setSaving(true)
+    const res = await fetch(`${API}/ngos/${ngoId}/services`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(form),
+    })
+    if (res.ok) {
+      setShowForm(false)
+      setForm({ name: '', description: '', serviceType: 'SUPPORT', availability: 'AVAILABLE' })
+      loadServices()
+    }
+    setSaving(false)
+  }
+
+  const availColor = (a) => ({
+    AVAILABLE: { bg: '#d1fae5', color: '#065f46' },
+    LIMITED: { bg: '#fef3c7', color: '#92400e' },
+    UNAVAILABLE: { bg: '#fee2e2', color: '#dc2626' },
+  })[a] || { bg: '#f1f5f9', color: '#64748b' }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-900">Services</h3>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
+          style={{ backgroundColor: GREEN }}
+        >
+          {showForm ? '✕ Cancel' : '+ Add Service'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Service</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Service Name *</span>
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Vocational Training Program" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Service Type</span>
+              <select value={form.serviceType} onChange={(e) => setForm((f) => ({ ...f, serviceType: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
+                <option value="SUPPORT">Support</option>
+                <option value="TRAINING">Training</option>
+                <option value="COUNSELING">Counseling</option>
+                <option value="HEALTHCARE">Healthcare</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </label>
+            <label className="block md:col-span-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Availability</span>
+              <select value={form.availability} onChange={(e) => setForm((f) => ({ ...f, availability: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
+                <option value="AVAILABLE">Available</option>
+                <option value="LIMITED">Limited</option>
+                <option value="UNAVAILABLE">Unavailable</option>
+              </select>
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe your service and eligibility criteria..." />
+          </label>
+          <button type="button" onClick={postService} disabled={saving || !form.name || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Adding…' : 'Add Service'}
+          </button>
+        </div>
+      )}
+
+      {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
+
+      {!loading && services.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+          <p className="text-sm font-bold text-slate-700">No services added yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Click "Add Service" to list your first service.</p>
+        </div>
+      )}
+
+      {services.map((service) => (
+        <div key={service.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">{service.serviceType}</span>
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={availColor(service.availability)}>{service.availability}</span>
+              </div>
+              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{service.name}</h4>
+              <p className="mt-2 text-sm text-slate-600">{service.description}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Achievements sub-section: list and create achievements ── */
+function AchievementsSection() {
+  const { user } = useAuth()
+  const [ngoId, setNgoId] = useState(null)
+  const [achievements, setAchievements] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', description: '', achievementDate: '', achievementType: 'MILESTONE' })
+
+  useEffect(() => {
+    if (!user?.email) return
+    fetch(`${API}/ngos/email/${encodeURIComponent(user.email)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((ngo) => { if (ngo?.id) setNgoId(ngo.id) })
+      .catch(() => {})
+  }, [user])
+
+  const loadAchievements = () => {
+    if (!ngoId) return
+    setLoading(true)
+    fetch(`${API}/ngos/${ngoId}/achievements`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => { setAchievements(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(loadAchievements, [ngoId])
+
+  const postAchievement = async () => {
+    if (!form.title.trim() || !form.description.trim()) return
+    setSaving(true)
+    const res = await fetch(`${API}/ngos/${ngoId}/achievements`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(form),
+    })
+    if (res.ok) {
+      setShowForm(false)
+      setForm({ title: '', description: '', achievementDate: '', achievementType: 'MILESTONE' })
+      loadAchievements()
+    }
+    setSaving(false)
+  }
+
+  const typeColor = (t) => ({
+    MILESTONE: { bg: '#dbeafe', color: '#1d4ed8' },
+    AWARD: { bg: '#fde2e4', color: '#9f1239' },
+    CERTIFICATION: { bg: '#e6f9d7', color: '#365314' },
+    IMPACT_STORY: { bg: '#fde68a', color: '#713f12' },
+  })[t] || { bg: '#f1f5f9', color: '#64748b' }
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-900">Achievements</h3>
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
+          style={{ backgroundColor: GREEN }}
+        >
+          {showForm ? '✕ Cancel' : '+ Add Achievement'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Achievement</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="block md:col-span-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Achievement Title *</span>
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} type="text" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Trained 500 specially-abled individuals" />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Achievement Type</span>
+              <select value={form.achievementType} onChange={(e) => setForm((f) => ({ ...f, achievementType: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400">
+                <option value="MILESTONE">Milestone</option>
+                <option value="AWARD">Award</option>
+                <option value="CERTIFICATION">Certification</option>
+                <option value="IMPACT_STORY">Impact Story</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Date</span>
+              <input value={form.achievementDate} onChange={(e) => setForm((f) => ({ ...f, achievementDate: e.target.value }))} type="date" className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" />
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={4} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Describe your achievement and its impact..." />
+          </label>
+          <button type="button" onClick={postAchievement} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            {saving ? 'Adding…' : 'Add Achievement'}
+          </button>
+        </div>
+      )}
+
+      {loading && <div className="h-24 animate-pulse rounded-2xl border border-slate-200 bg-white" />}
+
+      {!loading && achievements.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center">
+          <p className="text-sm font-bold text-slate-700">No achievements added yet.</p>
+          <p className="mt-1 text-xs text-slate-500">Click "Add Achievement" to showcase your first milestone.</p>
+        </div>
+      )}
+
+      {achievements.map((achievement) => (
+        <div key={achievement.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1">
+              <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={typeColor(achievement.achievementType)}>{achievement.achievementType}</span>
+              <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{achievement.title}</h4>
+              <p className="text-xs text-slate-500">{fmtDate(achievement.achievementDate)}</p>
+              <p className="mt-2 text-sm text-slate-600">{achievement.description}</p>
+            </div>
+          </div>
         </div>
       ))}
     </div>
@@ -304,7 +988,7 @@ function EventsSection() {
   if (selectedEvent) {
     return (
       <div className="space-y-4">
-        <button type="button" onClick={() => setSelectedEvent(null)} className="mb-2 flex items-center gap-2 text-sm font-bold" style={{ color: INDIGO }}>
+        <button type="button" onClick={() => setSelectedEvent(null)} className="mb-2 flex items-center gap-2 text-sm font-bold" style={{ color: GREEN }}>
           ← Back to Events
         </button>
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -381,7 +1065,7 @@ function EventsSection() {
           type="button"
           onClick={() => setShowForm((v) => !v)}
           className="rounded-xl px-4 py-2 text-xs font-bold text-white"
-          style={{ backgroundColor: INDIGO }}
+          style={{ backgroundColor: GREEN }}
         >
           {showForm ? '✕ Cancel' : '+ Create Event'}
         </button>
@@ -389,8 +1073,8 @@ function EventsSection() {
 
       {/* Create event form */}
       {showForm && (
-        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">New Event</p>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">New Event</p>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="block md:col-span-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Event Title *</span>
@@ -398,7 +1082,7 @@ function EventsSection() {
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 placeholder="e.g. Inclusive Community Awareness Day"
               />
             </label>
@@ -407,7 +1091,7 @@ function EventsSection() {
               <select
                 value={form.eventType}
                 onChange={(e) => setForm((f) => ({ ...f, eventType: e.target.value }))}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
               >
                 {EVENT_TYPES.map((t) => <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>)}
               </select>
@@ -418,7 +1102,7 @@ function EventsSection() {
                 value={form.eventDate}
                 onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))}
                 type="datetime-local"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
               />
             </label>
             <label className="block">
@@ -427,7 +1111,7 @@ function EventsSection() {
                 value={form.location}
                 onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
                 type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 placeholder="e.g. Town Hall, Mumbai"
               />
             </label>
@@ -437,7 +1121,7 @@ function EventsSection() {
                 value={form.city}
                 onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
                 type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 placeholder="e.g. Mumbai"
               />
             </label>
@@ -447,7 +1131,7 @@ function EventsSection() {
                 value={form.state}
                 onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
                 type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 placeholder="e.g. Maharashtra"
               />
             </label>
@@ -458,7 +1142,7 @@ function EventsSection() {
                 onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))}
                 type="number"
                 min="1"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 placeholder="e.g. 100 (leave blank for unlimited)"
               />
             </label>
@@ -469,7 +1153,7 @@ function EventsSection() {
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               rows={4}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
               placeholder="Describe the event, agenda, and who should attend…"
             />
           </label>
@@ -478,7 +1162,7 @@ function EventsSection() {
             onClick={postEvent}
             disabled={saving || !form.title || !form.description || !form.eventDate || !form.location}
             className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
-            style={{ backgroundColor: INDIGO }}
+            style={{ backgroundColor: GREEN }}
           >
             {saving ? 'Creating…' : 'Create Event'}
           </button>
@@ -523,7 +1207,7 @@ function EventsSection() {
                   type="button"
                   onClick={() => handleSelectEvent(ev)}
                   className="rounded-xl px-3 py-1.5 text-xs font-bold text-white"
-                  style={{ backgroundColor: INDIGO }}
+                  style={{ backgroundColor: GREEN }}
                 >
                   View Applicants
                 </button>
@@ -546,8 +1230,21 @@ function EventsSection() {
 
 export default function NgoWorkspaceFeaturePage({ type }) {
   const navigate = useNavigate()
-  const config = NGO_FEATURES[type]
-  const tips = FEATURE_ACTIONS[type]?.tips || []
+  const [activeTab, setActiveTab] = useState(type || 'requirements')
+  
+  // Tab configuration
+  const TABS = [
+    { id: 'requirements', label: 'Requirements', icon: '📋' },
+    { id: 'campaigns', label: 'Campaigns', icon: '📅' },
+    { id: 'jobs', label: 'Jobs', icon: '💼' },
+    { id: 'events', label: 'Events', icon: '🎉' },
+    { id: 'products', label: 'Products', icon: '📦' },
+    { id: 'services', label: 'Services', icon: '👥' },
+    { id: 'achievements', label: 'Achievements', icon: '⭐' },
+  ]
+
+  const config = NGO_FEATURES[activeTab]
+  const tips = FEATURE_ACTIONS[activeTab]?.tips || []
 
   if (!config) {
     return (
@@ -558,14 +1255,14 @@ export default function NgoWorkspaceFeaturePage({ type }) {
   }
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-5 max-w-5xl">
       {/* Header */}
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${INDIGO}12` }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: INDIGO }} />
-              <span className="text-xs font-bold" style={{ color: INDIGO }}>NGO Workspace</span>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${GREEN}12` }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GREEN }} />
+              <span className="text-xs font-bold" style={{ color: GREEN }}>NGO Workspace</span>
             </div>
             <h2 className="mt-3 text-2xl font-black text-slate-900">{config.title}</h2>
             <p className="mt-1 text-sm text-slate-600">{config.subtitle}</p>
@@ -573,14 +1270,36 @@ export default function NgoWorkspaceFeaturePage({ type }) {
         </div>
       </section>
 
+      {/* Tab Navigation Bar */}
+      <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-all"
+              style={{
+                backgroundColor: isActive ? GREEN : '#f1f5f9',
+                color: isActive ? '#fff' : '#64748b',
+                border: isActive ? `2px solid ${GREEN}` : '1px solid #e2e8f0',
+              }}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
       {/* Tips */}
       {tips.length > 0 && (
-        <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.15em] text-indigo-700">How to use this page</p>
+        <section className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-700">How to use this page</p>
           <ul className="mt-3 space-y-2">
             {tips.map((tip) => (
               <li key={tip} className="flex items-start gap-2 text-sm text-slate-700">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                 <span>{tip}</span>
               </li>
             ))}
@@ -588,38 +1307,19 @@ export default function NgoWorkspaceFeaturePage({ type }) {
         </section>
       )}
 
-      {/* Jobs inline panel */}
-      {type === 'jobs' && (
-        <section>
-          <JobsSection />
-        </section>
-      )}
-
-      {/* Events inline panel */}
-      {type === 'events' && (
-        <section>
-          <EventsSection />
-        </section>
-      )}
-
-      {/* Connector info (non-jobs, non-events pages) */}
-      {type !== 'jobs' && type !== 'events' && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
-          <p className="font-semibold text-slate-800">Connected to your NGO management system</p>
-          <p className="mt-1 text-slate-500">This workspace page links directly to the {config.title} section of your NGO profile dashboard.</p>
-        </div>
-      )}
+      {/* Content - Render based on activeTab */}
+      <section>
+        {activeTab === 'requirements' && <RequirementsSection />}
+        {activeTab === 'campaigns' && <CampaignsSection />}
+        {activeTab === 'jobs' && <JobsSection />}
+        {activeTab === 'events' && <EventsSection />}
+        {activeTab === 'products' && <ProductsSection />}
+        {activeTab === 'services' && <ServicesSection />}
+        {activeTab === 'achievements' && <AchievementsSection />}
+      </section>
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={() => navigate(`/ngo/profile?tab=${encodeURIComponent(config.tab)}`)}
-          className="rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: INDIGO }}
-        >
-          Open {config.title} Manager
-        </button>
         <button
           type="button"
           onClick={() => navigate('/ngo')}

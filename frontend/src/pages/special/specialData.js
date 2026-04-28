@@ -21,6 +21,7 @@ export const SPECIAL_NAV = [
   { to: '/special/campaigns', label: 'Campaigns' },
   { to: '/special/schemes', label: 'Schemes' },
   { to: '/special/help', label: 'Request Help' },
+  { to: '/special/requests', label: 'Request History' },
   { to: '/special/saved', label: 'Saved' },
 ]
 

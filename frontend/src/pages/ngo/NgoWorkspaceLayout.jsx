@@ -3,9 +3,8 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { NGO_WORKSPACE_NAV } from './ngoWorkspaceData'
 
-const G = '#5BCB2B'
+const GREEN = '#5BCB2B'
 const B = '#1A8FD1'
-const INDIGO = '#4f46e5'
 const NAVY = '#0f172a'
 
 const ICONS = {
@@ -58,7 +57,7 @@ function SidebarLink({ item }) {
       onMouseLeave={() => setHover(false)}
       className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all ${isActive ? 'text-white shadow-sm' : 'text-slate-700'}`}
       style={({ isActive }) => ({
-        backgroundColor: isActive ? INDIGO : hover ? '#eef2ff' : 'transparent',
+        backgroundColor: isActive ? GREEN : hover ? '#f0f9e7' : 'transparent',
         fontWeight: isActive ? 700 : 500,
       })}
     >
@@ -90,14 +89,14 @@ export default function NgoWorkspaceLayout() {
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
             <div className="flex items-center">
               <div style={{ width: 14, height: 24, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-              <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: G, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
+              <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: GREEN, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
             </div>
             <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>Inclusive Connect</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${INDIGO}50`, backgroundColor: `${INDIGO}12` }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: INDIGO }} />
-            <span className="text-xs font-bold" style={{ color: INDIGO }}>NGO / CSR Workspace</span>
+          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${GREEN}50`, backgroundColor: `${GREEN}12` }}>
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GREEN }} />
+            <span className="text-xs font-bold" style={{ color: GREEN }}>NGO / CSR Workspace</span>
           </div>
 
           <p className="mt-3 truncate text-xs text-slate-500">{user?.email || user?.name || 'Organization'}</p>
@@ -132,9 +131,9 @@ export default function NgoWorkspaceLayout() {
         <header className="border-b border-slate-200 bg-white lg:hidden">
           <div className="px-4 py-4 sm:px-6">
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${INDIGO}12` }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: INDIGO }} />
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: INDIGO }}>NGO / Organization / Corporate CSR</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${GREEN}12` }}>
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
               </div>
             </div>
             <h1 className="mt-2 text-lg font-black text-slate-900">Workspace</h1>
@@ -145,7 +144,7 @@ export default function NgoWorkspaceLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/ngo'}
-                className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}
+                className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}
               >
                 {item.label}
               </NavLink>

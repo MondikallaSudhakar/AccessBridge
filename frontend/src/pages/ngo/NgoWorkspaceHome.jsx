@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { NGO_CAPABILITIES_DO, NGO_CAPABILITIES_VIEW, NGO_WORKSPACE_NAV } from './ngoWorkspaceData'
 
-const INDIGO = '#4f46e5'
+const GREEN = '#5BCB2B'
 
 /* ── Sample active postings for timeline ── */
 const ACTIVE_POSTINGS = [
@@ -19,8 +19,8 @@ const ACTIVE_POSTINGS = [
   {
     id: 'job-1',
     type: 'Job',
-    dot: '#4f46e5',
-    bg: '#eef2ff',
+    dot: '#5BCB2B',
+    bg: '#f0f9e7',
     title: 'Inclusive Outreach Coordinator',
     org: 'NGO Workspace',
     openDate: '2025-04-10',
@@ -30,8 +30,8 @@ const ACTIVE_POSTINGS = [
   {
     id: 'job-2',
     type: 'Job',
-    dot: '#4f46e5',
-    bg: '#eef2ff',
+    dot: '#5BCB2B',
+    bg: '#f0f9e7',
     title: 'Accessibility Content Writer',
     org: 'NGO Workspace',
     openDate: '2025-04-15',
@@ -77,11 +77,11 @@ function StatCard({ label, value }) {
   )
 }
 
-function CapabilityList({ title, items, tone = 'indigo' }) {
+function CapabilityList({ title, items, tone = 'green' }) {
   const styles =
     tone === 'green'
       ? { border: 'border-emerald-200', bg: 'bg-emerald-50', dot: 'bg-emerald-500', heading: 'text-emerald-900' }
-      : { border: 'border-indigo-200', bg: 'bg-indigo-50', dot: 'bg-indigo-500', heading: 'text-indigo-900' }
+      : { border: 'border-emerald-200', bg: 'bg-emerald-50', dot: 'bg-emerald-500', heading: 'text-emerald-900' }
 
   return (
     <section className={`rounded-2xl border ${styles.border} ${styles.bg} p-4`}>
@@ -119,7 +119,7 @@ function FeatureCard({ item, accentColor, hoverBorder }) {
       className={`group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 ${hoverBorder} hover:shadow-md`}
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-base font-extrabold text-slate-900 group-hover:text-indigo-700">{label}</h3>
+        <h3 className="text-base font-extrabold text-slate-900 group-hover:text-emerald-700">{label}</h3>
         {meta && (
           <span
             className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
@@ -209,9 +209,9 @@ export default function NgoWorkspaceHome() {
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${INDIGO}12` }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: INDIGO }} />
-              <span className="text-xs font-bold" style={{ color: INDIGO }}>NGO / Organization / Corporate CSR</span>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${GREEN}12` }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GREEN }} />
+              <span className="text-xs font-bold" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
             </div>
             <h2 className="mt-3 text-2xl font-black text-slate-900">Workspace Overview</h2>
             <p className="mt-1 max-w-xl text-sm text-slate-600">
@@ -222,7 +222,7 @@ export default function NgoWorkspaceHome() {
             type="button"
             onClick={() => navigate('/ngo/profile')}
             className="rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: INDIGO }}
+            style={{ backgroundColor: GREEN }}
           >
             Open NGO Profile
           </button>
@@ -238,7 +238,7 @@ export default function NgoWorkspaceHome() {
 
       {/* Capabilities */}
       <div className="grid gap-4 md:grid-cols-2">
-        <CapabilityList title="What you can view" items={NGO_CAPABILITIES_VIEW} tone="indigo" />
+        <CapabilityList title="What you can view" items={NGO_CAPABILITIES_VIEW} tone="green" />
         <CapabilityList title="What you can post / do" items={NGO_CAPABILITIES_DO} tone="green" />
       </div>
 
@@ -250,8 +250,8 @@ export default function NgoWorkspaceHome() {
             <FeatureCard
               key={item.to}
               item={item}
-              accentColor={INDIGO}
-              hoverBorder="hover:border-indigo-200"
+              accentColor={GREEN}
+              hoverBorder="hover:border-emerald-200"
             />
           ))}
         </div>
@@ -260,7 +260,7 @@ export default function NgoWorkspaceHome() {
       {/* Active Postings Timeline */}
       <section>
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Active Postings Timeline</p>
-        <PostingTimeline items={ACTIVE_POSTINGS} accentColor={INDIGO} />
+        <PostingTimeline items={ACTIVE_POSTINGS} accentColor={GREEN} />
       </section>
     </div>
   )
