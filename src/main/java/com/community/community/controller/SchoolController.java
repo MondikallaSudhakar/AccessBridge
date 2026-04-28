@@ -226,6 +226,11 @@ public class SchoolController {
 
     // ── Courses Endpoints ────────────────────────────────────────────────────
 
+    @GetMapping("/courses/all")
+    public ResponseEntity<List<Course>> getAllCourses() {
+        return ResponseEntity.ok(courseRepository.findAll());
+    }
+
     @GetMapping("/{id}/courses")
     public ResponseEntity<List<Course>> getSchoolCourses(@PathVariable Long id) {
         School school = schoolService.getSchoolById(id);

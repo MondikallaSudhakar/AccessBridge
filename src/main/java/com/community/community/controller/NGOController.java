@@ -312,6 +312,11 @@ public class NGOController {
 
     // ── Hiring Requirements (Jobs) Endpoints ────────────────────────────────
 
+    @GetMapping("/jobs/all")
+    public ResponseEntity<List<NGOJob>> getAllJobs() {
+        return ResponseEntity.ok(ngoJobRepository.findAll());
+    }
+
     @GetMapping("/{id}/jobs")
     public ResponseEntity<List<NGOJob>> getNGOJobs(@PathVariable Long id) {
         return ResponseEntity.ok(ngoJobRepository.findByNgoIdOrderByCreatedAtDesc(id));
@@ -403,6 +408,11 @@ public class NGOController {
     }
 
     // ── Services Endpoints (Profile-only user visibility) ───────────────────
+
+    @GetMapping("/services/all")
+    public ResponseEntity<List<NGOServiceItem>> getAllServices() {
+        return ResponseEntity.ok(ngoServiceItemRepository.findAll());
+    }
 
     @GetMapping("/{id}/services")
     public ResponseEntity<List<NGOServiceItem>> getNGOServices(@PathVariable Long id) {
