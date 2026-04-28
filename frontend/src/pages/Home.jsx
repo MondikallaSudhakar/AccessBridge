@@ -268,82 +268,101 @@ function TimelineItem({ item, index, isLast }) {
 
       {/* Right: card */}
       <article
-        className="mb-4 min-w-0 flex-1 rounded-2xl border bg-white p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+        className="mb-4 min-w-0 flex-1 rounded-xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg overflow-hidden"
         style={{ borderColor: COLORS.blueBorder }}
       >
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-              style={{ backgroundColor: typeStyle.bg, color: typeStyle.dot }}
-            >
-              {typeStyle.label}
-            </span>
-            {item.verified && (
-              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: COLORS.blueSoft, color: COLORS.blue }}>
-                <Icons.Verified /> Verified
+        {/* Header with badges */}
+        <div className="border-b px-5 py-3" style={{ borderColor: COLORS.blueBorder, backgroundColor: typeStyle.bg }}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                style={{ backgroundColor: typeStyle.dot, color: 'white' }}
+              >
+                <span className="h-2 w-2 rounded-full bg-white"></span>
+                {typeStyle.label}
+              </span>
+              {item.verified && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: 'rgba(1, 151, 178, 0.15)', color: COLORS.blue }}>
+                  <Icons.Verified /> Verified
+                </span>
+              )}
+            </div>
+
+            {/* Open/Closed badge for jobs & requirements */}
+            {(item.type === 'jobs' || item.type === 'requirements') && item.closeDate && (
+              <span
+                className="rounded-full px-3 py-1 text-xs font-bold"
+                style={{
+                  backgroundColor: expired ? '#fee2e2' : '#dcfce7',
+                  color: expired ? '#dc2626' : '#16a34a',
+                }}
+              >
+                {expired ? '🔒 Closed' : '✓ Open'}
               </span>
             )}
           </div>
-
-          {/* Open/Closed badge for jobs & requirements */}
-          {(item.type === 'jobs' || item.type === 'requirements') && item.closeDate && (
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold"
-              style={{
-                backgroundColor: expired ? '#fee2e2' : '#dcfce7',
-                color: expired ? '#dc2626' : '#16a34a',
-              }}
-            >
-              {expired ? 'Closed' : 'Open'}
-            </span>
-          )}
         </div>
 
-        <h3 className="mt-2 text-base font-extrabold text-slate-900">{item.title}</h3>
-        <p className="mt-0.5 text-xs font-semibold text-slate-500">{item.meta}</p>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.subtitle}</p>
+        {/* Content */}
+        <div className="p-5">
+          {/* Top section: Title/Meta on left, Buttons on right */}
+          <div className="flex gap-4 justify-between items-start mb-3">
+            <div className="flex-1">
+              <h3 className="text-lg font-black text-slate-900 leading-tight">{item.title}</h3>
+              <p className="mt-2 text-sm font-semibold text-slate-600 flex items-center gap-1">
+                <span>🏢</span> {item.meta}
+              </p>
+            </div>
 
-        {/* Date + applied strip for jobs & requirements */}
-        {hasDateMeta && (item.type === 'jobs' || item.type === 'requirements') && (
-          <div className="mt-3 flex flex-wrap items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
-            {openFmt && (
-              <div className="flex items-center gap-1.5">
-                <Icons.Calendar />
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Open Date</span>
-                  <span className="text-xs font-bold text-slate-700">{openFmt}</span>
-                </div>
-              </div>
-            )}
-            {closeFmt && (
-              <div className="flex items-center gap-1.5">
-                <Icons.Calendar />
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Last Date</span>
-                  <span className={`text-xs font-bold ${expired ? 'text-rose-500' : 'text-slate-700'}`}>{closeFmt}</span>
-                </div>
-              </div>
-            )}
-            {item.applied != null && (
-              <div className="flex items-center gap-1.5">
-                <Icons.Users />
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Applied</span>
-                  <span className="text-xs font-bold text-slate-700">{item.applied} nos</span>
-                </div>
-              </div>
-            )}
+            {/* Right side buttons */}
+            <div className="flex flex-col gap-2 shrink-0 ml-4">
+              <a href={item.href} className="rounded-lg px-4 py-2.5 text-sm font-bold text-white text-center transition-all hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap" style={{ backgroundColor: COLORS.blue }}>
+                {item.cta}
+              </a>
+              <a href="/search" className="rounded-lg border-2 px-4 py-2.5 text-sm font-bold text-center transition-all hover:bg-green-50 hover:-translate-y-0.5 whitespace-nowrap" style={{ borderColor: COLORS.green, color: COLORS.green }}>
+                Similar
+              </a>
+            </div>
           </div>
-        )}
 
-        <div className="mt-3 flex items-center gap-2">
-          <a href={item.href} className="rounded-lg px-3.5 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: COLORS.blue }}>
-            {item.cta}
-          </a>
-          <a href="/search" className="rounded-lg border px-3.5 py-1.5 text-xs font-bold" style={{ borderColor: COLORS.green, color: COLORS.green }}>
-            Similar Results
-          </a>
+          {/* Description */}
+          <p className="text-base leading-relaxed text-slate-700">{item.subtitle}</p>
+
+          {/* Date + applied strip for jobs & requirements */}
+          {hasDateMeta && (item.type === 'jobs' || item.type === 'requirements') && (
+            <div className="mt-4 rounded-lg border px-4 py-3" style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.slate50 }}>
+              <div className="flex flex-wrap items-center gap-5">
+                {openFmt && (
+                  <div className="flex items-center gap-2">
+                    <Icons.Calendar />
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">📅 Open Date</span>
+                      <span className="text-sm font-bold text-slate-800">{openFmt}</span>
+                    </div>
+                  </div>
+                )}
+                {closeFmt && (
+                  <div className="flex items-center gap-2">
+                    <Icons.Calendar />
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">⏱️ Last Date</span>
+                      <span className={`text-sm font-bold ${expired ? 'text-rose-600' : 'text-slate-800'}`}>{closeFmt}</span>
+                    </div>
+                  </div>
+                )}
+                {item.applied != null && (
+                  <div className="flex items-center gap-2">
+                    <Icons.Users />
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">👥 Applied</span>
+                      <span className="text-sm font-bold text-slate-800">{item.applied} people</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </article>
     </div>
