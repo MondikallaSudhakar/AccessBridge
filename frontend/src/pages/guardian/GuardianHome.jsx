@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { GUARDIAN_OPPORTUNITIES } from './guardianData'
+import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 
 const FEATURES = [
   { title: 'Dependent Profile', desc: 'Create and manage dependent profile details.', to: '/guardian/profile' },
@@ -53,18 +53,21 @@ function CapabilityList({ title, items, tone = 'blue' }) {
 
 export default function GuardianHome() {
   const navigate = useNavigate()
+  const { opportunities, loading, error } = useGuardianOpportunities()
 
   const stats = [
-    { label: 'Jobs', count: GUARDIAN_OPPORTUNITIES.jobs.length },
-    { label: 'Schools', count: GUARDIAN_OPPORTUNITIES.schools.length },
-    { label: 'Events', count: GUARDIAN_OPPORTUNITIES.events.length },
-    { label: 'Therapy', count: GUARDIAN_OPPORTUNITIES.therapy.length },
+    { label: 'Jobs', count: opportunities.jobs.length },
+    { label: 'Schools', count: opportunities.schools.length },
+    { label: 'Events', count: opportunities.events.length },
+    { label: 'Therapy', count: opportunities.therapy.length },
   ]
 
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Guardian Workspace</p>
+        {loading && <p className="mt-3 text-sm text-slate-500">Loading latest opportunities from database...</p>}
+        {!!error && <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{error}</p>}
         <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
           {stats.map((item) => (
             <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GUARDIAN_OPPORTUNITIES, readGuardianBookmarks, toggleGuardianBookmark } from './guardianData'
+import { readGuardianBookmarks, toggleGuardianBookmark } from './guardianData'
+import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 
 function Card({ item, onPrimary, onBookmark, saved }) {
   return (
@@ -29,6 +30,8 @@ export default function GuardianJobsPage() {
   const [bookmarks, setBookmarks] = useState(readGuardianBookmarks())
   const [selectedOpportunity, setSelectedOpportunity] = useState(null)
   const [applicationNote, setApplicationNote] = useState('')
+  const { opportunities, loading, error } = useGuardianOpportunities()
+  const jobs = opportunities.jobs
 
   const savedSet = useMemo(() => new Set(bookmarks), [bookmarks])
 
@@ -42,8 +45,13 @@ export default function GuardianJobsPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-xl font-black text-slate-900">Suitable jobs for dependent</h2>
         <p className="mt-1 text-sm text-slate-600">Apply on behalf and save opportunities for follow-up.</p>
+        {loading && <p className="mt-4 text-sm text-slate-500">Loading jobs from database...</p>}
+        {!!error && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{error}</p>}
+        {!loading && jobs.length === 0 && !error && (
+          <p className="mt-4 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600">No open jobs available right now.</p>
+        )}
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {GUARDIAN_OPPORTUNITIES.jobs.map((item) => (
+          {jobs.map((item) => (
             <Card
               key={item.id}
               item={item}

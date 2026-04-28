@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GUARDIAN_OPPORTUNITIES, readGuardianBookmarks, toggleGuardianBookmark } from './guardianData'
+import { readGuardianBookmarks, toggleGuardianBookmark } from './guardianData'
+import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 
 const CONFIG = {
   schools: {
@@ -65,9 +66,10 @@ function Card({ item, onPrimary, onBookmark, saved, config }) {
 export default function GuardianFeaturePage({ type }) {
   const navigate = useNavigate()
   const [bookmarks, setBookmarks] = useState(readGuardianBookmarks())
+  const { opportunities, loading, error } = useGuardianOpportunities()
 
   const config = CONFIG[type]
-  const items = GUARDIAN_OPPORTUNITIES[type] || []
+  const items = opportunities[type] || []
   const savedSet = useMemo(() => new Set(bookmarks), [bookmarks])
 
   if (!config) {
@@ -78,6 +80,11 @@ export default function GuardianFeaturePage({ type }) {
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-xl font-black text-slate-900">{config.title}</h2>
       <p className="mt-1 text-sm text-slate-600">{config.subtitle}</p>
+      {loading && <p className="mt-4 text-sm text-slate-500">Loading from database...</p>}
+      {!!error && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{error}</p>}
+      {!loading && items.length === 0 && !error && (
+        <p className="mt-4 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-600">No records available for this section yet.</p>
+      )}
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {items.map((item) => (
