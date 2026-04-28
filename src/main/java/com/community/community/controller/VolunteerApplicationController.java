@@ -19,7 +19,7 @@ public class VolunteerApplicationController {
     private final VolunteerApplicationRepository volunteerApplicationRepository;
 
     @PostMapping
-    public ResponseEntity<VolunteerApplication> submitApplication(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> submitApplication(@RequestBody Map<String, Object> payload) {
         VolunteerApplication application = new VolunteerApplication();
 
         application.setFullName(asString(payload.get("fullName"), asString(payload.get("volunteerName"), "")));
@@ -53,7 +53,13 @@ public class VolunteerApplicationController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "fullName and email are required"));
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(volunteerApplicationRepository.save(application));
+        try {
+            VolunteerApplication saved = volunteerApplicationRepository.save(application);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (Exception ex) {
+            // Return the exception message to help debugging during development
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", ex.getMessage()));
+        }
     }
 
     @GetMapping("/email/{email}")

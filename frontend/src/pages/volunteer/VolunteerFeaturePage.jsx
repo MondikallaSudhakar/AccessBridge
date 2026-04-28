@@ -59,7 +59,7 @@ export default function VolunteerFeaturePage({ type }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedOpportunity, setSelectedOpportunity] = useState(null)
-  const [applyForm, setApplyForm] = useState({ availability: '', note: '' })
+  const [applyForm, setApplyForm] = useState({ name: '', email: '', availability: '', note: '' })
   const [applyMsg, setApplyMsg] = useState('')
   const [applying, setApplying] = useState(false)
 
@@ -157,7 +157,12 @@ export default function VolunteerFeaturePage({ type }) {
 
   const handleApply = async (item) => {
     setSelectedOpportunity(item)
-    setApplyForm({ availability: '', note: '' })
+    setApplyForm({
+      name: user?.name || '',
+      email: user?.email || '',
+      availability: '',
+      note: ''
+    })
     setApplyMsg('')
   }
 
@@ -168,9 +173,18 @@ export default function VolunteerFeaturePage({ type }) {
     setApplying(true)
     setApplyMsg('')
     try {
+      const fullName = applyForm.name?.trim() || user?.name
+      const email = applyForm.email?.trim() || user?.email
+
+      if (!fullName || !email) {
+        setApplyMsg('Please provide your name and email before submitting.')
+        setApplying(false)
+        return
+      }
+
       await api.post('/volunteer-applications', {
-        fullName: user?.name,
-        email: user?.email,
+        fullName,
+        email,
         ngoId: selectedOpportunity.ngoId,
         sourceId: selectedOpportunity.sourceId,
         opportunityType: selectedOpportunity.type,
@@ -246,6 +260,28 @@ export default function VolunteerFeaturePage({ type }) {
             <h3 className="mt-1 text-lg font-black text-slate-900">{selectedOpportunity.title}</h3>
             <p className="mt-1 text-xs text-slate-500">{selectedOpportunity.org}</p>
             <form onSubmit={submitApplication} className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerName">Name</label>
+                <input
+                  id="volunteerName"
+                  type="text"
+                  value={applyForm.name}
+                  onChange={(event) => setApplyForm((current) => ({ ...current, name: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
+                  placeholder="Your full name"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerEmail">Email</label>
+                <input
+                  id="volunteerEmail"
+                  type="email"
+                  value={applyForm.email}
+                  onChange={(event) => setApplyForm((current) => ({ ...current, email: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
+                  placeholder="you@example.com"
+                />
+              </div>
               <div>
                 <label className="mb-1 block text-xs font-bold text-slate-600" htmlFor="volunteerAvail">Availability</label>
                 <input
