@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VolunteerApplicationRepository extends JpaRepository<VolunteerApplication, Long> {
     List<VolunteerApplication> findByEmailOrderByCreatedAtDesc(String email);
+    List<VolunteerApplication> findByNgoIdOrderByCreatedAtDesc(Long ngoId);
 }

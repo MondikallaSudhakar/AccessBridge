@@ -26,6 +26,16 @@ public class VolunteerApplication {
     @Column(nullable = false)
     private String email;
 
+    private Long ngoId;
+
+    private Long sourceId;
+
+    private String opportunityType;
+
+    private String opportunityTitle;
+
+    private String organizationName;
+
     @Column(length = 20)
     private String phone;
 
@@ -46,6 +56,9 @@ public class VolunteerApplication {
 
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    @Column(columnDefinition = "TEXT")
+    private String motivationLetter;
 
     @Column(nullable = false)
     private String status = "PENDING";
