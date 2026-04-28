@@ -87,7 +87,16 @@ const Icons = {
   ),
 }
 
-function TopNav({ user }) {
+const PUBLIC_TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'events', label: 'Events' },
+  { id: 'stories', label: 'Stories' },
+  { id: 'jobs', label: 'Jobs' },
+  { id: 'requirements', label: 'Requirements' },
+  { id: 'products', label: 'Products' },
+]
+
+function TopNav({ user, activeTab, setActiveTab, counts }) {
   const navItems = user
     ? [
         { label: 'Home', href: '/', Icon: Icons.Home },
@@ -104,36 +113,55 @@ function TopNav({ user }) {
 
   return (
     <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.blueBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 md:px-6">
-        <div className="flex min-w-0 items-center gap-3 md:gap-4">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center justify-between gap-3 lg:min-w-fit">
           <a href="/" className="flex shrink-0 items-center gap-2">
             <div className="h-8 w-8 rounded-lg text-sm font-black text-white grid place-items-center" style={{ background: COLORS.heroGradient }}>IC</div>
             <span className="hidden text-sm font-extrabold tracking-tight text-slate-900 md:inline">Inclusive Connect</span>
           </a>
-
-          <label className="relative hidden md:block">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Icons.Search /></span>
-            <input
-              type="text"
-              placeholder="Search public updates, stories, and products"
-              className="h-10 w-72 rounded-full border bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-colors focus:border-emerald-500"
-              style={{ borderColor: COLORS.blueBorder }}
-            />
-          </label>
         </div>
 
-        <nav className="flex items-center gap-1 md:gap-2">
-          {navItems.map((item) => (
-            <a key={item.label} href={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
-              <item.Icon />
-              <span className="text-xs font-medium">{item.label}</span>
-            </a>
-          ))}
+        {!user && (
+          <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-1 lg:justify-center lg:pb-0">
+            {PUBLIC_TABS.map((tab) => {
+              const selected = tab.id === activeTab
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all"
+                  style={{
+                    backgroundColor: selected ? COLORS.blue : COLORS.blueSoft,
+                    color: selected ? COLORS.white : COLORS.blue,
+                  }}
+                >
+                  {tab.label} ({counts[tab.id]})
+                </button>
+              )
+            })}
+          </nav>
+        )}
 
-          <a href={user ? '/dashboard' : '/login'} className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-slate-700 hover:bg-slate-50">
-            <Icons.User />
-            <span className="hidden text-xs font-semibold md:inline">{user ? 'Me' : 'Sign In'}</span>
-          </a>
+        <nav className="flex items-center justify-end gap-2">
+          {user ? (
+            navItems.map((item) => (
+              <a key={item.label} href={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
+                <item.Icon />
+                <span className="text-xs font-medium">{item.label}</span>
+              </a>
+            ))
+          ) : (
+            <>
+              <a href="/login" className="hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 md:inline-flex" style={{ borderColor: COLORS.blueBorder }}>
+                <Icons.User />
+                <span>Sign In</span>
+              </a>
+              <a href="/register" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+                Join Now
+              </a>
+            </>
+          )}
         </nav>
       </div>
     </header>
@@ -511,7 +539,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #e7f7fb 0%, #f4fbef 35%, #ffffff 100%)' }}>
-      <TopNav user={user} />
+      <TopNav user={user} activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
 
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
         <section className="rounded-3xl border p-6 shadow-md md:p-8" style={{ borderColor: COLORS.blueBorder, background: COLORS.heroGradient }}>
@@ -542,10 +570,6 @@ export default function Home() {
               style={{ borderColor: COLORS.blueBorder }}
             />
           </label>
-        </section>
-
-        <section className="mt-4">
-          <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
         </section>
 
         {/* ── Timeline feed ── */}
