@@ -1238,6 +1238,7 @@ function VolunteersSection() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [updatingId, setUpdatingId] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [form, setForm] = useState({ title: '', purpose: '', neededCount: '' })
 
   useEffect(() => {
@@ -1382,11 +1383,26 @@ function VolunteersSection() {
           </div>
           <p className="mt-2 text-sm text-slate-600">{need.description}</p>
 
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Interested Volunteers</p>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-slate-500">Filter:</label>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs outline-none">
+                <option value="ALL">All</option>
+                <option value="PENDING">Pending</option>
+                <option value="ACCEPTED">Accepted</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+          </div>
+
           {interested.length > 0 && (
             <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Interested Volunteers</p>
+              
               <div className="mt-2 space-y-2">
-                {interested.map((app) => (
+                {interested
+                  .filter((app) => statusFilter === 'ALL' || (app.status || 'PENDING') === statusFilter)
+                  .map((app) => (
                   <div key={app.id} className="rounded-lg border border-slate-200 bg-white p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
