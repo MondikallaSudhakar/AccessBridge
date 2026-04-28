@@ -639,6 +639,7 @@ export default function NgoProfile() {
   const [volunteerNeedForm, setVolunteerNeedForm] = useState(blankVolunteerNeed)
   const [showVolunteerNeedForm, setShowVolunteerNeedForm] = useState(false)
   const [volunteerUpdatingId, setVolunteerUpdatingId] = useState(null)
+  const [volunteerStatusFilter, setVolunteerStatusFilter] = useState('ALL')
   const [campaignForm, setCampaignForm] = useState(blankCampaign)
   const [showCampaignForm, setShowCampaignForm] = useState(false)
   const [needForm, setNeedForm]               = useState(blankNeed)
@@ -923,6 +924,11 @@ export default function NgoProfile() {
   }, [supportRequests, supportRequestFilter])
 
   const volunteerNeeds = useMemo(() => needs.filter((need) => (need.category || '').toUpperCase() === 'VOLUNTEER_NEED'), [needs])
+
+  const filteredVolunteers = useMemo(() => {
+    if (volunteerStatusFilter === 'ALL') return volunteers
+    return volunteers.filter((app) => (app.status || 'PENDING') === volunteerStatusFilter)
+  }, [volunteers, volunteerStatusFilter])
 
   const sendMsg = async e => {
     e.preventDefault(); if(!ngo?.id)return
@@ -1289,11 +1295,32 @@ export default function NgoProfile() {
                 )}
               </Panel>
               <Panel>
-                <PanelHeader title="Volunteer Interests" subtitle={`${volunteers.length} interested volunteers`} />
+                <PanelHeader title="Volunteer Interests" subtitle={`${filteredVolunteers.length} interested volunteers`} />
+                <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
+                  {['ALL','PENDING','ACCEPTED','REJECTED'].map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setVolunteerStatusFilter(status)}
+                      style={{
+                        border:'1px solid #e2e8f0',
+                        borderRadius:999,
+                        padding:'6px 12px',
+                        background: volunteerStatusFilter === status ? '#dcfce7' : '#fff',
+                        color: volunteerStatusFilter === status ? '#166534' : '#475569',
+                        fontSize:12,
+                        fontWeight:700,
+                        cursor:'pointer',
+                      }}
+                    >
+                      {status === 'ALL' ? 'All' : status[0] + status.slice(1).toLowerCase()}
+                    </button>
+                  ))}
+                </div>
                 {volunteerNeeds.length === 0 ? <EmptyPane iconName="users" title="No volunteer needs posted" body="Post volunteer needs first so volunteers can submit interest."/> : (
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     {volunteerNeeds.map((need) => {
-                      const interested = volunteers.filter((app) => Number(app.sourceId) === Number(need.id))
+                      const interested = filteredVolunteers.filter((app) => Number(app.sourceId) === Number(need.id))
                       return (
                         <ListItem key={need.id}>
                           <div style={{display:'flex',flexDirection:'column',gap:10}}>

@@ -1314,6 +1314,11 @@ function VolunteersSection() {
     loadVolunteerNeeds()
   }
 
+  const visibleApplications = (needId) => {
+    const matched = applications.filter((app) => Number(app.sourceId) === Number(needId))
+    return matched.filter((app) => statusFilter === 'ALL' || (app.status || 'PENDING') === statusFilter)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -1360,8 +1365,26 @@ function VolunteersSection() {
         </div>
       )}
 
+      {!loading && volunteerNeeds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div>
+            <p className="text-sm font-bold text-slate-900">Volunteer Interests</p>
+            <p className="text-xs text-slate-500">{applications.length} interested volunteers</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500">Filter by status</span>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold outline-none">
+              <option value="ALL">All</option>
+              <option value="PENDING">Pending</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {volunteerNeeds.map((need) => {
-        const interested = applications.filter((app) => Number(app.sourceId) === Number(need.id))
+        const interested = visibleApplications(need.id)
         return (
         <div key={need.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1383,25 +1406,10 @@ function VolunteersSection() {
           </div>
           <p className="mt-2 text-sm text-slate-600">{need.description}</p>
 
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Interested Volunteers</p>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-slate-500">Filter:</label>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs outline-none">
-                <option value="ALL">All</option>
-                <option value="PENDING">Pending</option>
-                <option value="ACCEPTED">Accepted</option>
-                <option value="REJECTED">Rejected</option>
-              </select>
-            </div>
-          </div>
-
           {interested.length > 0 && (
             <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              
               <div className="mt-2 space-y-2">
                 {interested
-                  .filter((app) => statusFilter === 'ALL' || (app.status || 'PENDING') === statusFilter)
                   .map((app) => (
                   <div key={app.id} className="rounded-lg border border-slate-200 bg-white p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
