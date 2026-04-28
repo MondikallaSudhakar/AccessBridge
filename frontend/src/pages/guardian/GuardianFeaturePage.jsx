@@ -7,11 +7,11 @@ import api from '../../services/api'
 
 const CONFIG = {
   schools: {
-    title: 'School courses',
-    subtitle: 'View special courses from schools and training centers only.',
-    primaryLabel: 'Enroll now',
-    secondaryLabel: 'Save course',
-    path: '/search',
+    title: 'Schools',
+    subtitle: 'Browse schools and training centers in the directory.',
+    primaryLabel: 'View school',
+    secondaryLabel: 'Save school',
+    path: '/schools',
   },
   ngos: {
     title: 'NGOs and support services',
@@ -21,10 +21,10 @@ const CONFIG = {
     path: '/guardian/help',
   },
   learning: {
-    title: 'Learning resources',
-    subtitle: 'Open adaptive resources and programs for dependent learning.',
-    primaryLabel: 'Open resource',
-    secondaryLabel: 'Save resource',
+    title: 'Courses and learning programs',
+    subtitle: 'Browse school courses and enroll in the right program.',
+    primaryLabel: 'Enroll now',
+    secondaryLabel: 'Save course',
     path: '/search',
   },
   events: {
@@ -89,6 +89,8 @@ export default function GuardianFeaturePage({ type }) {
   const config = CONFIG[type]
   const items = opportunities[type] || []
   const savedSet = useMemo(() => new Set(bookmarks), [bookmarks])
+  const isSchoolSection = type === 'schools'
+  const isLearningSection = type === 'learning'
 
   useEffect(() => {
     const loadMyEventApplications = async () => {
@@ -117,14 +119,17 @@ export default function GuardianFeaturePage({ type }) {
     loadMyEventApplications()
   }, [type, user?.email, items])
 
-  // Prefill enroll form from logged-in user and refresh enrollments for schools
+  // Prefill enroll form from logged-in user and refresh enrollments for learning courses
   useEffect(() => {
     if (user) {
       setEnrollForm((prev) => ({ ...prev, name: (user.name || '').trim(), email: (user.email || '').trim() }))
     }
 
     const loadEnrollments = async () => {
-      if (type !== 'schools') return
+      if (!isLearningSection) {
+        setEnrollments([])
+        return
+      }
       try {
         const schools = await api.get('/schools')
         if (!Array.isArray(schools) || schools.length === 0) {
@@ -148,7 +153,7 @@ export default function GuardianFeaturePage({ type }) {
     }
 
     loadEnrollments()
-  }, [type, user])
+  }, [isLearningSection, user])
 
   const openEnrollmentModal = (item) => {
     setEnrollingCourse(item)
@@ -199,10 +204,10 @@ export default function GuardianFeaturePage({ type }) {
     }
   }
 
-    const alreadyEnrolled = (courseSourceId, email) => {
-      if (!email) return false
-      return enrollments.some((row) => String(row.courseId) === String(courseSourceId) && row.email && String(row.email).toLowerCase() === String(email).toLowerCase())
-    }
+  const alreadyEnrolled = (courseSourceId, email) => {
+    if (!email) return false
+    return enrollments.some((row) => String(row.courseId) === String(courseSourceId) && row.email && String(row.email).toLowerCase() === String(email).toLowerCase())
+  }
 
   const handleEventApply = async (event) => {
     event.preventDefault()
@@ -242,10 +247,10 @@ export default function GuardianFeaturePage({ type }) {
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {items.map((item) => {
-          const isEnrolled = type === 'schools' && alreadyEnrolled(item.sourceId, user?.email)
+          const isEnrolled = isLearningSection && alreadyEnrolled(item.sourceId, user?.email)
           const eventApp = type === 'events' ? myApplications[item.sourceId] : null
-          const primaryLabelFor = type === 'events' && eventApp ? 'Applied' : (type === 'schools' && isEnrolled ? 'Enrolled' : null)
-          const primaryDisabledFor = (type === 'events' && Boolean(eventApp)) || (type === 'schools' && isEnrolled)
+          const primaryLabelFor = type === 'events' && eventApp ? 'Applied' : (isLearningSection && isEnrolled ? 'Enrolled' : null)
+          const primaryDisabledFor = (type === 'events' && Boolean(eventApp)) || (isLearningSection && isEnrolled)
 
           return (
             <Card
@@ -254,7 +259,7 @@ export default function GuardianFeaturePage({ type }) {
               saved={savedSet.has(item.id)}
               primaryLabel={primaryLabelFor || config.primaryLabel}
               primaryDisabled={primaryDisabledFor}
-              statusLabel={type === 'events' && eventApp ? (eventApp.status || 'PENDING') : (type === 'schools' && isEnrolled ? 'ENROLLED' : '')}
+              statusLabel={type === 'events' && eventApp ? (eventApp.status || 'PENDING') : (isLearningSection && isEnrolled ? 'ENROLLED' : '')}
               onPrimary={() => {
                 if (type === 'events') {
                   setRegisteringEvent(item)
@@ -262,8 +267,12 @@ export default function GuardianFeaturePage({ type }) {
                   setRegForm({ notes: '' })
                   return
                 }
-                if (type === 'schools') {
+                if (isLearningSection) {
                   openEnrollmentModal(item)
+                  return
+                }
+                if (isSchoolSection && item.sourceId) {
+                  navigate(`/schools/${item.sourceId}`)
                   return
                 }
                 navigate(config.path)

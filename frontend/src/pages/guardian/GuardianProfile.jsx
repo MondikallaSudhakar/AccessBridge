@@ -191,9 +191,9 @@ export default function GuardianProfile() {
 
   const sections = [
     { title: 'Suitable jobs for dependent person', items: OPPORTUNITIES.jobs, primaryLabel: 'Apply on behalf', secondaryLabel: 'Bookmark job', onPrimary: startApplication },
-    { title: 'Special schools & therapy centers', items: OPPORTUNITIES.schools, primaryLabel: 'Enroll', secondaryLabel: 'Save school', onPrimary: () => navigate('/search') },
+    { title: 'Special schools & training centers', items: OPPORTUNITIES.schools, primaryLabel: 'View schools', secondaryLabel: 'Save school', onPrimary: () => navigate('/guardian/schools') },
     { title: 'NGOs & support services', items: OPPORTUNITIES.ngos, primaryLabel: 'Request support', secondaryLabel: 'Save NGO', onPrimary: () => navigate('/search') },
-    { title: 'Learning resources', items: OPPORTUNITIES.learning, primaryLabel: 'Open resource', secondaryLabel: 'Save resource', onPrimary: () => navigate('/search') },
+    { title: 'Courses and learning programs', items: OPPORTUNITIES.learning, primaryLabel: 'Enroll', secondaryLabel: 'Save course', onPrimary: () => navigate('/guardian/learning') },
     { title: 'Events & awareness programs', items: OPPORTUNITIES.events, primaryLabel: 'Register', secondaryLabel: 'Save event', onPrimary: () => navigate('/search') },
     { title: 'Book therapy / training', items: OPPORTUNITIES.therapy, primaryLabel: 'Book now', secondaryLabel: 'Save booking', onPrimary: () => navigate('/search') },
   ]

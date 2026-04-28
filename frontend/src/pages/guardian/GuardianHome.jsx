@@ -4,9 +4,9 @@ import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 const FEATURES = [
   { title: 'Dependent Profile', desc: 'Create and manage dependent profile details.', to: '/guardian/profile' },
   { title: 'Jobs', desc: 'Apply for suitable jobs on behalf of dependent.', to: '/guardian/jobs' },
-  { title: 'Schools', desc: 'Browse special courses from schools and training centers.', to: '/guardian/schools' },
+  { title: 'Schools', desc: 'Browse schools and training centers in the directory.', to: '/guardian/schools' },
   { title: 'NGO Support', desc: 'Find NGOs and support services.', to: '/guardian/ngos' },
-  { title: 'Learning Resources', desc: 'Open resources and adaptive learning options.', to: '/guardian/learning' },
+  { title: 'Courses and Learning', desc: 'Browse courses and learning programs.', to: '/guardian/learning' },
   { title: 'Events', desc: 'Join events and awareness programs.', to: '/guardian/events' },
   { title: 'Therapy', desc: 'Find therapy-focused programs and sessions.', to: '/guardian/therapy' },
   { title: 'Request Help', desc: 'Send NGO support requests.', to: '/guardian/help' },
@@ -17,9 +17,9 @@ const FEATURES = [
 
 const CAN_VIEW = [
   'Suitable jobs for dependent',
-  'School courses and therapy programs',
+  'Schools, courses, and therapy programs',
   'NGOs and support services',
-  'Learning resources',
+  'Courses and learning programs',
   'Events and awareness programs',
 ]
 

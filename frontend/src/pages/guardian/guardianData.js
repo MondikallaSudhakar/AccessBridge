@@ -16,11 +16,10 @@ function joinLocation(...parts) {
 }
 
 export async function loadGuardianOpportunities() {
-  const [jobsResult, schoolsResult, ngosResult, servicesResult, eventsResult, coursesResult] = await Promise.allSettled([
+  const [jobsResult, schoolsResult, ngosResult, eventsResult, coursesResult] = await Promise.allSettled([
     api.get('/ngos/jobs/all'),
     api.get('/schools'),
     api.get('/ngos'),
-    api.get('/ngos/services/all'),
     api.get('/events/public'),
     api.get('/schools/courses/all'),
   ])
@@ -30,6 +29,8 @@ export async function loadGuardianOpportunities() {
   const schoolNameById = new Map(
     schoolsRaw.map((school) => [String(school.id), text(school.name, 'School / Training Center')])
   )
+
+  const schoolLocation = (school) => joinLocation(school.city, school.state, school.country) || 'Location not specified'
 
   const jobs = asArray(jobsResult.status === 'fulfilled' ? jobsResult.value : [])
     .filter((job) => text(job?.status, 'OPEN').toUpperCase() !== 'CLOSED')
@@ -41,16 +42,17 @@ export async function loadGuardianOpportunities() {
       summary: text(job.description, 'No job details provided yet.'),
     }))
 
-  const schools = coursesRaw
-    .filter((course) => text(course?.status, 'ACTIVE').toUpperCase() !== 'CANCELLED')
-    .map((course) => ({
-      id: `schools-${course.id}`,
-      sourceId: course.id,
-      title: text(course.courseTitle, 'School course'),
-      org: schoolNameById.get(String(course.schoolId)) || 'School / Training Center',
-      place: text(course.category, 'School Program'),
-      summary: text(course.description, 'Course details will be shared during enrollment.'),
-    }))
+  const schools = schoolsRaw.map((school) => ({
+    id: `schools-${school.id}`,
+    sourceId: school.id,
+    title: text(school.name, 'School / Training Center'),
+    org: school.specialSchool ? 'Special School' : 'School',
+    place: schoolLocation(school),
+    summary: text(
+      school.description || school.mission,
+      school.verified ? 'Verified school profile and services.' : 'School profile and services.'
+    ),
+  }))
 
   const ngos = asArray(ngosResult.status === 'fulfilled' ? ngosResult.value : [])
     .map((ngo) => ({
@@ -61,14 +63,15 @@ export async function loadGuardianOpportunities() {
       summary: text(ngo.mission || ngo.description, 'Community support services.'),
     }))
 
-  const learning = asArray(servicesResult.status === 'fulfilled' ? servicesResult.value : [])
-    .filter((service) => text(service?.status, 'ACTIVE').toUpperCase() !== 'INACTIVE')
-    .map((service) => ({
-      id: `learning-${service.id}`,
-      title: text(service.title, 'Learning resource'),
-      org: text(service.category, 'Service Program'),
-      place: text(service.availability, 'Flexible access'),
-      summary: text(service.description, 'Adaptive learning support resource.'),
+  const learning = coursesRaw
+    .filter((course) => text(course?.status, 'ACTIVE').toUpperCase() !== 'CANCELLED')
+    .map((course) => ({
+      id: `learning-course-${course.id}`,
+      sourceId: course.id,
+      title: text(course.courseTitle, 'Learning course'),
+      org: schoolNameById.get(String(course.schoolId)) || 'School / Training Center',
+      place: text(course.category, 'Course Program'),
+      summary: text(course.description, 'Course details will be shared during enrollment.'),
     }))
 
   const events = asArray(eventsResult.status === 'fulfilled' ? eventsResult.value : [])
