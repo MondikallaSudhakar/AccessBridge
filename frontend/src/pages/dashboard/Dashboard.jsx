@@ -1,12 +1,17 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import api from '../../services/api'
 
 /* ── brand tokens ─────────────────────────────────────────────────────── */
 const G    = '#5BCB2B'   // brand green
 const B    = '#1A8FD1'   // brand blue
 const TEAL = '#0d9488'   // sidebar active color (NYSPACE)
 const NAVY = '#0f172a'   // dark text
+
+// Super Admin constants
+const SUPER_ADMIN_TEAL = '#0197B2'
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
 
 /* ── SVG icon helper ──────────────────────────────────────────────────── */
 const ICONS = {
@@ -49,6 +54,37 @@ const ROLE_MAP = {
   NGO_ADMIN:     { label: 'NGO Admin',    icon: 'ngo',    color: TEAL      },
   STARTUP_ADMIN: { label: 'Startup Admin',icon: 'startup',color: '#f59e0b' },
   SUPER_ADMIN:   { label: 'Super Admin',  icon: 'shield', color: B         },
+}
+
+// Super Admin role colors for user distribution cards
+const roleColors = {
+  SCHOOL_ADMIN: { bg: '#f0fdf4', text: '#5BCB2B' },
+  NGO_ADMIN: { bg: '#f0fdfa', text: SUPER_ADMIN_TEAL },
+  STARTUP_ADMIN: { bg: '#fffbeb', text: '#f59e0b' },
+  VOLUNTEER: { bg: '#fef2f2', text: '#ef4444' },
+  SPECIAL_ABLED_PERSON: { bg: '#ecfdf5', text: '#10b981' },
+  GUARDIAN_CAREGIVER: { bg: '#ecfef6', text: '#0ea5e9' },
+}
+
+const roleLabel = {
+  SCHOOL_ADMIN: 'School',
+  NGO_ADMIN: 'NGO',
+  STARTUP_ADMIN: 'Startup',
+  VOLUNTEER: 'Volunteer',
+  SPECIAL_ABLED_PERSON: 'Special Abled',
+  GUARDIAN_CAREGIVER: 'Guardian',
+}
+
+// Fetch org by email helper
+async function fetchOrgByEmail(email, role) {
+  try {
+    const type = role === 'SCHOOL_ADMIN' ? 'schools' : role === 'NGO_ADMIN' ? 'ngos' : 'startups'
+    const encoded = encodeURIComponent(email)
+    const res = await fetch(`${BASE}/${type}/email/${encoded}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    })
+    return res.ok ? res.json() : null
+  } catch { return null }
 }
 
 /* ── sidebar nav groups ───────────────────────────────────────────────── */
@@ -259,6 +295,19 @@ export default function Dashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeNav, setActiveNav] = useState('home')
 
+  // Super Admin state
+  const [tab, setTab] = useState('overview')
+  const [stats, setStats] = useState(null)
+  const [pendingUsers, setPendingUsers] = useState([])
+  const [courses, setCourses] = useState([])
+  const [products, setProducts] = useState([])
+  const [orgDetails, setOrgDetails] = useState({})
+  const [expanded, setExpanded] = useState(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+  const [pendingLoading, setPendingLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState({})
+  const [error, setError] = useState('')
+
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
     if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special', { replace: true })
@@ -276,6 +325,86 @@ export default function Dashboard() {
     setMobileMenuOpen(false)
     if (item.path) navigate(item.path)
   }
+
+  // Super Admin fetch functions
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true)
+      const res = await api.get('/admin/stats')
+      setStats(res)
+    } catch (e) {
+      setError('Failed to load statistics')
+      console.error(e)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
+  const fetchCourses = async () => {
+    try {
+      // backend exposes a consolidated courses list under /api/schools/courses/all
+      const res = await api.get('/schools/courses/all')
+      setCourses(Array.isArray(res) ? res.slice(0, 5) : (res?.content || []).slice(0,5))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get('/products')
+      setProducts(Array.isArray(res) ? res.slice(0, 5) : (res?.content || []).slice(0,5))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const fetchPendingUsers = async () => {
+    try {
+      setPendingLoading(true)
+      const res = await api.get('/admin/pending')
+      const users = Array.isArray(res) ? res : (res?.content || [])
+      setPendingUsers(users)
+      const details = {}
+      for (const user of users) {
+        details[user.email] = await fetchOrgByEmail(user.email, user.role)
+      }
+      setOrgDetails(details)
+    } catch (e) {
+      setError('Failed to load pending approvals')
+      console.error(e)
+    } finally {
+      setPendingLoading(false)
+    }
+  }
+
+  const handleAction = async (userId, action) => {
+    try {
+      setActionLoading(prev => ({ ...prev, [userId]: action }))
+      await api.post(`/admin/${action}/${userId}`)
+      setPendingUsers(prev => prev.filter(u => u.id !== userId))
+      setExpanded(null)
+    } catch (e) {
+      setError(`Failed to ${action} account`)
+      console.error(e)
+    } finally {
+      setActionLoading(prev => ({ ...prev, [userId]: null }))
+    }
+  }
+
+  // Modify useEffect to load super admin data
+  useEffect(() => {
+    if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
+    if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special', { replace: true })
+    if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian', { replace: true })
+
+    if (user?.role === 'SUPER_ADMIN') {
+      fetchStats()
+      fetchCourses()
+      fetchProducts()
+      fetchPendingUsers()
+    }
+  }, [navigate, user])
 
   // Flatten nav items for mobile bottom bar (only relevant)
   const bottomNav = [
@@ -435,6 +564,163 @@ export default function Dashboard() {
         {/* Scrollable body */}
         <div className="ds-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 28px 48px' }}>
 
+          {user?.role === 'SUPER_ADMIN' ? (
+            // SUPER ADMIN DASHBOARD
+            <div>
+              <div style={{ marginBottom: '28px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '8px', color: SUPER_ADMIN_TEAL, textTransform: 'uppercase' }}>Super Admin</p>
+                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#0f172a', marginBottom: '8px', margin: 0 }}>Platform Dashboard</h2>
+                <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Monitor all platform activity, approvals, users, and content.</p>
+              </div>
+
+              <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '32px', marginBottom: '28px' }}>
+                {[
+                  { id: 'overview', label: 'Overview' },
+                  { id: 'approvals', label: 'Pending Approvals' },
+                  { id: 'courses', label: 'Courses' },
+                  { id: 'products', label: 'Products' },
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    style={{
+                      padding: '16px 0',
+                      borderBottom: tab === t.id ? `3px solid ${SUPER_ADMIN_TEAL}` : '3px solid transparent',
+                      fontSize: '14px',
+                      fontWeight: tab === t.id ? 600 : 500,
+                      color: tab === t.id ? '#0f172a' : '#64748b',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {error && <div style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '14px' }}>{error}</div>}
+
+              {tab === 'overview' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  {statsLoading ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+                      {[1, 2, 3, 4].map(i => <div key={i} style={{ height: '96px', background: '#e2e8f0', borderRadius: '16px' }} />)}
+                    </div>
+                  ) : stats && (
+                    <>
+                      <div>
+                        <h3 style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '16px', color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Key Metrics</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                          <StatCard label="Total Users" value={stats.totalUsers || 0} icon="👥" color="#3b82f6" />
+                          <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} icon="🏢" color="#8b5cf6" />
+                          <StatCard label="Total Courses" value={stats.totalCourses || 0} icon="📚" color="#ec4899" />
+                          <StatCard label="Total Products" value={stats.totalProducts || 0} icon="🛍️" color="#f59e0b" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '16px', color: '#64748b', textTransform: 'uppercase', margin: 0 }}>User Distribution</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '16px' }}>
+                          <RoleSummaryCard role="SCHOOL_ADMIN" count={stats.totalSchools || 0} color={roleColors.SCHOOL_ADMIN} />
+                          <RoleSummaryCard role="NGO_ADMIN" count={stats.totalNGOs || 0} color={roleColors.NGO_ADMIN} />
+                          <RoleSummaryCard role="STARTUP_ADMIN" count={stats.totalStartups || 0} color={roleColors.STARTUP_ADMIN} />
+                          <RoleSummaryCard role="VOLUNTEER" count={stats.totalVolunteers || 0} color={roleColors.VOLUNTEER} />
+                          <RoleSummaryCard role="SPECIAL_ABLED_PERSON" count={stats.totalSpecialAbled || 0} color={roleColors.SPECIAL_ABLED_PERSON} />
+                          <RoleSummaryCard role="GUARDIAN_CAREGIVER" count={stats.totalGuardians || 0} color={roleColors.GUARDIAN_CAREGIVER} />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {tab === 'approvals' && (
+                <div>
+                  {pendingLoading ? (
+                    <div>Loading...</div>
+                  ) : pendingUsers.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '64px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No pending approvals</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {pendingUsers.map((item) => (
+                        <div key={item.id} style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                            <div>
+                              <p style={{ margin: 0, fontWeight: 'bold', color: '#0f172a' }}>{item.name}</p>
+                              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748b' }}>{item.email}</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={() => handleAction(item.id, 'reject')}
+                                style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #fecaca', background: '#fff', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Reject
+                              </button>
+                              <button
+                                onClick={() => handleAction(item.id, 'approve')}
+                                style={{ padding: '6px 16px', borderRadius: '8px', background: '#5BCB2B', color: '#fff', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Approve
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'courses' && (
+                <div>
+                  {courses.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No courses available</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
+                      {courses.map(course => (
+                        <div key={course.id} style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
+                          <h4 style={{ margin: '0 0 8px', fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{course.name}</h4>
+                          <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>{course.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'products' && (
+                <div>
+                  {products.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No products available</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
+                      {products.map(product => (
+                        <div key={product.id} style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                          {product.imageUrl && <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '128px', objectFit: 'cover' }} />}
+                          <div style={{ padding: '16px' }}>
+                            <h4 style={{ margin: '0 0 4px', fontWeight: 'bold', color: '#0f172a', fontSize: '14px' }}>{product.name}</h4>
+                            <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#64748b' }}>{product.description}</p>
+                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#0f172a' }}>₹{product.price}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            // REGULAR USER DASHBOARD
+            <div>
+
           {/* ── Hero welcome banner ── */}
           <div className="ds-hero fade-in" style={{
             background: `linear-gradient(135deg, ${TEAL} 0%, #0f766e 60%, #134e4a 100%)`,
@@ -507,6 +793,8 @@ export default function Dashboard() {
             </button>
           </div>
 
+            </div>
+          )}
         </div>{/* /content */}
       </main>
 
@@ -543,6 +831,30 @@ export default function Dashboard() {
           )
         })}
       </nav>
+    </div>
+  )
+}
+
+/* ── Hero CTA button ──────────────────────────────────────────────────── */
+function StatCard({ label, value, icon, color }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: color + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+        {icon}
+      </div>
+      <div>
+        <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+        <p style={{ margin: 0, marginTop: '4px', fontSize: '28px', fontWeight: '900', color: color }}>{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function RoleSummaryCard({ role, count, color }) {
+  return (
+    <div style={{ background: color.bg, borderRadius: '12px', border: '1px solid ' + color.text + '20', padding: '16px', textAlign: 'center' }}>
+      <p style={{ margin: 0, fontSize: '24px', fontWeight: '900', color: color.text }}>{count}</p>
+      <p style={{ margin: '4px 0 0', fontSize: '12px', fontWeight: '600', color: color.text }}>{roleLabel[role]}</p>
     </div>
   )
 }
