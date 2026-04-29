@@ -19,14 +19,17 @@ export function CartProvider({ children }) {
   }, [cart])
 
   const addToCart = (product) => {
+    const normalizedSource = product.source || product._source || ''
+    const normalizedSourceId = product.sourceId ?? product.sourceDetails?.id ?? null
+
     setCart((prevCart) => {
       const existingItem = prevCart.find(
-        (item) => item.productId === product.id && item.source === product.source
+        (item) => item.productId === product.id && item.source === normalizedSource
       )
 
       if (existingItem) {
         return prevCart.map((item) =>
-          item.productId === product.id && item.source === product.source
+          item.productId === product.id && item.source === normalizedSource
             ? { ...item, quantity: item.quantity + (product.quantity || 1) }
             : item
         )
@@ -40,8 +43,8 @@ export function CartProvider({ children }) {
           description: product.description,
           price: product.price,
           quantity: product.quantity || 1,
-          source: product.source,
-          sourceId: product.sourceId,
+          source: normalizedSource,
+          sourceId: normalizedSourceId,
           sourceDetails: product.sourceDetails,
           imageUrl: product.imageUrl,
           category: product.category,

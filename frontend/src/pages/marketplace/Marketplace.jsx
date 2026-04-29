@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import { useCart } from '../../context/CartContext'
+import UserNavbar from '../../components/common/UserNavbar'
 
 // Marketplace - Product Listing
 export default function Marketplace() {
@@ -29,33 +30,7 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Navbar Minimal */}
-      <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-            <div className="w-4 h-7 rounded-sm -ml-1.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-            <span className="font-black tracking-tight text-gray-900 text-lg">Inclusive Connect</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate('/cart')} 
-              className="relative text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              Cart
-              {getTotalItems() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {getTotalItems()}
-                </span>
-              )}
-            </button>
-            <button onClick={() => navigate('/dashboard')} className="text-sm font-bold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </nav>
+      <UserNavbar currentPage="marketplace" cartCount={getTotalItems()} />
 
       {cartMessage && (
         <div className="fixed top-20 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse z-40">
@@ -91,13 +66,18 @@ export default function Marketplace() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col group">
+              <div key={`${product.source || 'UNKNOWN'}-${product.id}`} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col group">
                 <div className="h-48 relative overflow-hidden bg-gray-50 flex items-center justify-center border-b border-gray-100">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   {product.imageUrl ? (
                     <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-gray-300 text-6xl group-hover:scale-110 transition-transform duration-300">📦</span>
+                  )}
+                  {product.source && (
+                    <span className="absolute top-3 left-3 z-20 rounded-full bg-gray-900/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm backdrop-blur">
+                      {product.source === 'STARTUP' ? 'Startup' : 'NGO'}
+                    </span>
                   )}
                   {product.category && (
                     <span className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur text-gray-800 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">

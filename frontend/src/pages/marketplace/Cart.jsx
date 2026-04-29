@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import UserNavbar from '../../components/common/UserNavbar'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -29,6 +30,11 @@ export default function Cart() {
     setError('')
 
     try {
+      const invalidItem = cart.find((item) => !item.source || item.sourceId == null)
+      if (invalidItem) {
+        throw new Error('Some cart items are missing product source details. Please remove the item and add it again.')
+      }
+
       // Prepare cart items for order
       const cartItems = cart.map((item) => ({
         productId: item.productId,
@@ -83,22 +89,7 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-            <div className="w-4 h-7 rounded-sm -ml-1.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-            <span className="font-black tracking-tight text-gray-900 text-lg">Inclusive Connect</span>
-          </div>
-          <button
-            onClick={() => navigate('/marketplace')}
-            className="text-sm font-bold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
-          >
-            Continue Shopping
-          </button>
-        </div>
-      </nav>
+      <UserNavbar currentPage="cart" cartCount={getTotalItems()} />
 
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         <h1 className="text-4xl font-black text-gray-900 mb-8">Shopping Cart</h1>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import UserNavbar from '../../components/common/UserNavbar'
 
 export default function Orders() {
   const navigate = useNavigate()
@@ -58,22 +59,7 @@ export default function Orders() {
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-4 h-7 rounded-sm" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-            <div className="w-4 h-7 rounded-sm -ml-1.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-            <span className="font-black tracking-tight text-gray-900 text-lg">Inclusive Connect</span>
-          </div>
-          <button
-            onClick={() => navigate('/marketplace')}
-            className="text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Back to Marketplace
-          </button>
-        </div>
-      </nav>
+      <UserNavbar currentPage="orders" cartCount={0} />
 
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         <h1 className="text-4xl font-black text-gray-900 mb-8">My Orders</h1>
