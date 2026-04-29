@@ -96,6 +96,7 @@ const TABS = [
   { id:'overview',      label:'Overview',     icon:'home'      },
   { id:'requirements',  label:'Requirements', icon:'clipboard' },
   { id:'supportRequests', label:'Support Requests', icon:'chat' },
+  { id:'orders',        label:'Orders',       icon:'box'       },
   { id:'volunteers',    label:'Volunteers',   icon:'users'     },
   { id:'campaigns',     label:'Campaigns',    icon:'calendar'  },
   { id:'events',        label:'Events',       icon:'calendar'  },
@@ -616,6 +617,7 @@ export default function NgoProfile() {
   const [events, setEvents]       = useState([])
   const [eventApps, setEventApps] = useState({ event:null, apps:[], loading:false })
   const [products, setProducts]   = useState([])
+  const [orders, setOrders]       = useState([])
   const [services, setServices]   = useState([])
   const [achievements, setAchievements] = useState([])
   const [supportRequests, setSupportRequests] = useState([])
@@ -747,7 +749,7 @@ export default function NgoProfile() {
   }
 
   const loadData = async id => {
-    const [n,j,p,s,a,sr,v,c,ev] = await Promise.all([
+    const [n,j,p,s,a,sr,v,c,o,ev] = await Promise.all([
       api.get(`/ngos/${id}/needs`).catch(()=>[]),
       api.get(`/ngos/${id}/jobs`).catch(()=>[]),
       api.get(`/ngos/${id}/products`).catch(()=>[]),
@@ -756,6 +758,7 @@ export default function NgoProfile() {
       api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
       api.get(`/volunteer-applications/ngo/${id}`).catch(()=>[]),
       api.get(`/ngos/${id}/campaigns`).catch(()=>[]),
+      api.get(`/orders/ngo/${id}/orders`).catch(()=>[]),
       fetch(`${BASE}/events/ngo/${id}`,{headers:{Authorization:`Bearer ${localStorage.getItem('token')}`}}).then(r=>r.ok?r.json():[]).catch(()=>[]),
     ])
     setNeeds(Array.isArray(n)?n:[]); setJobs(Array.isArray(j)?j:[])
@@ -764,6 +767,7 @@ export default function NgoProfile() {
     setSupportRequests(Array.isArray(sr)?sr:[])
     setVolunteers(Array.isArray(v)?v:[])
     setCampaigns(Array.isArray(c)?c:[])
+    setOrders(Array.isArray(o)?o:[])
     setEvents(Array.isArray(ev)?ev:[])
   }
 
@@ -945,6 +949,7 @@ export default function NgoProfile() {
   const counts = {
     requirements:needs.length,
     supportRequests:supportRequests.filter(r => r.status === 'PENDING').length,
+    orders: orders?.length || 0,
     volunteers:volunteers.length,
     campaigns:campaigns.length,
     events:events.length,
@@ -1068,7 +1073,7 @@ export default function NgoProfile() {
             const active = tab===t.id
             const count  = counts[t.id]
             return (
-              <SidebarBtn key={t.id} t={t} active={active} count={count} onClick={()=>setTab(t.id)}/>
+              <SidebarBtn key={t.id} t={t} active={active} count={count} onClick={()=> t.id === 'orders' ? navigate('/ngo/orders') : setTab(t.id)}/>
             )
           })}
 
@@ -1078,7 +1083,7 @@ export default function NgoProfile() {
             const active = tab===t.id
             const count  = counts[t.id]
             return (
-              <SidebarBtn key={t.id} t={t} active={active} count={count} onClick={()=>setTab(t.id)}/>
+              <SidebarBtn key={t.id} t={t} active={active} count={count} onClick={()=> t.id === 'orders' ? navigate('/ngo/orders') : setTab(t.id)}/>
             )
           })}
         </nav>
@@ -1112,6 +1117,7 @@ export default function NgoProfile() {
               tab==='overview'       ? 'Manage your NGO information' :
               tab==='requirements'   ? 'Post and manage requirements' :
               tab==='supportRequests'? 'Review and respond to user help requests' :
+              tab==='orders'         ? 'Review product orders and customer details' :
               tab==='volunteers'     ? 'Post volunteer needs and review interested volunteers' :
               tab==='campaigns'      ? 'Plan and track campaign outcomes' :
               tab==='events'         ? 'Create and manage community events' :
@@ -1122,10 +1128,23 @@ export default function NgoProfile() {
               tab==='messages'       ? 'Real-time conversations' : ''
             }</p>
           </div>
-          {/* Breadcrumb pill */}
-          <div className="ngo-topbar-pill" style={{alignItems:'center',gap:6,padding:'5px 12px',background:'#f8fafc',borderRadius:20,border:'1px solid #e9ecef'}}>
-            <Ic n={TABS.find(t=>t.id===tab)?.icon||'home'} s={13} c={G}/>
-            <span style={{fontSize:12,fontWeight:600,color:'#475569'}}>{TABS.find(t=>t.id===tab)?.label}</span>
+          {/* Quick actions */}
+          <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',justifyContent:'flex-end'}}>
+            <button
+              onClick={()=>navigate('/ngo/orders')}
+              style={{display:'inline-flex',alignItems:'center',gap:7,padding:'7px 13px',borderRadius:20,border:`1px solid ${G}35`,background:`${G}10`,color:G,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:"'Inter',sans-serif",transition:'all .15s'}}
+              onMouseEnter={e=>{e.currentTarget.style.background=`${G}18`;e.currentTarget.style.borderColor=`${G}55`}}
+              onMouseLeave={e=>{e.currentTarget.style.background=`${G}10`;e.currentTarget.style.borderColor=`${G}35`}}
+            >
+              <Ic n="box" s={13} c={G}/>
+              Orders
+            </button>
+
+            {/* Breadcrumb pill */}
+            <div className="ngo-topbar-pill" style={{display:'flex',alignItems:'center',gap:6,padding:'5px 12px',background:'#f8fafc',borderRadius:20,border:'1px solid #e9ecef'}}>
+              <Ic n={TABS.find(t=>t.id===tab)?.icon||'home'} s={13} c={G}/>
+              <span style={{fontSize:12,fontWeight:600,color:'#475569'}}>{TABS.find(t=>t.id===tab)?.label}</span>
+            </div>
           </div>
         </header>
 
@@ -2109,7 +2128,7 @@ export default function NgoProfile() {
           return (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => t.id === 'orders' ? navigate('/ngo/orders') : setTab(t.id)}
               style={{
                 flex:1, display:'flex', flexDirection:'column', alignItems:'center',
                 justifyContent:'center', gap:2, border:'none', background:'transparent',

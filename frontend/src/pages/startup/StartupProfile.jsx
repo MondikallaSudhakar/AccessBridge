@@ -149,6 +149,13 @@ export default function StartupProfile() {
             <span className="text-sm font-bold text-gray-900">Startup Manage</span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/startup/orders')}
+              className="text-xs font-semibold text-white px-3 py-1.5 rounded transition-colors"
+              style={{ backgroundColor: '#e65100' }}
+            >
+              Orders
+            </button>
             <span className="text-xs text-gray-400 hidden md:block">{user?.email}</span>
             <button onClick={() => { logout(); navigate('/') }}
               className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
@@ -169,6 +176,13 @@ export default function StartupProfile() {
                 <h1 className="text-3xl font-black text-gray-900">{startup?.name || 'My Startup'}</h1>
                 {startup?.city && <p className="text-sm text-gray-400 mt-1">{[startup.city, startup.state].filter(Boolean).join(', ')}</p>}
               </div>
+              <button
+                onClick={() => navigate('/startup/orders')}
+                className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#e65100' }}
+              >
+                View Orders
+              </button>
             </div>
 
             <div className="space-y-6">

@@ -1,5 +1,7 @@
 package com.community.community.service;
 
+import com.community.community.dto.OrderItemSummaryDto;
+import com.community.community.dto.OrderSummaryDto;
 import com.community.community.model.Order;
 import com.community.community.model.OrderItem;
 import com.community.community.model.User;
@@ -11,7 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map;
 
 @Service
@@ -81,13 +87,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderItem> getOrdersForNGO(Long ngoId) {
-        return orderItemRepository.findBySourceAndSourceId("NGO", ngoId);
+    public List<OrderSummaryDto> getOrdersForNGO(Long ngoId) {
+        return buildOrderSummaries(orderItemRepository.findBySourceAndSourceId("NGO", ngoId));
     }
 
     @Transactional(readOnly = true)
-    public List<OrderItem> getOrdersForStartup(Long startupId) {
-        return orderItemRepository.findBySourceAndSourceId("STARTUP", startupId);
+    public List<OrderSummaryDto> getOrdersForStartup(Long startupId) {
+        return buildOrderSummaries(orderItemRepository.findBySourceAndSourceId("STARTUP", startupId));
     }
 
     public Order updateOrderStatus(Long orderId, Order.OrderStatus status) {
@@ -114,5 +120,50 @@ public class OrderService {
         
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
+    }
+
+    private List<OrderSummaryDto> buildOrderSummaries(List<OrderItem> orderItems) {
+        Map<Long, List<OrderItem>> grouped = new LinkedHashMap<>();
+        for (OrderItem item : orderItems) {
+            Long orderId = item.getOrder().getId();
+            grouped.computeIfAbsent(orderId, key -> new ArrayList<>()).add(item);
+        }
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    List<OrderItem> items = entry.getValue();
+                    Order order = items.get(0).getOrder();
+                    BigDecimal sourceTotal = items.stream()
+                            .map(OrderItem::getTotalPrice)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    List<OrderItemSummaryDto> itemDtos = items.stream()
+                            .sorted(Comparator.comparing(OrderItem::getCreatedAt))
+                            .map(item -> new OrderItemSummaryDto(
+                                    item.getProductId(),
+                                    item.getProductName(),
+                                    item.getSource(),
+                                    item.getSourceId(),
+                                    item.getQuantity(),
+                                    item.getPrice(),
+                                    item.getTotalPrice()
+                            ))
+                            .toList();
+
+                    String buyerName = order.getUser() != null ? order.getUser().getName() : null;
+                    String buyerEmail = order.getUser() != null ? order.getUser().getEmail() : null;
+
+                    return new OrderSummaryDto(
+                            order.getId(),
+                            order.getStatus(),
+                            order.getTotalPrice(),
+                            sourceTotal,
+                            order.getCreatedAt(),
+                            buyerName,
+                            buyerEmail,
+                            itemDtos
+                    );
+                })
+                .sorted(Comparator.comparing(OrderSummaryDto::createdAt).reversed())
+                .toList();
     }
 }

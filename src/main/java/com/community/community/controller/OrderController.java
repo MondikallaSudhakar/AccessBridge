@@ -1,5 +1,6 @@
 package com.community.community.controller;
 
+import com.community.community.dto.OrderSummaryDto;
 import com.community.community.model.Order;
 import com.community.community.model.OrderItem;
 import com.community.community.service.OrderService;
@@ -49,16 +50,16 @@ public class OrderController {
 
     @GetMapping("/ngo/{ngoId}/orders")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<List<OrderItem>> getOrdersForNGO(@PathVariable Long ngoId) {
-        List<OrderItem> orderItems = orderService.getOrdersForNGO(ngoId);
-        return ResponseEntity.ok(orderItems);
+    public ResponseEntity<List<OrderSummaryDto>> getOrdersForNGO(@PathVariable Long ngoId) {
+        List<OrderSummaryDto> orders = orderService.getOrdersForNGO(ngoId);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/startup/{startupId}/orders")
     @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<List<OrderItem>> getOrdersForStartup(@PathVariable Long startupId) {
-        List<OrderItem> orderItems = orderService.getOrdersForStartup(startupId);
-        return ResponseEntity.ok(orderItems);
+    public ResponseEntity<List<OrderSummaryDto>> getOrdersForStartup(@PathVariable Long startupId) {
+        List<OrderSummaryDto> orders = orderService.getOrdersForStartup(startupId);
+        return ResponseEntity.ok(orders);
     }
 
     @PatchMapping("/{orderId}/status")

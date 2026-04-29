@@ -15,6 +15,7 @@ export const NGO_WORKSPACE_NAV = [
     meta: { openDate: '2025-04-10', closeDate: '2025-05-31', applied: 23 },
   },
   { to: '/ngo/products', label: 'Products' },
+  { to: '/ngo/orders', label: 'Orders' },
   { to: '/ngo/services', label: 'Services' },
   { to: '/ngo/achievements', label: 'Achievements' },
   // { to: '/ngo/messages', label: 'Messages' },
