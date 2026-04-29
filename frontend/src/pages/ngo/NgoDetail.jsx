@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const BASE = 'http://localhost:8081/api'
-const G = '#16a34a'
-const B = '#1A8FD1'
+const G = '#5bcb2b'
+const B = '#0197b2'
 const NAVY = '#0f172a'
 
 const EMP_LABELS = {
@@ -15,11 +15,6 @@ const EMP_LABELS = {
 async function fetchJSON(url) {
   try { const r = await fetch(url); return r.ok ? r.json() : null } catch { return null }
 }
-
-/* ── tiny design tokens ── */
-const card  = { background:'#fff', borderRadius:16, border:'1px solid #e9ecef', padding:'22px 24px' }
-const chip  = (color, bg) => ({ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:700,
-  color, background: bg || color+'18', padding:'3px 10px', borderRadius:20, letterSpacing:'0.04em' })
 
 /* ── SVG Icons ── */
 const Icons = {
@@ -176,53 +171,59 @@ export default function NgoDetail() {
   ]
 
   return (
-    <div style={{ minHeight:'100vh', background:'#ffffff', fontFamily:"'Inter',sans-serif" }}>
-      <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .ngo-job-card:hover{border-left-color:${G} !important; box-shadow:0 8px 24px rgba(22,163,74,.12) !important}
-        .ngo-tab-btn:hover{background:rgba(22,163,74,.06) !important}
-      `}</style>
-
+    <div className="min-h-screen bg-white font-sans">
       {/* ── Topbar ── */}
-      <div style={{ background:'#fff', borderBottom:'1px solid #e2e8f0', padding:'16px 32px', display:'flex', alignItems:'center', gap:12, position:'sticky', top:0, zIndex:50, boxShadow:'0 1px 3px rgba(0,0,0,.06)' }}>
-        <button onClick={() => navigate('/')} style={{ display:'flex', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700, color:'#64748b', transition:'color .2s' }}>
-          ← Back
-        </button>
-        <div style={{ flex:1 }}/>
-        <span style={{ ...chip(G), fontSize:12, fontWeight:800 }}>{ngo.verified ? '✓ Verified NGO' : '⏳ Pending'}</span>
-      </div>
-
-      <div style={{ maxWidth:1100, margin:'0 auto', padding:'32px 24px 60px' }}>
-
-        {/* ── Hero card ── */}
-        <div style={{ ...card, padding:0, overflow:'hidden', animation:'fadeIn .4s ease', marginBottom:24, boxShadow:'0 4px 16px rgba(0,0,0,.08)' }}>
-          {/* Solid banner */}
-          <div style={{ height:140, background:B, position:'relative', display:'flex', alignItems:'flex-end', paddingLeft:32, paddingBottom:20 }}>
-            <div style={{ width:80, height:80, borderRadius:20, background:'#fff', border:'3px solid #fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, fontWeight:900, color:B, boxShadow:'0 8px 24px rgba(0,0,0,.15)' }}>
-              {ngo.name?.charAt(0).toUpperCase()}
-            </div>
+      <header className="sticky top-0 z-50 border-b border-black bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm font-bold text-black hover:underline">
+              ← Back
+            </button>
+            <div className="h-6 w-px bg-black opacity-20"></div>
+            <a href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg border-2 border-black text-sm font-black text-black grid place-items-center bg-transparent">IC</div>
+              <span className="hidden text-sm font-extrabold tracking-tight md:inline" style={{ color: '#0197B2' }}>Inclusive Connect</span>
+            </a>
           </div>
-          <div style={{ padding:'28px 32px 32px', display:'flex', gap:28, alignItems:'flex-start', flexWrap:'wrap' }}>
-            <div style={{ flex:1, minWidth:240 }}>
-              <h1 style={{ margin:0, fontSize:28, fontWeight:900, color:NAVY }}>{ngo.name}</h1>
-              <p style={{ margin:'6px 0 12px', fontSize:14, color:'#64748b', fontWeight:600 }}>{[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
-              {(ngo.category||ngo.focusArea) && <span style={{ ...chip(B), display:'inline-block', marginBottom:12 }}>{ngo.category||ngo.focusArea}</span>}
-              <p style={{ margin:'12px 0 0', fontSize:15, color:'#475569', lineHeight:1.8, maxWidth:620 }}>{ngo.description||ngo.mission||'Committed to inclusive growth and accessibility.'}</p>
+          <span className="rounded-full border border-[#5bcb2b] px-3 py-1 text-xs font-bold text-[#5bcb2b] bg-white">
+            {ngo.verified ? '✓ Verified NGO' : '⏳ Pending'}
+          </span>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
+        {/* ── Hero card ── */}
+        <div className="mb-8 rounded-xl border border-[#0197b2] bg-white p-6 md:p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-[#0197b2] bg-white grid place-items-center">
+              {ngo.logoUrl ? (
+                <img 
+                  src={ngo.logoUrl.startsWith('http') ? ngo.logoUrl : `http://localhost:8081${ngo.logoUrl.startsWith('/') ? '' : '/'}${ngo.logoUrl}`} 
+                  alt={ngo.name} 
+                  className="h-full w-full object-contain p-1" 
+                />
+              ) : (
+                <span className="text-4xl font-black text-black">{ngo.name?.charAt(0).toUpperCase()}</span>
+              )}
             </div>
-            {/* Stat cards - horizontal */}
-            <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'flex-end' }}>
+            <div className="flex-1">
+              <h1 className="text-3xl font-black text-slate-900">{ngo.name}</h1>
+              <p className="mt-1 text-sm font-bold text-slate-700">{[ngo.city,ngo.state,ngo.country].filter(Boolean).join(', ')}</p>
+              {(ngo.category||ngo.focusArea) && <span className="mt-3 inline-block rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">{ngo.category||ngo.focusArea}</span>}
+              <p className="mt-4 text-sm font-medium text-slate-800 leading-relaxed max-w-2xl">{ngo.description||ngo.mission||'Committed to inclusive growth and accessibility.'}</p>
+            </div>
+            
+            {/* Stat cards */}
+            <div className="flex flex-wrap gap-4 mt-6 md:mt-0 justify-start md:justify-end">
               {[
-                { label:'Jobs', Icon: Icons.Briefcase, color: G },
-                { label:'Needs', Icon: Icons.Heart, color: B },
-                { label:'Products', Icon: Icons.Package, color:'#6366f1' },
+                { label:'Jobs', Icon: Icons.Briefcase, count: openJobs.length },
+                { label:'Needs', Icon: Icons.Heart, count: activeNeeds.length },
+                { label:'Products', Icon: Icons.Package, count: products.length },
               ].map(s => (
-                <div key={s.label} style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:14, padding:'16px 20px', textAlign:'center', minWidth:110, boxShadow:'0 2px 8px rgba(0,0,0,.04)', transition:'all .2s' }}>
-                  <div style={{ margin:0, marginBottom:8, display:'flex', justifyContent:'center', width:24, height:24, marginLeft:'auto', marginRight:'auto', color:s.color }}>
-                    <s.Icon />
-                  </div>
-                  <p style={{ margin:'0 0 4px', fontSize:20, fontWeight:900, color:s.color }}>{s.label === 'Jobs' ? openJobs.length : s.label === 'Needs' ? activeNeeds.length : products.length}</p>
-                  <p style={{ margin:0, fontSize:12, color:'#64748b', fontWeight:600 }}>{s.label}</p>
+                <div key={s.label} className="flex min-w-[100px] flex-col items-center justify-center rounded-xl border border-[#0197b2] bg-white p-4">
+                  <div className="mb-2 text-[#0197b2]"><s.Icon /></div>
+                  <span className="text-xl font-black text-[#0197b2]">{s.count}</span>
+                  <span className="text-xs font-bold text-slate-600">{s.label}</span>
                 </div>
               ))}
             </div>
@@ -230,54 +231,41 @@ export default function NgoDetail() {
         </div>
 
         {/* ── Tab bar ── */}
-        <div style={{ display:'flex', gap:8, marginBottom:24, overflowX:'auto', paddingBottom:6, scrollBehavior:'smooth' }}>
+        <div className="mb-8 flex gap-2 overflow-x-auto pb-2">
           {TABS.map(t => (
-            <button key={t.key} className="ngo-tab-btn"
+            <button key={t.key}
               onClick={() => setTab(t.key)}
-              style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 20px', borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Inter',sans-serif", fontWeight:tab===t.key?800:600, fontSize:14, transition:'all .2s', whiteSpace:'nowrap',
-                background: tab===t.key ? G : '#f8fafc',
-                color: tab===t.key ? '#fff' : '#64748b',
-                boxShadow: tab===t.key ? `0 4px 12px ${G}30` : 'none',
-                border: tab===t.key ? 'none' : '1px solid #e2e8f0',
-              }}
+              className={`shrink-0 rounded-full border-2 px-5 py-2 text-sm font-bold transition-all ${tab===t.key ? 'border-[#0197b2] text-[#0197b2]' : 'border-transparent text-slate-600 hover:border-slate-200 hover:text-[#0197b2]'}`}
             >
-              {t.label}
-              <span style={{ fontSize:12, fontWeight:800, background: tab===t.key?'rgba(255,255,255,.35)':'#e2e8f0', color: tab===t.key?'#fff':'#64748b', padding:'2px 8px', borderRadius:8 }}>{t.count}</span>
+              {t.label} <span className={`ml-1 rounded-full border px-2 py-0.5 text-xs ${tab===t.key ? 'border-[#0197b2]' : 'border-slate-300'}`}>{t.count}</span>
             </button>
           ))}
         </div>
 
         {/* ── JOBS tab ── */}
         {tab === 'jobs' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:14, animation:'fadeIn .3s ease' }}>
+          <div className="flex flex-col gap-4">
             {openJobs.length === 0 && (
-              <div style={{ ...card, textAlign:'center', padding:'48px 24px', color:'#94a3b8' }}>
-                <p style={{ fontSize:15, fontWeight:700, color:NAVY, margin:'0 0 4px' }}>No open positions right now</p>
-                <p style={{ fontSize:13, margin:0 }}>Check back later for new opportunities.</p>
+              <div className="rounded-xl border border-black bg-white p-12 text-center">
+                <p className="text-base font-bold text-black">No open positions right now</p>
               </div>
             )}
             {openJobs.map(j => (
-              <div key={j.id} className="ngo-job-card"
-                style={{ ...card, transition:'all .18s', display:'flex', gap:24, alignItems:'flex-start', flexWrap:'wrap', borderLeft:`4px solid ${G}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-                {/* Info */}
-                <div style={{ flex:1, minWidth:280 }}>
-                  <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
-                    <span style={{ ...chip(G, `${G}15`), fontWeight:800 }}>✓ HIRING</span>
-                    {j.employmentType && <span style={{ ...chip(B, `${B}12`), fontWeight:700 }}>{EMP_LABELS[j.employmentType]||j.employmentType}</span>}
+              <div key={j.id} className="flex flex-col md:flex-row gap-6 items-start rounded-xl border border-[#0197b2] bg-white p-6 shadow-sm">
+                <div className="flex-1 min-w-0">
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-[#5bcb2b] px-3 py-1 text-xs font-bold text-[#5bcb2b]">✓ HIRING</span>
+                    {j.employmentType && <span className="rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">{EMP_LABELS[j.employmentType]||j.employmentType}</span>}
                   </div>
-                  <h3 style={{ margin:'0 0 8px', fontSize:17, fontWeight:900, color:NAVY }}>{j.title}</h3>
-                  <div style={{ display:'flex', gap:16, flexWrap:'wrap', marginBottom:12, fontSize:13, color:'#64748b', fontWeight:600 }}>
+                  <h3 className="mb-2 text-lg font-black text-slate-900">{j.title}</h3>
+                  <div className="mb-3 flex flex-wrap gap-4 text-sm font-bold text-slate-600">
                     {j.location && <span>{j.location}</span>}
-                    {j.salaryRange && <span style={{ color:G, fontWeight:800 }}>{j.salaryRange}</span>}
+                    {j.salaryRange && <span>{j.salaryRange}</span>}
                   </div>
-                  <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{j.description}</p>
+                  <p className="text-sm font-medium text-slate-800 leading-relaxed">{j.description}</p>
                 </div>
-                {/* Actions */}
-                <div style={{ display:'flex', flexDirection:'column', gap:10, flexShrink:0 }}>
-                  <button
-                    onClick={() => { setApplyJob(j); setApplyMsg(null) }}
-                    style={{ padding:'11px 24px', background:G, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', boxShadow:`0 2px 10px ${G}40`, transition:'all .2s' }}
-                  >Apply Now</button>
+                <div className="shrink-0 mt-4 md:mt-0">
+                  <button onClick={() => { setApplyJob(j); setApplyMsg(null) }} className="rounded-xl px-6 py-3 text-sm font-bold text-white bg-[#5bcb2b] transition-opacity hover:opacity-90 shadow-sm">Apply Now</button>
                 </div>
               </div>
             ))}
@@ -286,21 +274,22 @@ export default function NgoDetail() {
 
         {/* ── REQUIREMENTS tab ── */}
         {tab === 'requirements' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:14, animation:'fadeIn .3s ease' }}>
-            {activeNeeds.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', padding:'48px 24px' }}><p style={{fontSize:15, fontWeight:700, margin:'0 0 4px'}}>No active requirements</p><p style={{fontSize:14, margin:0}}>Check back later for new opportunities.</p></div>}
+          <div className="flex flex-col gap-4">
+            {activeNeeds.length === 0 && (
+              <div className="rounded-xl border border-black bg-white p-12 text-center">
+                <p className="text-base font-bold text-black">No active requirements</p>
+              </div>
+            )}
             {activeNeeds.map(n => (
-              <div key={n.id} style={{ ...card, borderLeft:`4px solid ${B}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:16 }}>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{n.title}</h3>
-                    <span style={{ ...chip(B, `${B}12`), display:'inline-block', marginBottom:12, fontWeight:700 }}>{n.category}</span>
-                    <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{n.description}</p>
-                    {n.targetAmount > 0 && <p style={{ margin:0, fontSize:14, fontWeight:800, color:G }}>Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
-                  </div>
-                  <button onClick={() => { setSupportNeed(n); setSupportMsg(null); setSupportForm({ name:'', email:'', message:'' }) }}
-                    style={{ whiteSpace:'nowrap', padding:'11px 24px', background:B, color:'#fff', border:'none', borderRadius:10, fontWeight:800, fontSize:14, cursor:'pointer', flexShrink:0, boxShadow:`0 2px 10px ${B}40` }}>
-                    Support
-                  </button>
+              <div key={n.id} className="flex flex-col md:flex-row gap-6 items-start rounded-xl border border-[#0197b2] bg-white p-6 shadow-sm">
+                <div className="flex-1 min-w-0">
+                  <h3 className="mb-2 text-lg font-black text-slate-900">{n.title}</h3>
+                  <span className="mb-3 inline-block rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">{n.category}</span>
+                  <p className="mb-3 text-sm font-medium text-slate-800 leading-relaxed">{n.description}</p>
+                  {n.targetAmount > 0 && <p className="text-sm font-bold text-[#5bcb2b]">Target: Rs {Number(n.targetAmount).toLocaleString('en-IN')}</p>}
+                </div>
+                <div className="shrink-0 mt-4 md:mt-0">
+                  <button onClick={() => { setSupportNeed(n); setSupportMsg(null); setSupportForm({ name:'', email:'', message:'' }) }} className="rounded-xl px-6 py-3 text-sm font-bold text-white bg-[#0197b2] transition-opacity hover:opacity-90 shadow-sm">Support</button>
                 </div>
               </div>
             ))}
@@ -309,16 +298,20 @@ export default function NgoDetail() {
 
         {/* ── PRODUCTS tab ── */}
         {tab === 'products' && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:18, animation:'fadeIn .3s ease' }}>
-            {products.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:48 }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No products listed</p><p style={{fontSize:14, margin:0}}>Check back later for new products.</p></div>}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {products.length === 0 && (
+              <div className="col-span-full rounded-xl border border-black bg-white p-12 text-center">
+                <p className="text-base font-bold text-black">No products listed</p>
+              </div>
+            )}
             {products.map(p => (
-              <div key={p.id} style={{ ...card, borderTop:`4px solid #6366f1`, boxShadow:'0 2px 8px rgba(0,0,0,.04)', transition:'all .2s' }}>
-                <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{p.name}</h3>
-                <span style={{ ...chip('#6366f1', '#e0e7ff'), display:'inline-block', marginBottom:12, fontWeight:700 }}>{p.category||'General'}</span>
-                <p style={{ margin:'0 0 12px', fontSize:14, color:'#475569', lineHeight:1.6 }}>{p.description}</p>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:12, borderTop:'1px solid #e2e8f0' }}>
-                  <p style={{ margin:0, fontSize:18, fontWeight:900, color:G }}>₹{Number(p.price||0).toLocaleString('en-IN')}</p>
-                  <p style={{ margin:0, fontSize:12, color:'#64748b', fontWeight:700 }}>📦 Stock: {p.stockQuantity}</p>
+              <div key={p.id} className="rounded-xl border border-[#0197b2] bg-white p-6 flex flex-col shadow-sm">
+                <h3 className="mb-2 text-lg font-black text-slate-900">{p.name}</h3>
+                <span className="mb-3 inline-block self-start rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">{p.category||'General'}</span>
+                <p className="mb-4 text-sm font-medium text-slate-800 leading-relaxed flex-1">{p.description}</p>
+                <div className="flex items-center justify-between border-t border-slate-200 pt-4">
+                  <p className="text-xl font-black text-[#5bcb2b]">₹{Number(p.price||0).toLocaleString('en-IN')}</p>
+                  <p className="text-xs font-bold text-slate-600">📦 Stock: {p.stockQuantity}</p>
                 </div>
               </div>
             ))}
@@ -327,18 +320,18 @@ export default function NgoDetail() {
 
         {/* ── SERVICES tab ── */}
         {tab === 'services' && (
-          <div style={{ display:'flex', flexDirection:'column', gap:14, animation:'fadeIn .3s ease' }}>
-            {services.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8' }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No services listed</p><p style={{fontSize:14,margin:0}}>Check back later for new services.</p></div>}
+          <div className="flex flex-col gap-4">
+            {services.length === 0 && (
+              <div className="rounded-xl border border-black bg-white p-12 text-center">
+                <p className="text-base font-bold text-black">No services listed</p>
+              </div>
+            )}
             {services.map(s => (
-              <div key={s.id} style={{ ...card, borderLeft:`4px solid #6366f1`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:16 }}>
-                  <div style={{ flex:1 }}>
-                    <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{s.title}</h3>
-                    <span style={{ ...chip('#6366f1', '#e0e7ff'), display:'inline-block', marginBottom:12, fontWeight:700 }}>{s.category||'Service'}</span>
-                    <p style={{ margin:'0 0 10px', fontSize:14, color:'#475569', lineHeight:1.7 }}>{s.description}</p>
-                    {s.contactInfo && <p style={{ margin:0, fontSize:13, color:G, fontWeight:800 }}>Contact: {s.contactInfo}</p>}
-                  </div>
-                </div>
+              <div key={s.id} className="rounded-xl border border-[#0197b2] bg-white p-6 shadow-sm">
+                <h3 className="mb-2 text-lg font-black text-slate-900">{s.title}</h3>
+                <span className="mb-3 inline-block rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">{s.category||'Service'}</span>
+                <p className="mb-3 text-sm font-medium text-slate-800 leading-relaxed">{s.description}</p>
+                {s.contactInfo && <p className="text-sm font-bold text-[#5bcb2b]">Contact: {s.contactInfo}</p>}
               </div>
             ))}
           </div>
@@ -346,13 +339,17 @@ export default function NgoDetail() {
 
         {/* ── ACHIEVEMENTS tab ── */}
         {tab === 'achievements' && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:18, animation:'fadeIn .3s ease' }}>
-            {achievements.length === 0 && <div style={{ ...card, textAlign:'center', color:'#94a3b8', gridColumn:'1/-1', padding:48 }}><p style={{fontSize:15,fontWeight:700,margin:'0 0 4px'}}>No achievements posted</p><p style={{fontSize:14,margin:0}}>Check back later for success stories.</p></div>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {achievements.length === 0 && (
+              <div className="col-span-full rounded-xl border border-black bg-white p-12 text-center">
+                <p className="text-base font-bold text-black">No achievements posted</p>
+              </div>
+            )}
             {achievements.map(a => (
-              <div key={a.id} style={{ ...card, borderTop:`4px solid ${G}`, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-                <h3 style={{ margin:'0 0 8px', fontSize:16, fontWeight:900, color:NAVY }}>{a.title}</h3>
-                {a.achievementDate && <p style={{ margin:'0 0 12px', fontSize:12, color:'#64748b', fontWeight:700 }}>{a.achievementDate}</p>}
-                <p style={{ margin:0, fontSize:14, color:'#475569', lineHeight:1.7 }}>{a.description}</p>
+              <div key={a.id} className="rounded-xl border border-[#0197b2] bg-white p-6 shadow-sm">
+                <h3 className="mb-2 text-lg font-black text-slate-900">{a.title}</h3>
+                {a.achievementDate && <p className="mb-3 text-xs font-bold text-slate-600">{a.achievementDate}</p>}
+                <p className="text-sm font-medium text-slate-800 leading-relaxed">{a.description}</p>
               </div>
             ))}
           </div>

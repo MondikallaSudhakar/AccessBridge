@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext'
 const API = 'http://localhost:8081/api'
 
 const COLORS = {
-  green: '#0197B2',
-  greenSoft: '#f0f8fc',
-  greenBorder: '#c8e6f0',
-  blue: '#0197B2',
+  green: '#5bcb2b',
+  greenSoft: '#f0fdf4',
+  greenBorder: '#bbf7d0',
+  blue: '#0197b2',
   blueSoft: '#f0f8fc',
   blueBorder: '#c8e6f0',
   blueDark: '#0a4b5a',
-  heroGradient: '#0197B2',
+  heroGradient: '#0197b2',
   white: '#ffffff',
   slate50: '#f9fafb',
   slate100: '#f3f4f6',
@@ -135,7 +135,8 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`shrink-0 rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all ${selected ? 'border-black text-black' : 'border-transparent text-black hover:border-black'}`}
+                  className={`shrink-0 rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all ${selected ? 'border-[#0197b2] text-[#0197b2]' : 'border-transparent text-slate-600 hover:border-slate-200 hover:text-[#0197b2]'}`}
+                  style={selected ? { borderColor: COLORS.blue, color: COLORS.blue } : {}}
                 >
                   {tab.label}
                 </button>
