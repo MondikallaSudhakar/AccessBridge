@@ -35,13 +35,49 @@ public class EventController {
     // ── Public Event Endpoints ────────────────────────────────────────────
 
     @GetMapping("/public")
-    public ResponseEntity<List<Event>> getPublicEvents(@RequestParam(required = false) String city) {
+    public ResponseEntity<List<Map<String, Object>>> getPublicEvents(@RequestParam(required = false) String city) {
         LocalDateTime now = LocalDateTime.now();
-        List<Event> events = eventRepository.findByEventDateAfter(now)
+        List<Map<String, Object>> events = eventRepository.findByEventDateAfter(now)
                 .stream()
                 .filter(event -> !"CANCELLED".equalsIgnoreCase(event.getStatus()))
                 .filter(event -> city == null || city.isBlank() || (event.getCity() != null && event.getCity().equalsIgnoreCase(city)))
                 .sorted(Comparator.comparing(Event::getEventDate))
+                .map(event -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", event.getId());
+                    map.put("title", event.getTitle());
+                    map.put("description", event.getDescription());
+                    map.put("eventDate", event.getEventDate());
+                    map.put("endDate", event.getEndDate());
+                    map.put("location", event.getLocation());
+                    map.put("city", event.getCity());
+                    map.put("state", event.getState());
+                    map.put("eventType", event.getEventType());
+                    map.put("imageUrl", event.getImageUrl());
+                    map.put("maxParticipants", event.getMaxParticipants());
+                    map.put("registeredParticipants", event.getRegisteredParticipants());
+                    map.put("status", event.getStatus());
+                    map.put("createdAt", event.getCreatedAt());
+                    map.put("updatedAt", event.getUpdatedAt());
+                    
+                    if (event.getNgo() != null) {
+                        Map<String, Object> ngoMap = new java.util.HashMap<>();
+                        ngoMap.put("id", event.getNgo().getId());
+                        ngoMap.put("name", event.getNgo().getName());
+                        ngoMap.put("logoUrl", event.getNgo().getLogoUrl());
+                        ngoMap.put("verified", event.getNgo().getVerified());
+                        map.put("ngo", ngoMap);
+                    }
+                    if (event.getSchool() != null) {
+                        Map<String, Object> schoolMap = new java.util.HashMap<>();
+                        schoolMap.put("id", event.getSchool().getId());
+                        schoolMap.put("name", event.getSchool().getName());
+                        schoolMap.put("logoUrl", event.getSchool().getLogoUrl());
+                        schoolMap.put("verified", event.getSchool().getVerified());
+                        map.put("school", schoolMap);
+                    }
+                    return map;
+                })
                 .toList();
         return ResponseEntity.ok(events);
     }

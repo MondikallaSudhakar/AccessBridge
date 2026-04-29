@@ -461,7 +461,7 @@ export default function Home() {
             href: `/ngos/${ngo.id}`,
             accent: COLORS.green,
             openDate: job.openDate || job.createdAt || null,
-            closeDate: job.closeDate || job.deadline || null,
+            closeDate: job.lastDateToApply || job.closeDate || job.deadline || null,
             applied: job.applicantCount ?? null,
             logo: ngo.logoUrl,
           }))
