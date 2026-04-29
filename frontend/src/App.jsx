@@ -7,6 +7,8 @@ import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/dashboard/Dashboard'
 import Marketplace from './pages/marketplace/Marketplace'
+import Cart from './pages/marketplace/Cart'
+import Orders from './pages/marketplace/Orders'
 import Search from './pages/search/Search'
 import AdminApproval from './pages/dashboard/AdminApproval'
 import SchoolProfile from './pages/school/SchoolProfile'
@@ -53,6 +55,8 @@ function App() {
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
         <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />

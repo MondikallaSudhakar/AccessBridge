@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import { useCart } from '../../context/CartContext'
 
 // Marketplace - Product Listing
 export default function Marketplace() {
   const navigate = useNavigate()
+  const { addToCart, getTotalItems } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [cartMessage, setCartMessage] = useState('')
 
   useEffect(() => {
     fetchProducts()
@@ -34,11 +37,31 @@ export default function Marketplace() {
             <div className="w-4 h-7 rounded-sm -ml-1.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
             <span className="font-black tracking-tight text-gray-900 text-lg">Inclusive Connect</span>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="text-sm font-bold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">
-            Back to Dashboard
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigate('/cart')} 
+              className="relative text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              Cart
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="text-sm font-bold bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </nav>
+
+      {cartMessage && (
+        <div className="fixed top-20 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-pulse z-40">
+          {cartMessage}
+        </div>
+      )}
 
       <div className="container mx-auto px-6 py-12 max-w-7xl">
         <div className="text-center mb-12">
@@ -111,6 +134,11 @@ export default function Marketplace() {
                   </div>
                   <button 
                     disabled={product.stockQuantity <= 0}
+                    onClick={() => {
+                      addToCart(product)
+                      setCartMessage('Added to cart!')
+                      setTimeout(() => setCartMessage(''), 2000)
+                    }}
                     className={`w-full py-2.5 rounded-lg text-sm font-bold transition-colors ${
                       product.stockQuantity > 0 
                         ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
