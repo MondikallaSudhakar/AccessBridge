@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext'
 const API = 'http://localhost:8081/api'
 
 const COLORS = {
-  green: '#5BCB2B',
-  greenSoft: '#f0f8e8',
-  greenBorder: '#d4e6c1',
+  green: '#0197B2',
+  greenSoft: '#f0f8fc',
+  greenBorder: '#c8e6f0',
   blue: '#0197B2',
   blueSoft: '#f0f8fc',
   blueBorder: '#c8e6f0',
@@ -241,11 +241,11 @@ function isDeadlinePassed(dateStr) {
 
 /* ── Timeline dot colours by type ── */
 const TYPE_DOT = {
-  jobs: { dot: '#4f46e5', bg: '#eef2ff', label: 'Job' },
-  requirements: { dot: '#0197B2', bg: '#e7f7fb', label: 'Requirement' },
-  events: { dot: '#d97706', bg: '#fef3c7', label: 'Event' },
-  stories: { dot: '#5BCB2B', bg: '#eaf6ef', label: 'Story' },
-  products: { dot: '#e11d48', bg: '#fff1f2', label: 'Product' },
+  jobs: { dot: '#0197B2', bg: '#f0f8fc', label: 'Job' },
+  requirements: { dot: '#0197B2', bg: '#f0f8fc', label: 'Requirement' },
+  events: { dot: '#0197B2', bg: '#f0f8fc', label: 'Event' },
+  stories: { dot: '#0197B2', bg: '#f0f8fc', label: 'Story' },
+  products: { dot: '#0197B2', bg: '#f0f8fc', label: 'Product' },
 }
 
 function TimelineItem({ item, index, isLast }) {
@@ -310,8 +310,8 @@ function TimelineItem({ item, index, isLast }) {
           <div className="flex gap-4 justify-between items-start mb-3">
             <div className="flex-1">
               <h3 className="text-lg font-black text-slate-900 leading-tight">{item.title}</h3>
-              <p className="mt-2 text-sm font-semibold text-slate-600 flex items-center gap-1">
-                <span>🏢</span> {item.meta}
+              <p className="mt-2 text-sm font-semibold text-slate-600 flex items-center gap-2">
+                {item.logo ? <img src={item.logo} alt="logo" className="h-5 w-5 rounded object-cover" /> : null} <span>{item.meta}</span>
               </p>
             </div>
 
@@ -337,7 +337,7 @@ function TimelineItem({ item, index, isLast }) {
                   <div className="flex items-center gap-2">
                     <Icons.Calendar />
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">📅 Open Date</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Open Date</span>
                       <span className="text-sm font-bold text-slate-800">{openFmt}</span>
                     </div>
                   </div>
@@ -346,7 +346,7 @@ function TimelineItem({ item, index, isLast }) {
                   <div className="flex items-center gap-2">
                     <Icons.Calendar />
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">⏱️ Last Date</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Last Date</span>
                       <span className={`text-sm font-bold ${expired ? 'text-rose-600' : 'text-slate-800'}`}>{closeFmt}</span>
                     </div>
                   </div>
@@ -355,7 +355,7 @@ function TimelineItem({ item, index, isLast }) {
                   <div className="flex items-center gap-2">
                     <Icons.Users />
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">👥 Applied</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Applied</span>
                       <span className="text-sm font-bold text-slate-800">{item.applied} people</span>
                     </div>
                   </div>
@@ -427,6 +427,7 @@ export default function Home() {
               openDate: need.openDate || need.createdAt || null,
               closeDate: need.closeDate || need.deadline || null,
               applied: need.applicantCount ?? null,
+              logo: ngo.logoUrl,
             }))
         ),
         ...schoolNeedsGroups.flatMap(({ school, items }) =>
@@ -445,6 +446,7 @@ export default function Home() {
               openDate: need.openDate || need.createdAt || null,
               closeDate: need.closeDate || need.deadline || null,
               applied: need.applicantCount ?? null,
+              logo: school.logoUrl,
             }))
         ),
       ]
@@ -465,6 +467,7 @@ export default function Home() {
             openDate: job.openDate || job.createdAt || null,
             closeDate: job.closeDate || job.deadline || null,
             applied: job.applicantCount ?? null,
+            logo: ngo.logoUrl,
           }))
       )
 
@@ -481,6 +484,7 @@ export default function Home() {
             cta: 'View NGO Profile',
             href: `/ngos/${ngo.id}`,
             accent: COLORS.green,
+            logo: product.imageUrl || ngo.logoUrl,
           }))
       )
 
@@ -496,6 +500,7 @@ export default function Home() {
             cta: 'View School Profile',
             href: `/schools/${school.id}`,
             accent: COLORS.blue,
+            logo: school.logoUrl,
           }))
         ),
         ...ngoCampaignGroups.flatMap(({ ngo, items }) =>
@@ -509,6 +514,7 @@ export default function Home() {
             cta: 'View NGO Profile',
             href: `/ngos/${ngo.id}`,
             accent: COLORS.green,
+            logo: ngo.logoUrl,
           }))
         ),
       ]
@@ -525,6 +531,7 @@ export default function Home() {
         accent: COLORS.blue,
         openDate: event.startDate || null,
         closeDate: event.endDate || null,
+        logo: event.imageUrl,
       }))
 
       setDirectory({ schools, ngos, requirements, jobs, products, events: publicEvents, stories })

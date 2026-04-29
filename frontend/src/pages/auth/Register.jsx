@@ -52,13 +52,13 @@ const ORG_FIELDS = {
 }
 
 const COLORS = {
-  green: '#5BCB2B',
-  greenSoft: '#eaf6ef',
-  greenBorder: '#c8e6d2',
+  green: '#0197B2',
+  greenSoft: '#f0f8fc',
+  greenBorder: '#c8e6f0',
   blue: '#0197B2',
-  blueSoft: '#e7f7fb',
-  blueBorder: '#b8e7f1',
-  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #5BCB2B 100%)',
+  blueSoft: '#f0f8fc',
+  blueBorder: '#c8e6f0',
+  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #0a4b5a 100%)',
 }
 
 export default function Register() {

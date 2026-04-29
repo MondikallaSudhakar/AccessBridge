@@ -333,6 +333,13 @@ export default function Dashboard() {
   const [allNGOs, setAllNGOs] = useState([])
   const [allStartups, setAllStartups] = useState([])
   const [resourceLoading, setResourceLoading] = useState({})
+  
+  // Detail modal states
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [selectedNGO, setSelectedNGO] = useState(null)
+  const [selectedStartup, setSelectedStartup] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
@@ -492,6 +499,74 @@ export default function Dashboard() {
       console.error('Failed to load all startups:', err)
     } finally {
       setResourceLoading(prev => ({ ...prev, startups: false }))
+    }
+  }
+
+  const fetchNGODetails = async (ngoId) => {
+    setDetailLoading(true)
+    try {
+      const data = await api.get(`/ngos/${ngoId}`)
+      setSelectedNGO(data)
+      setShowDetailModal(true)
+    } catch (err) {
+      console.error('Failed to load NGO details:', err)
+      alert('Failed to load full details')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const fetchStartupDetails = async (startupId) => {
+    setDetailLoading(true)
+    try {
+      const data = await api.get(`/startups/${startupId}`)
+      setSelectedStartup(data)
+      setShowDetailModal(true)
+    } catch (err) {
+      console.error('Failed to load Startup details:', err)
+      alert('Failed to load full details')
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  const updateNGOStatus = async (ngoId, newStatus) => {
+    setUpdatingStatus(true)
+    try {
+      // Backend only has /verify endpoint which sets verified to true
+      if (newStatus === 'VERIFIED') {
+        await api.patch(`/ngos/${ngoId}/verify`)
+        setAllNGOs(allNGOs.map(ngo => ngo.id === ngoId ? { ...ngo, verified: true } : ngo))
+        if (selectedNGO?.id === ngoId) {
+          setSelectedNGO({ ...selectedNGO, verified: true })
+        }
+      }
+      alert('Status updated successfully!')
+    } catch (err) {
+      console.error('Failed to update NGO status:', err)
+      alert('Failed to update status')
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  const updateStartupStatus = async (startupId, newStatus) => {
+    setUpdatingStatus(true)
+    try {
+      // Backend only has /verify endpoint which sets verified to true
+      if (newStatus === 'VERIFIED') {
+        await api.patch(`/startups/${startupId}/verify`)
+        setAllStartups(allStartups.map(startup => startup.id === startupId ? { ...startup, verified: true } : startup))
+        if (selectedStartup?.id === startupId) {
+          setSelectedStartup({ ...selectedStartup, verified: true })
+        }
+      }
+      alert('Status updated successfully!')
+    } catch (err) {
+      console.error('Failed to update Startup status:', err)
+      alert('Failed to update status')
+    } finally {
+      setUpdatingStatus(false)
     }
   }
 
@@ -914,8 +989,8 @@ export default function Dashboard() {
                   ) : (
                     <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                       <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>City</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th></tr></thead>
-                        <tbody>{allNGOs.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.city}</td><td style={{ padding: '12px 16px' }}>{org.verified ? 'Verified' : 'Pending'}</td></tr>)}</tbody>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>City</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Action</th></tr></thead>
+                        <tbody>{allNGOs.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer', hover: '#f8fafc' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.city}</td><td style={{ padding: '12px 16px' }}><span style={{ background: org.verified ? '#d1fae5' : '#fef3c7', color: org.verified ? '#065f46' : '#92400e', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{org.verified ? 'Verified' : 'Pending'}</span></td><td style={{ padding: '12px 16px' }}><button onClick={() => fetchNGODetails(org.id)} style={{ background: SUPER_ADMIN_TEAL, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>View Details</button></td></tr>)}</tbody>
                       </table>
                     </div>
                   )}
@@ -935,11 +1010,126 @@ export default function Dashboard() {
                   ) : (
                     <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                       <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Industry</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th></tr></thead>
-                        <tbody>{allStartups.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.industry}</td><td style={{ padding: '12px 16px' }}>{org.verified ? 'Verified' : 'Pending'}</td></tr>)}</tbody>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Industry</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Action</th></tr></thead>
+                        <tbody>{allStartups.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer', hover: '#f8fafc' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.industry}</td><td style={{ padding: '12px 16px' }}><span style={{ background: org.verified ? '#d1fae5' : '#fef3c7', color: org.verified ? '#065f46' : '#92400e', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{org.verified ? 'Verified' : 'Pending'}</span></td><td style={{ padding: '12px 16px' }}><button onClick={() => fetchStartupDetails(org.id)} style={{ background: SUPER_ADMIN_TEAL, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>View Details</button></td></tr>)}</tbody>
                       </table>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Detail Modal for NGO/Startup */}
+              {showDetailModal && (selectedNGO || selectedStartup) && (
+                <div style={{
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(0,0,0,0.5)', zIndex: 50,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }} onClick={() => { setShowDetailModal(false); setSelectedNGO(null); setSelectedStartup(null) }}>
+                  <div style={{
+                    background: '#fff', borderRadius: '12px', maxWidth: '600px',
+                    maxHeight: '80vh', overflowY: 'auto', padding: '32px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                  }} onClick={(e) => e.stopPropagation()}>
+                    {detailLoading ? (
+                      <p style={{ textAlign: 'center', color: '#64748b' }}>Loading details...</p>
+                    ) : selectedNGO ? (
+                      <div>
+                        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a', marginTop: 0, marginBottom: '20px' }}>{selectedNGO.name}</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '13px' }}>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Email</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.email}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Phone</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.phone || 'N/A'}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>City</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.city}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>State</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.state}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Registration Number</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.registrationNumber}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Founded Year</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedNGO.foundedYear}</p></div>
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <p style={{ color: '#64748b', margin: '0 0 4px', fontSize: '13px' }}>Description</p>
+                          <p style={{ fontWeight: 500, margin: 0, color: '#0f172a', fontSize: '13px', lineHeight: 1.6 }}>{selectedNGO.description}</p>
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', color: '#64748b', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>Status</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>
+                              {selectedNGO.verified ? '✓ Verified' : '○ Pending'}
+                            </span>
+                            {!selectedNGO.verified && (
+                              <button
+                                onClick={() => updateNGOStatus(selectedNGO.id, 'VERIFIED')}
+                                disabled={updatingStatus}
+                                style={{
+                                  padding: '6px 12px', background: '#10b981',
+                                  color: '#fff', border: 'none', borderRadius: '4px',
+                                  cursor: updatingStatus ? 'not-allowed' : 'pointer',
+                                  fontSize: '12px', fontWeight: 600, opacity: updatingStatus ? 0.6 : 1
+                                }}
+                              >
+                                {updatingStatus ? 'Updating...' : 'Verify'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => { setShowDetailModal(false); setSelectedNGO(null) }}
+                          style={{
+                            width: '100%', padding: '12px', background: SUPER_ADMIN_TEAL,
+                            color: '#fff', border: 'none', borderRadius: '6px',
+                            fontSize: '13px', fontWeight: 600, cursor: 'pointer'
+                          }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    ) : selectedStartup ? (
+                      <div>
+                        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a', marginTop: 0, marginBottom: '20px' }}>{selectedStartup.name}</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', fontSize: '13px' }}>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Email</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.email}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Phone</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.phone || 'N/A'}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Industry</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.industry}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Founded Year</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.foundedYear}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Location</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.location}</p></div>
+                          <div><p style={{ color: '#64748b', margin: '0 0 4px' }}>Website</p><p style={{ fontWeight: 600, margin: 0, color: '#0f172a' }}>{selectedStartup.website || 'N/A'}</p></div>
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <p style={{ color: '#64748b', margin: '0 0 4px', fontSize: '13px' }}>Description</p>
+                          <p style={{ fontWeight: 500, margin: 0, color: '#0f172a', fontSize: '13px', lineHeight: 1.6 }}>{selectedStartup.description}</p>
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', color: '#64748b', fontSize: '13px', marginBottom: '8px', fontWeight: 600 }}>Status</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: '#0f172a', fontWeight: 500 }}>
+                              {selectedStartup.verified ? '✓ Verified' : '○ Pending'}
+                            </span>
+                            {!selectedStartup.verified && (
+                              <button
+                                onClick={() => updateStartupStatus(selectedStartup.id, 'VERIFIED')}
+                                disabled={updatingStatus}
+                                style={{
+                                  padding: '6px 12px', background: '#10b981',
+                                  color: '#fff', border: 'none', borderRadius: '4px',
+                                  cursor: updatingStatus ? 'not-allowed' : 'pointer',
+                                  fontSize: '12px', fontWeight: 600, opacity: updatingStatus ? 0.6 : 1
+                                }}
+                              >
+                                {updatingStatus ? 'Updating...' : 'Verify'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => { setShowDetailModal(false); setSelectedStartup(null) }}
+                          style={{
+                            width: '100%', padding: '12px', background: SUPER_ADMIN_TEAL,
+                            color: '#fff', border: 'none', borderRadius: '6px',
+                            fontSize: '13px', fontWeight: 600, cursor: 'pointer'
+                          }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               )}
             </div>
