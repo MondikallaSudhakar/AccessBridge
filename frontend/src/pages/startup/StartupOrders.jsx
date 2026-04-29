@@ -3,6 +3,33 @@ import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
 
+const normalizeOrder = (order) => {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : Array.isArray(order?.orderItems)
+      ? order.orderItems
+      : []
+
+  const toNumber = (value) => {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  const computedItemsTotal = items.reduce((sum, item) => {
+    const itemTotal = item?.totalPrice ?? item?.total_price ?? (toNumber(item?.price) * toNumber(item?.quantity))
+    return sum + toNumber(itemTotal)
+  }, 0)
+
+  return {
+    ...order,
+    orderId: order?.orderId ?? order?.id ?? null,
+    items,
+    orderTotalPrice: order?.orderTotalPrice ?? order?.totalPrice ?? order?.total_price ?? computedItemsTotal,
+    sourceTotalPrice: order?.sourceTotalPrice ?? order?.sourceTotal ?? order?.source_total_price ?? computedItemsTotal,
+    createdAt: order?.createdAt ?? order?.created_at ?? null,
+  }
+}
+
 export default function StartupOrders() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -31,7 +58,7 @@ export default function StartupOrders() {
   const fetchOrders = async (startupId) => {
     try {
       const data = await api.get(`/orders/startup/${startupId}/orders`)
-      setOrders(Array.isArray(data) ? data : [])
+      setOrders(Array.isArray(data) ? data.map(normalizeOrder) : [])
     } catch (error) {
       console.error('Failed to fetch orders:', error)
     } finally {
@@ -40,12 +67,17 @@ export default function StartupOrders() {
   }
 
   const handleStatusUpdate = async (orderId, newStatus) => {
+    if (!orderId) {
+      alert('Error: Order ID is missing')
+      return
+    }
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus })
       // Refresh orders
       if (startupId) fetchOrders(startupId)
     } catch (error) {
       console.error('Failed to update order status:', error)
+      alert('Failed to update order status: ' + (error.message || 'Unknown error'))
     }
   }
 
@@ -110,13 +142,13 @@ export default function StartupOrders() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {orders.map((order) => (
             <div
-              key={order.id}
-              onClick={() => setSelectedOrder(selectedOrder?.orderId === order.orderId ? null : order)}
+              key={order.orderId ?? order.id}
+              onClick={() => setSelectedOrder(selectedOrder?.orderId === (order.orderId ?? order.id) ? null : order)}
               className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId ?? order.id ?? '—'}</p>
                   <p className="mt-1 text-sm font-bold text-gray-900">{order.buyerName || 'Community User'}</p>
                   <p className="text-xs text-gray-500">{order.buyerEmail || 'No email provided'}</p>
                 </div>
@@ -126,11 +158,11 @@ export default function StartupOrders() {
               <div className="mt-4 border-t border-gray-100 pt-4">
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>Order total</span>
-                  <span className="font-bold text-gray-900">₹{parseFloat(order.orderTotalPrice || 0).toLocaleString()}</span>
+                  <span className="font-bold text-gray-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
                   <span>Your share</span>
-                  <span className="font-bold text-orange-600">₹{parseFloat(order.sourceTotalPrice || 0).toLocaleString()}</span>
+                  <span className="font-bold text-orange-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
                   <span>Placed on</span>
@@ -140,10 +172,27 @@ export default function StartupOrders() {
 
               <div className="mt-4 rounded-lg bg-orange-50 p-3">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">Items</p>
-                <p className="mt-1 text-sm text-gray-700">{(order.items || []).map((item) => `${item.productName} x${item.quantity}`).join(', ')}</p>
+                <div className="mt-2 space-y-2">
+                  {(order.items || []).length > 0 ? (
+                    (order.items || []).map((item) => (
+                      <div key={item.id ?? `${item.productId}-${item.productName}`} className="rounded-md border border-orange-100 bg-white/80 px-3 py-2 text-sm text-gray-700">
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="font-semibold text-gray-900">{item.productName || item.name || 'Item'}</span>
+                          <span className="text-xs font-bold text-orange-700">x{item.quantity ?? 0}</span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
+                          <span>{item.source || 'Source'}</span>
+                          <span>₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-600">No item details were returned for this order.</p>
+                  )}
+                </div>
               </div>
 
-              {selectedOrder?.orderId === order.orderId && (
+              {selectedOrder?.orderId === (order.orderId ?? order.id) && (
                 <div className="mt-4 border-t border-gray-100 pt-4">
                   <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">Update Status</p>
                   <div className="flex flex-wrap gap-2">
@@ -152,7 +201,7 @@ export default function StartupOrders() {
                         key={status}
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleStatusUpdate(order.orderId, status)
+                          handleStatusUpdate(order.orderId ?? order.id, status)
                         }}
                         className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200"
                       >
