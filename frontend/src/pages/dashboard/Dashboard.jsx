@@ -103,7 +103,23 @@ const NAV_GROUPS = [
       { id: 'guardian',   label: 'Guardian Workspace', icon: 'info',   role: 'GUARDIAN_CAREGIVER', path: '/guardian' },
       { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo/profile'     },
       { id: 'startup',    label: 'Startup Dashboard', icon: 'startup', role: 'STARTUP_ADMIN', path: '/startup/profile' },
-      { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/dashboard' },
+    ],
+  },
+  {
+    label: 'Admin Tools',
+    role: 'SUPER_ADMIN',
+    items: [
+      { id: 'admin-overview', label: 'Overview', icon: 'grid', tabId: 'overview' },
+      { id: 'admin-approvals', label: 'Approvals', icon: 'check', tabId: 'approvals' },
+      { id: 'admin-jobs', label: 'Jobs', icon: 'search', tabId: 'jobs' },
+      { id: 'admin-products', label: 'Products', icon: 'shop', tabId: 'products' },
+      { id: 'admin-events', label: 'Events', icon: 'grid', tabId: 'events' },
+      { id: 'admin-campaigns', label: 'Campaigns', icon: 'search', tabId: 'campaigns' },
+      { id: 'admin-needs', label: 'Requirements', icon: 'info', tabId: 'needs' },
+      { id: 'admin-support', label: 'Support', icon: 'shield', tabId: 'support' },
+      { id: 'admin-donations', label: 'Donations', icon: 'shop', tabId: 'donations' },
+      { id: 'admin-ngos', label: 'NGOs', icon: 'ngo', tabId: 'ngos' },
+      { id: 'admin-startups', label: 'Startups', icon: 'startup', tabId: 'startups' },
     ],
   },
   {
@@ -307,6 +323,16 @@ export default function Dashboard() {
   const [pendingLoading, setPendingLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState({})
   const [error, setError] = useState('')
+  const [jobsMap, setJobsMap] = useState({})
+  const [allJobs, setAllJobs] = useState([])
+  const [allEvents, setAllEvents] = useState([])
+  const [allCampaigns, setAllCampaigns] = useState([])
+  const [allNeeds, setAllNeeds] = useState([])
+  const [allSupport, setAllSupport] = useState([])
+  const [allDonations, setAllDonations] = useState([])
+  const [allNGOs, setAllNGOs] = useState([])
+  const [allStartups, setAllStartups] = useState([])
+  const [resourceLoading, setResourceLoading] = useState({})
 
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
@@ -323,6 +349,11 @@ export default function Dashboard() {
   const handleNavClick = (item) => {
     setActiveNav(item.id)
     setMobileMenuOpen(false)
+    // If the item has a tabId, switch to that tab instead of navigating
+    if (item.tabId) {
+      setTab(item.tabId)
+      return
+    }
     if (item.path) navigate(item.path)
   }
 
@@ -392,6 +423,78 @@ export default function Dashboard() {
     }
   }
 
+  const fetchAllJobs = async () => {
+    setResourceLoading(prev => ({ ...prev, jobs: true }))
+    try {
+      const data = await api.get('/ngos/jobs/all')
+      setAllJobs(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all jobs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, jobs: false }))
+    }
+  }
+
+  const fetchAllEvents = async () => {
+    setResourceLoading(prev => ({ ...prev, events: true }))
+    try {
+      const data = await api.get('/events/public')
+      setAllEvents(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all events:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, events: false }))
+    }
+  }
+
+  const fetchAllNeeds = async () => {
+    setResourceLoading(prev => ({ ...prev, needs: true }))
+    try {
+      const data = await api.get('/ngos/volunteer-needs')
+      setAllNeeds(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all needs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, needs: false }))
+    }
+  }
+
+  const fetchAllDonations = async () => {
+    setResourceLoading(prev => ({ ...prev, donations: true }))
+    try {
+      const data = await api.get('/donations')
+      setAllDonations(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all donations:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, donations: false }))
+    }
+  }
+
+  const fetchAllNGOs = async () => {
+    setResourceLoading(prev => ({ ...prev, ngos: true }))
+    try {
+      const data = await api.get('/ngos')
+      setAllNGOs(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all NGOs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, ngos: false }))
+    }
+  }
+
+  const fetchAllStartups = async () => {
+    setResourceLoading(prev => ({ ...prev, startups: true }))
+    try {
+      const data = await api.get('/startups')
+      setAllStartups(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all startups:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, startups: false }))
+    }
+  }
+
   // Modify useEffect to load super admin data
   useEffect(() => {
     if (user?.role === 'NGO_ADMIN') navigate('/ngo/profile', { replace: true })
@@ -403,6 +506,13 @@ export default function Dashboard() {
       fetchCourses()
       fetchProducts()
       fetchPendingUsers()
+      // Load all resource data
+      fetchAllJobs()
+      fetchAllEvents()
+      fetchAllNeeds()
+      fetchAllDonations()
+      fetchAllNGOs()
+      fetchAllStartups()
     }
   }, [navigate, user])
 
@@ -491,6 +601,8 @@ export default function Dashboard() {
         {/* Nav */}
         <nav style={{ flex: 1, padding: '14px 12px 8px' }}>
           {NAV_GROUPS.map(group => {
+            // Check if group itself requires a role
+            if (group.role && group.role !== user?.role) return null
             const visibleItems = group.items.filter(i => !i.role || i.role === user?.role)
             if (visibleItems.length === 0) return null
             return (
@@ -502,7 +614,7 @@ export default function Dashboard() {
                   <SidebarItem
                     key={item.id}
                     item={item}
-                    active={activeNav === item.id}
+                    active={activeNav === item.id || tab === item.tabId}
                     onClick={() => handleNavClick(item)}
                   />
                 ))}
@@ -573,34 +685,6 @@ export default function Dashboard() {
                 <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Monitor all platform activity, approvals, users, and content.</p>
               </div>
 
-              <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '32px', marginBottom: '28px',
-                position: 'sticky', top: 58, background: '#fff', zIndex: 39, paddingTop: 8 }}>
-                {[
-                  { id: 'overview', label: 'Overview' },
-                  { id: 'approvals', label: 'Pending Approvals' },
-                  { id: 'courses', label: 'Courses' },
-                  { id: 'products', label: 'Products' },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    style={{
-                      padding: '16px 0',
-                      borderBottom: tab === t.id ? `3px solid ${SUPER_ADMIN_TEAL}` : '3px solid transparent',
-                      fontSize: '14px',
-                      fontWeight: tab === t.id ? 600 : 500,
-                      color: tab === t.id ? '#0f172a' : '#64748b',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
               {error && <div style={{ background: '#fee2e2', border: '1px solid #fecaca', color: '#dc2626', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontSize: '14px' }}>{error}</div>}
 
               {tab === 'overview' && (
@@ -614,10 +698,10 @@ export default function Dashboard() {
                       <div>
                         <h3 style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', marginBottom: '16px', color: '#64748b', textTransform: 'uppercase', margin: 0 }}>Key Metrics</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginTop: '16px' }}>
-                          <StatCard label="Total Users" value={stats.totalUsers || 0} icon="👥" color="#3b82f6" />
-                          <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} icon="🏢" color="#8b5cf6" />
-                          <StatCard label="Total Courses" value={stats.totalCourses || 0} icon="📚" color="#ec4899" />
-                          <StatCard label="Total Products" value={stats.totalProducts || 0} icon="🛍️" color="#f59e0b" />
+                          <StatCard label="Total Users" value={stats.totalUsers || 0} color="#3b82f6" />
+                          <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} color="#8b5cf6" />
+                          <StatCard label="Total Courses" value={stats.totalCourses || 0} color="#ec4899" />
+                          <StatCard label="Total Products" value={stats.totalProducts || 0} color="#f59e0b" />
                         </div>
                       </div>
 
@@ -713,6 +797,147 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'jobs' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All Jobs</h3>
+                    <button onClick={fetchAllJobs} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.jobs ? <p>Loading jobs...</p> : allJobs.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No jobs available</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Title</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Location</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Type</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Salary</th></tr></thead>
+                        <tbody>{allJobs.map(job => <tr key={job.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px' }}>{job.title}</td><td style={{ padding: '12px 16px' }}>{job.location}</td><td style={{ padding: '12px 16px' }}>{job.employmentType}</td><td style={{ padding: '12px 16px' }}>₹{job.salaryRange || '—'}</td></tr>)}</tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'events' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All Events</h3>
+                    <button onClick={fetchAllEvents} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.events ? <p>Loading events...</p> : allEvents.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No events available</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
+                      {allEvents.map(event => (
+                        <div key={event.id} style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '16px' }}>
+                          <h4 style={{ margin: '0 0 4px', fontWeight: 'bold', color: '#0f172a', fontSize: '13px' }}>{event.title || event.name}</h4>
+                          <p style={{ margin: '0 0 8px', fontSize: '11px', color: '#64748b' }}>{event.eventDate || event.date}</p>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: 1.4 }}>{event.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'campaigns' && (
+                <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Campaigns are managed at the organization level. View individual NGOs to see their campaigns.</p>
+                </div>
+              )}
+
+              {tab === 'needs' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All Requirements</h3>
+                    <button onClick={fetchAllNeeds} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.needs ? <p>Loading needs...</p> : allNeeds.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No needs posted</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Title</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Category</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Urgent</th></tr></thead>
+                        <tbody>{allNeeds.map(need => <tr key={need.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px' }}>{need.title}</td><td style={{ padding: '12px 16px' }}>{need.category}</td><td style={{ padding: '12px 16px' }}>{need.status}</td><td style={{ padding: '12px 16px' }}>{need.isUrgent ? 'Yes' : 'No'}</td></tr>)}</tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'support' && (
+                <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                  <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Support requests are managed at the organization level. View individual NGOs to see their support tickets.</p>
+                </div>
+              )}
+
+              {tab === 'donations' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All Donations</h3>
+                    <button onClick={fetchAllDonations} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.donations ? <p>Loading donations...</p> : allDonations.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No donations yet</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Amount</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Donor</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Date</th></tr></thead>
+                        <tbody>{allDonations.map(donation => <tr key={donation.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>₹{donation.amount}</td><td style={{ padding: '12px 16px' }}>{donation.donorName || 'Anonymous'}</td><td style={{ padding: '12px 16px' }}>{donation.status}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{donation.createdAt?.split('T')[0]}</td></tr>)}</tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'ngos' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All NGOs</h3>
+                    <button onClick={fetchAllNGOs} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.ngos ? <p>Loading NGOs...</p> : allNGOs.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No NGOs registered</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>City</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th></tr></thead>
+                        <tbody>{allNGOs.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.city}</td><td style={{ padding: '12px 16px' }}>{org.verified ? 'Verified' : 'Pending'}</td></tr>)}</tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tab === 'startups' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>All Startups</h3>
+                    <button onClick={fetchAllStartups} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.startups ? <p>Loading startups...</p> : allStartups.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No startups registered</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Name</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Email</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Industry</th><th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th></tr></thead>
+                        <tbody>{allStartups.map(org => <tr key={org.id} style={{ borderBottom: '1px solid #e2e8f0' }}><td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{org.name}</td><td style={{ padding: '12px 16px', fontSize: '11px' }}>{org.email}</td><td style={{ padding: '12px 16px' }}>{org.industry}</td><td style={{ padding: '12px 16px' }}>{org.verified ? 'Verified' : 'Pending'}</td></tr>)}</tbody>
+                      </table>
                     </div>
                   )}
                 </div>

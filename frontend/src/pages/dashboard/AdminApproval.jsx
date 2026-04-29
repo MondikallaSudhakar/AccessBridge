@@ -75,6 +75,16 @@ export default function AdminApproval() {
   const [statsLoading, setStatsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState({})
   const [error, setError] = useState('')
+  const [jobsMap, setJobsMap] = useState({})
+  const [allJobs, setAllJobs] = useState([])
+  const [allEvents, setAllEvents] = useState([])
+  const [allCampaigns, setAllCampaigns] = useState([])
+  const [allNeeds, setAllNeeds] = useState([])
+  const [allSupport, setAllSupport] = useState([])
+  const [allDonations, setAllDonations] = useState([])
+  const [allNGOs, setAllNGOs] = useState([])
+  const [allStartups, setAllStartups] = useState([])
+  const [resourceLoading, setResourceLoading] = useState({})
   const { user, logout } = useAuth()
 
   useEffect(() => { 
@@ -133,6 +143,89 @@ export default function AdminApproval() {
       setError('Failed to load pending approvals')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchJobsForOrg = async (email, type, orgId) => {
+    if (!orgId || !type) return
+    try {
+      const data = await api.get(`/${type}/${orgId}/jobs`)
+      setJobsMap(prev => ({ ...prev, [email]: data || [] }))
+    } catch (err) {
+      console.error('Failed to load jobs for org', err)
+      setJobsMap(prev => ({ ...prev, [email]: [] }))
+    }
+  }
+
+  const fetchAllJobs = async () => {
+    setResourceLoading(prev => ({ ...prev, jobs: true }))
+    try {
+      const data = await api.get('/ngos/jobs/all')
+      setAllJobs(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all jobs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, jobs: false }))
+    }
+  }
+
+  const fetchAllEvents = async () => {
+    setResourceLoading(prev => ({ ...prev, events: true }))
+    try {
+      const data = await api.get('/events/public')
+      setAllEvents(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all events:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, events: false }))
+    }
+  }
+
+  const fetchAllNeeds = async () => {
+    setResourceLoading(prev => ({ ...prev, needs: true }))
+    try {
+      const data = await api.get('/ngos/volunteer-needs')
+      setAllNeeds(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all needs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, needs: false }))
+    }
+  }
+
+  const fetchAllDonations = async () => {
+    setResourceLoading(prev => ({ ...prev, donations: true }))
+    try {
+      const data = await api.get('/donations')
+      setAllDonations(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all donations:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, donations: false }))
+    }
+  }
+
+  const fetchAllNGOs = async () => {
+    setResourceLoading(prev => ({ ...prev, ngos: true }))
+    try {
+      const data = await api.get('/ngos')
+      setAllNGOs(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all NGOs:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, ngos: false }))
+    }
+  }
+
+  const fetchAllStartups = async () => {
+    setResourceLoading(prev => ({ ...prev, startups: true }))
+    try {
+      const data = await api.get('/startups')
+      setAllStartups(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load all startups:', err)
+    } finally {
+      setResourceLoading(prev => ({ ...prev, startups: false }))
     }
   }
 
@@ -198,13 +291,20 @@ export default function AdminApproval() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-slate-200 bg-white sticky top-16 z-30">
-        <div className="max-w-7xl mx-auto px-6 flex gap-8">
+      <div className="border-b border-slate-200 bg-white sticky top-16 z-30 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-6 flex gap-6 min-w-min">
           {[
             { id: 'overview', label: 'Overview' },
-            { id: 'approvals', label: 'Pending Approvals' },
-            { id: 'courses', label: 'Courses' },
+            { id: 'approvals', label: 'Approvals' },
+            { id: 'jobs', label: 'Jobs' },
             { id: 'products', label: 'Products' },
+            { id: 'events', label: 'Events' },
+            { id: 'campaigns', label: 'Campaigns' },
+            { id: 'needs', label: 'Needs' },
+            { id: 'support', label: 'Support' },
+            { id: 'donations', label: 'Donations' },
+            { id: 'ngos', label: 'NGOs' },
+            { id: 'startups', label: 'Startups' },
           ].map(t => (
             <button
               key={t.id}
@@ -242,10 +342,10 @@ export default function AdminApproval() {
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-widest mb-4 text-slate-600">Key Metrics</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard label="Total Users" value={stats.totalUsers || 0} icon="👥" color="#3b82f6" />
-                    <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} icon="🏢" color="#8b5cf6" />
-                    <StatCard label="Total Courses" value={stats.totalCourses || 0} icon="📚" color="#ec4899" />
-                    <StatCard label="Total Products" value={stats.totalProducts || 0} icon="🛍️" color="#f59e0b" />
+                    <StatCard label="Total Users" value={stats.totalUsers || 0} color="#3b82f6" />
+                    <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} color="#8b5cf6" />
+                    <StatCard label="Total Courses" value={stats.totalCourses || 0} color="#ec4899" />
+                    <StatCard label="Total Products" value={stats.totalProducts || 0} color="#f59e0b" />
                   </div>
                 </div>
 
@@ -266,12 +366,12 @@ export default function AdminApproval() {
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-widest mb-4 text-slate-600">Content Statistics</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <StatCard label="Total Jobs" value={stats.totalJobs || 0} icon="💼" color="#06b6d4" />
-                    <StatCard label="Total Events" value={stats.totalEvents || 0} icon="📅" color="#a855f7" />
-                    <StatCard label="Total Donations" value={stats.totalDonations || 0} icon="❤️" color="#ef4444" />
-                    <StatCard label="Job Applications" value={stats.totalJobApplications || 0} icon="📝" color="#3b82f6" />
-                    <StatCard label="Event Applications" value={stats.totalEventApplications || 0} icon="✅" color="#10b981" />
-                    <StatCard label="Certifications" value={stats.totalCertifications || 0} icon="🏆" color="#f59e0b" />
+                    <StatCard label="Total Jobs" value={stats.totalJobs || 0} color="#06b6d4" />
+                    <StatCard label="Total Events" value={stats.totalEvents || 0} color="#a855f7" />
+                    <StatCard label="Total Donations" value={stats.totalDonations || 0} color="#ef4444" />
+                    <StatCard label="Job Applications" value={stats.totalJobApplications || 0} color="#3b82f6" />
+                    <StatCard label="Event Applications" value={stats.totalEventApplications || 0} color="#10b981" />
+                    <StatCard label="Certifications" value={stats.totalCertifications || 0} color="#f59e0b" />
                   </div>
                 </div>
 
@@ -279,9 +379,9 @@ export default function AdminApproval() {
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-widest mb-4 text-slate-600">Approval Status</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <StatCard label="Pending Approvals" value={stats.pendingApprovals || 0} icon="⏳" color={TEAL} />
-                    <StatCard label="Approved Organizations" value={stats.approvedOrganizations || 0} icon="✓" color="#5BCB2B" />
-                    <StatCard label="Rejected Applications" value={stats.rejectedApplications || 0} icon="✕" color="#ef4444" />
+                    <StatCard label="Pending Approvals" value={stats.pendingApprovals || 0} color={TEAL} />
+                    <StatCard label="Approved Organizations" value={stats.approvedOrganizations || 0} color="#5BCB2B" />
+                    <StatCard label="Rejected Applications" value={stats.rejectedApplications || 0} color="#ef4444" />
                   </div>
                 </div>
               </>
@@ -341,13 +441,32 @@ export default function AdminApproval() {
 
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {org && (
-                            <button
-                              onClick={() => setExpanded(isExpanded ? null : item.id)}
-                              className="text-xs font-semibold border rounded-lg px-3 py-1.5 transition-colors hover:bg-slate-50"
-                              style={{ color: TEAL, borderColor: '#c3dff5' }}
-                            >
-                              {isExpanded ? 'Hide' : 'View Details'}
-                            </button>
+                            <>
+                              <button
+                                onClick={async () => {
+                                  if (isExpanded) {
+                                    setExpanded(null)
+                                    return
+                                  }
+                                  setExpanded(item.id)
+                                  // fetch jobs for this org
+                                  const type = roleTypeMap[item.role]
+                                  const orgId = org?.id || org?.ngoId || org?.schoolId
+                                  fetchJobsForOrg(item.email, type, orgId)
+                                }}
+                                className="text-xs font-semibold border rounded-lg px-3 py-1.5 transition-colors hover:bg-slate-50"
+                                style={{ color: TEAL, borderColor: '#c3dff5' }}
+                              >
+                                {isExpanded ? 'Hide' : 'View Details'}
+                              </button>
+                              <button
+                                onClick={() => fetchJobsForOrg(item.email, roleTypeMap[item.role], org?.id || org?.ngoId || org?.schoolId)}
+                                className="text-xs font-semibold border rounded-lg px-3 py-1.5 transition-colors hover:bg-slate-50"
+                                style={{ color: '#0ea5e9', borderColor: '#c3dff5', marginLeft: 6 }}
+                              >
+                                View Jobs
+                              </button>
+                            </>
                           )}
                           <button
                             onClick={() => handleAction(item.id, 'reject')}
@@ -401,6 +520,37 @@ export default function AdminApproval() {
                                 </dd>
                               </div>
                             ))}
+                          </div>
+
+                          {/* Jobs list */}
+                          <div className="mt-4">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-2">Jobs</h4>
+                            {(!jobsMap[item.email] || jobsMap[item.email].length === 0) ? (
+                              <p className="text-xs text-slate-500">No jobs found for this organization.</p>
+                            ) : (
+                              <div className="space-y-3">
+                                {jobsMap[item.email].map(job => (
+                                  <div key={job.id} className="bg-white border rounded p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <div className="font-bold text-sm text-slate-900">{job.title}</div>
+                                        <div className="text-xs text-slate-500">{job.location} • {job.employmentType}</div>
+                                      </div>
+                                      <div className="text-xs text-slate-500">₹{job.salaryRange || '—'}</div>
+                                    </div>
+                                    {job.description && <p className="text-xs text-slate-600 mt-2 line-clamp-3">{job.description}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Raw data */}
+                          <div className="mt-4">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-2">Raw Data</h4>
+                            <pre className="text-xs bg-white border rounded p-3 overflow-auto" style={{ maxHeight: 240 }}>
+{JSON.stringify({ user: item, org }, null, 2)}
+                            </pre>
                           </div>
                         </div>
                       )}
@@ -462,6 +612,193 @@ export default function AdminApproval() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* JOBS TAB */}
+        {tab === 'jobs' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Jobs</h3>
+              <button onClick={fetchAllJobs} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.jobs ? (
+              <div className="text-center py-8"><p>Loading jobs...</p></div>
+            ) : allJobs.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No jobs available.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="text-left py-2 px-4">Title</th><th className="text-left py-2 px-4">Location</th><th className="text-left py-2 px-4">Type</th><th className="text-left py-2 px-4">Salary</th></tr></thead>
+                  <tbody>
+                    {allJobs.map(job => (
+                      <tr key={job.id} className="border-b hover:bg-slate-50"><td className="py-3 px-4">{job.title}</td><td className="py-3 px-4">{job.location}</td><td className="py-3 px-4">{job.employmentType}</td><td className="py-3 px-4">₹{job.salaryRange || '—'}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* EVENTS TAB */}
+        {tab === 'events' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Events</h3>
+              <button onClick={fetchAllEvents} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.events ? (
+              <div className="text-center py-8"><p>Loading events...</p></div>
+            ) : allEvents.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No events available.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allEvents.map(event => (
+                  <div key={event.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                    <h4 className="font-bold text-slate-900 text-sm mb-1">{event.title || event.name}</h4>
+                    <p className="text-xs text-slate-500 mb-2">{event.eventDate || event.date}</p>
+                    <p className="text-xs text-slate-600 line-clamp-2">{event.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CAMPAIGNS TAB */}
+        {tab === 'campaigns' && (
+          <div className="space-y-6">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Campaigns</h3>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+              <p className="text-slate-500 text-sm">Campaigns are managed at the organization level. View individual NGOs to see their campaigns.</p>
+            </div>
+          </div>
+        )}
+
+        {/* NEEDS TAB */}
+        {tab === 'needs' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Requirements/Needs</h3>
+              <button onClick={fetchAllNeeds} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.needs ? (
+              <div className="text-center py-8"><p>Loading needs...</p></div>
+            ) : allNeeds.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No needs posted.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="text-left py-2 px-4">Title</th><th className="text-left py-2 px-4">Category</th><th className="text-left py-2 px-4">Status</th><th className="text-left py-2 px-4">Urgent</th></tr></thead>
+                  <tbody>
+                    {allNeeds.map(need => (
+                      <tr key={need.id} className="border-b hover:bg-slate-50"><td className="py-3 px-4">{need.title}</td><td className="py-3 px-4">{need.category}</td><td className="py-3 px-4"><span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{need.status}</span></td><td className="py-3 px-4">{need.isUrgent ? 'Yes' : 'No'}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SUPPORT TAB */}
+        {tab === 'support' && (
+          <div className="space-y-6">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">Support Requests</h3>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center">
+              <p className="text-slate-500 text-sm">Support requests are managed at the organization level. View individual NGOs to see their support tickets.</p>
+            </div>
+          </div>
+        )}
+
+        {/* DONATIONS TAB */}
+        {tab === 'donations' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Donations</h3>
+              <button onClick={fetchAllDonations} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.donations ? (
+              <div className="text-center py-8"><p>Loading donations...</p></div>
+            ) : allDonations.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No donations yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="text-left py-2 px-4">Amount</th><th className="text-left py-2 px-4">Donor</th><th className="text-left py-2 px-4">Status</th><th className="text-left py-2 px-4">Date</th></tr></thead>
+                  <tbody>
+                    {allDonations.map(donation => (
+                      <tr key={donation.id} className="border-b hover:bg-slate-50"><td className="py-3 px-4 font-bold">₹{donation.amount}</td><td className="py-3 px-4">{donation.donorName || 'Anonymous'}</td><td className="py-3 px-4"><span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{donation.status}</span></td><td className="py-3 px-4 text-xs">{donation.createdAt?.split('T')[0]}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* NGOS TAB */}
+        {tab === 'ngos' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All NGOs</h3>
+              <button onClick={fetchAllNGOs} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.ngos ? (
+              <div className="text-center py-8"><p>Loading NGOs...</p></div>
+            ) : allNGOs.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No NGOs registered.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="text-left py-2 px-4">Name</th><th className="text-left py-2 px-4">Email</th><th className="text-left py-2 px-4">City</th><th className="text-left py-2 px-4">Status</th></tr></thead>
+                  <tbody>
+                    {allNGOs.map(org => (
+                      <tr key={org.id} className="border-b hover:bg-slate-50"><td className="py-3 px-4 font-bold">{org.name}</td><td className="py-3 px-4 text-xs">{org.email}</td><td className="py-3 px-4">{org.city}</td><td className="py-3 px-4"><span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{org.verified ? 'Verified' : 'Pending'}</span></td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STARTUPS TAB */}
+        {tab === 'startups' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600">All Startups</h3>
+              <button onClick={fetchAllStartups} className="text-xs font-semibold" style={{ color: TEAL }}>Refresh</button>
+            </div>
+            {resourceLoading.startups ? (
+              <div className="text-center py-8"><p>Loading startups...</p></div>
+            ) : allStartups.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                <p className="text-slate-500 text-sm">No startups registered.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="text-left py-2 px-4">Name</th><th className="text-left py-2 px-4">Email</th><th className="text-left py-2 px-4">Industry</th><th className="text-left py-2 px-4">Status</th></tr></thead>
+                  <tbody>
+                    {allStartups.map(org => (
+                      <tr key={org.id} className="border-b hover:bg-slate-50"><td className="py-3 px-4 font-bold">{org.name}</td><td className="py-3 px-4 text-xs">{org.email}</td><td className="py-3 px-4">{org.industry}</td><td className="py-3 px-4"><span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{org.verified ? 'Verified' : 'Pending'}</span></td></tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
