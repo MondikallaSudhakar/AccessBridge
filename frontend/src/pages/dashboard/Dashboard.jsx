@@ -103,7 +103,7 @@ const NAV_GROUPS = [
       { id: 'guardian',   label: 'Guardian Workspace', icon: 'info',   role: 'GUARDIAN_CAREGIVER', path: '/guardian' },
       { id: 'ngo',        label: 'NGO Dashboard',     icon: 'ngo',     role: 'NGO_ADMIN',     path: '/ngo/profile'     },
       { id: 'startup',    label: 'Startup Dashboard', icon: 'startup', role: 'STARTUP_ADMIN', path: '/startup/profile' },
-      { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/admin/approvals' },
+      { id: 'approvals',  label: 'Approvals',         icon: 'check',   role: 'SUPER_ADMIN',   path: '/dashboard' },
     ],
   },
   {
@@ -573,7 +573,8 @@ export default function Dashboard() {
                 <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>Monitor all platform activity, approvals, users, and content.</p>
               </div>
 
-              <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '32px', marginBottom: '28px' }}>
+              <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '32px', marginBottom: '28px',
+                position: 'sticky', top: 58, background: '#fff', zIndex: 39, paddingTop: 8 }}>
                 {[
                   { id: 'overview', label: 'Overview' },
                   { id: 'approvals', label: 'Pending Approvals' },
@@ -753,7 +754,7 @@ export default function Dashboard() {
             {user?.role === 'SPECIAL_ABLED_PERSON' && <HeroCta label="Open Specially Abled Workspace" onClick={() => navigate('/special')} />}
             {user?.role === 'GUARDIAN_CAREGIVER' && <HeroCta label="Open Guardian Workspace" onClick={() => navigate('/guardian')} />}
             {user?.role === 'STARTUP_ADMIN' && <HeroCta label="Go to Startup Dashboard" onClick={() => navigate('/startup/profile')} />}
-            {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => navigate('/admin/approvals')} />}
+            {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => { setActiveNav('approvals'); setTab('approvals') }} />}
           </div>
 
           {/* ── Quick access grid ── */}
@@ -768,7 +769,16 @@ export default function Dashboard() {
               <QuickCard
                 key={card.title}
                 card={card}
-                onClick={() => navigate(card.path)}
+                onClick={() => {
+                  // If this card is the Network Approvals card, open approvals tab inside Dashboard
+                  if (card.path === '/admin/approvals' && user?.role === 'SUPER_ADMIN') {
+                    setActiveNav('approvals')
+                    setTab('approvals')
+                    setMobileMenuOpen(false)
+                    return
+                  }
+                  if (card.path) navigate(card.path)
+                }}
               />
             ))}
           </div>
