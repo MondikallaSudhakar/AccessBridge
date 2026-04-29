@@ -117,7 +117,7 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
     ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black bg-transparent">
+    <header className="sticky top-0 z-50 border-b border-black bg-white">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center justify-between gap-3 lg:min-w-fit">
           <a href="/" className="flex shrink-0 items-center gap-2">
