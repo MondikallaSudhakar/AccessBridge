@@ -104,25 +104,25 @@ const PUBLIC_TABS = [
 function TopNav({ user, activeTab, setActiveTab, counts }) {
   const navItems = user
     ? [
-        { label: 'Home', href: '/', Icon: Icons.Home },
-        { label: 'My Network', href: '/search', Icon: Icons.Network },
-        { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
-        { label: 'Messaging', href: user.role === 'USER' ? '/messages' : '/ngo/profile?tab=messages', Icon: Icons.Messages },
-        { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
-      ]
+      { label: 'Home', href: '/', Icon: Icons.Home },
+      { label: 'My Network', href: '/search', Icon: Icons.Network },
+      { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
+      { label: 'Messaging', href: user.role === 'USER' ? '/messages' : '/ngo/profile?tab=messages', Icon: Icons.Messages },
+      { label: 'Notifications', href: '/dashboard', Icon: Icons.Bell },
+    ]
     : [
-        { label: 'Home', href: '/', Icon: Icons.Home },
-        { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
-        { label: 'Login', href: '/login', Icon: Icons.User },
-      ]
+      { label: 'Home', href: '/', Icon: Icons.Home },
+      { label: 'Marketplace', href: '/marketplace', Icon: Icons.Marketplace },
+      { label: 'Login', href: '/login', Icon: Icons.User },
+    ]
 
   return (
-    <header className="sticky top-0 z-50 border-b backdrop-blur-sm" style={{ borderColor: COLORS.blueBorder, backgroundColor: 'rgba(255,255,255,0.95)' }}>
+    <header className="sticky top-0 z-50 border-b border-black bg-transparent">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center justify-between gap-3 lg:min-w-fit">
           <a href="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-8 w-8 rounded-lg text-sm font-black text-white grid place-items-center" style={{ background: COLORS.heroGradient }}>IC</div>
-            <span className="hidden text-sm font-extrabold tracking-tight text-slate-900 md:inline">Inclusive Connect</span>
+            <div className="h-8 w-8 rounded-lg border-2 border-black text-sm font-black text-black grid place-items-center bg-transparent">IC</div>
+            <span className="hidden text-sm font-extrabold tracking-tight md:inline" style={{ color: COLORS.blue }}>Inclusive Connect</span>
           </a>
         </div>
 
@@ -135,13 +135,9 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className="shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                  style={{
-                    backgroundColor: selected ? COLORS.blue : COLORS.blueSoft,
-                    color: selected ? COLORS.white : COLORS.blue,
-                  }}
+                  className={`shrink-0 rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all ${selected ? 'border-black text-black' : 'border-transparent text-black hover:border-black'}`}
                 >
-                  {tab.label} ({counts[tab.id]})
+                  {tab.label}
                 </button>
               )
             })}
