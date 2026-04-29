@@ -14,7 +14,7 @@ export default function Marketplace() {
 
   const fetchProducts = async () => {
     try {
-      const data = await api.get('/products/available')
+      const data = await api.get('/products/all-available')
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch products', error)
@@ -63,7 +63,7 @@ export default function Marketplace() {
                <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
              </div>
              <h3 className="text-xl font-bold text-gray-900 mb-2">No Products Available</h3>
-             <p className="text-gray-500">Check back later for new assistive products from our startup network.</p>
+             <p className="text-gray-500">Check back later for new assistive products from NGOs and startups.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -89,6 +89,11 @@ export default function Marketplace() {
                   <p className="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed flex-grow">
                     {product.description}
                   </p>
+                  {product.source && (
+                    <p className="text-xs text-gray-400 mb-3 font-semibold">
+                      By: <span className="text-gray-600">{product.sourceDetails?.name || product.source}</span>
+                    </p>
+                  )}
                   <div className="flex justify-between items-end mb-4">
                     <div>
                       <p className="text-xs text-gray-400 font-semibold mb-0.5">Price</p>

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface NGOProductRepository extends JpaRepository<NGOProduct, Long> {
     List<NGOProduct> findByNgoIdOrderByCreatedAtDesc(Long ngoId);
+    
+    List<NGOProduct> findByAvailableTrue();
 }

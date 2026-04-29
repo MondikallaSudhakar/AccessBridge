@@ -11,6 +11,7 @@ const COLORS = {
   blueSoft: '#f0f8fc',
   blueBorder: '#c8e6f0',
   blueDark: '#0a4b5a',
+  orange: '#f97316',
   heroGradient: '#0197b2',
   white: '#ffffff',
   slate50: '#f9fafb',
@@ -382,6 +383,7 @@ export default function Home() {
       ])
 
       const events = await fetchPublic('/events/public')
+      const startupProducts = await fetchPublic('/products').catch(() => [])
 
       const ngoNeedsGroups = await Promise.all(
         ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/needs`) }))
@@ -468,22 +470,38 @@ export default function Home() {
           }))
       )
 
-      const products = ngoProductsGroups.flatMap(({ ngo, items }) =>
-        items
+      const products = [
+        ...ngoProductsGroups.flatMap(({ ngo, items }) =>
+          items
+            .filter((product) => product.available !== false)
+            .map((product) => ({
+              id: `ngo-product-${product.id}`,
+              type: 'products',
+              title: product.name,
+              subtitle: product.description || 'Product listed by NGO.',
+              meta: `${ngo.name} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
+              verified: ngo.verified,
+              cta: 'View NGO Profile',
+              href: `/ngos/${ngo.id}`,
+              accent: COLORS.green,
+              logo: product.imageUrl || ngo.logoUrl,
+            }))
+        ),
+        ...(Array.isArray(startupProducts) ? startupProducts
           .filter((product) => product.available !== false)
           .map((product) => ({
-            id: `ngo-product-${product.id}`,
+            id: `startup-product-${product.id}`,
             type: 'products',
             title: product.name,
-            subtitle: product.description || 'Product listed by NGO.',
-            meta: `${ngo.name} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
-            verified: ngo.verified,
-            cta: 'View NGO Profile',
-            href: `/ngos/${ngo.id}`,
-            accent: COLORS.green,
-            logo: product.imageUrl || ngo.logoUrl,
-          }))
-      )
+            subtitle: product.description || 'Product listed by startup.',
+            meta: `${product.startup?.name || 'Startup'} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
+            verified: true,
+            cta: 'View Marketplace',
+            href: '/marketplace',
+            accent: COLORS.orange,
+            logo: product.imageUrl,
+          })) : [])
+      ]
 
       const stories = [
         ...schoolAchievementGroups.flatMap(({ school, items }) =>

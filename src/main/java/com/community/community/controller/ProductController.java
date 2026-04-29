@@ -55,6 +55,12 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/all-available")
+    public ResponseEntity<List<Map<String, Object>>> getAllAvailableProductsIncludingNGO() {
+        List<Map<String, Object>> products = productService.getAllAvailableProductsIncludingNGO();
+        return ResponseEntity.ok(products);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> updateProduct(

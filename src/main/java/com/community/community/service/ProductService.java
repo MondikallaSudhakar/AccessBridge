@@ -1,13 +1,18 @@
 package com.community.community.service;
 
 import com.community.community.model.Product;
+import com.community.community.model.NGOProduct;
 import com.community.community.repository.ProductRepository;
 import com.community.community.repository.StartupRepository;
+import com.community.community.repository.NGOProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +21,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final StartupRepository startupRepository;
+    private final NGOProductRepository ngoProductRepository;
 
     public Product createProduct(Product product) {
         return productRepository.save(product);
@@ -90,5 +96,56 @@ public class ProductService {
         Product product = getProductById(id);
         product.setAvailable(!product.getAvailable());
         return productRepository.save(product);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getAllAvailableProductsIncludingNGO() {
+        List<Map<String, Object>> allProducts = new ArrayList<>();
+        
+        // Get available startup products
+        List<Product> startupProducts = productRepository.findByAvailableTrue();
+        for (Product product : startupProducts) {
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("id", product.getId());
+            productMap.put("name", product.getName());
+            productMap.put("description", product.getDescription());
+            productMap.put("category", product.getCategory());
+            productMap.put("price", product.getPrice());
+            productMap.put("stockQuantity", product.getStockQuantity());
+            productMap.put("available", product.getAvailable());
+            productMap.put("imageUrl", product.getImageUrl());
+            productMap.put("source", "STARTUP");
+            if (product.getStartup() != null) {
+                Map<String, Object> startup = new HashMap<>();
+                startup.put("id", product.getStartup().getId());
+                startup.put("name", product.getStartup().getName());
+                productMap.put("sourceDetails", startup);
+            }
+            allProducts.add(productMap);
+        }
+        
+        // Get available NGO products
+        List<NGOProduct> ngoProducts = ngoProductRepository.findByAvailableTrue();
+        for (NGOProduct product : ngoProducts) {
+            Map<String, Object> productMap = new HashMap<>();
+            productMap.put("id", product.getId());
+            productMap.put("name", product.getName());
+            productMap.put("description", product.getDescription());
+            productMap.put("category", product.getCategory());
+            productMap.put("price", product.getPrice());
+            productMap.put("stockQuantity", product.getStockQuantity());
+            productMap.put("available", product.getAvailable());
+            productMap.put("imageUrl", product.getImageUrl());
+            productMap.put("source", "NGO");
+            if (product.getNgo() != null) {
+                Map<String, Object> ngo = new HashMap<>();
+                ngo.put("id", product.getNgo().getId());
+                ngo.put("name", product.getNgo().getName());
+                productMap.put("sourceDetails", ngo);
+            }
+            allProducts.add(productMap);
+        }
+        
+        return allProducts;
     }
 }
