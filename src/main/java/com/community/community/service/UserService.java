@@ -26,6 +26,7 @@ public class UserService {
         if (userDetails.getName() != null) user.setName(userDetails.getName());
         if (userDetails.getEmail() != null) user.setEmail(userDetails.getEmail());
         if (userDetails.getPhone() != null) user.setPhone(userDetails.getPhone());
+        if (userDetails.getAddress() != null) user.setAddress(userDetails.getAddress());
         if (userDetails.getBio() != null) user.setBio(userDetails.getBio());
         if (userDetails.getDisabilityType() != null) user.setDisabilityType(userDetails.getDisabilityType());
         if (userDetails.getSkills() != null) user.setSkills(userDetails.getSkills());

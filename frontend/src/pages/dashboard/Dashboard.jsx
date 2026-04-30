@@ -79,6 +79,7 @@ const roleLabel = {
 
 const USER_NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', icon: 'home', path: '/dashboard' },
+  { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
   { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
   { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
   { id: 'cart', label: 'Cart', icon: 'shop', path: '/cart' },
@@ -610,7 +611,7 @@ export default function Dashboard() {
     ...(user?.role === 'GUARDIAN_CAREGIVER' ? [{ id: 'guardian', label: 'Guardian', icon: 'info', path: '/guardian' }] : []),
     ...(user?.role === 'STARTUP_ADMIN' ? [{ id: 'startup', label: 'Startup', icon: 'startup', path: '/startup/profile' }] : []),
     ...(user?.role === 'SUPER_ADMIN' ? [{ id: 'approvals', label: 'Approvals', icon: 'check', path: '/admin/approvals' }] : []),
-    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
   ]
 
   return (
@@ -1192,6 +1193,7 @@ export default function Dashboard() {
 
             {/* Role CTA button */}
             {user?.role === 'SCHOOL_ADMIN' && <HeroCta label="Go to School Dashboard" onClick={() => navigate('/school/profile')} />}
+            {user?.role === 'USER' && <HeroCta label="Update Address" onClick={() => navigate('/profile')} />}
             {user?.role === 'SPECIAL_ABLED_PERSON' && <HeroCta label="Open Specially Abled Workspace" onClick={() => navigate('/special')} />}
             {user?.role === 'GUARDIAN_CAREGIVER' && <HeroCta label="Open Guardian Workspace" onClick={() => navigate('/guardian')} />}
             {user?.role === 'STARTUP_ADMIN' && <HeroCta label="Go to Startup Dashboard" onClick={() => navigate('/startup/profile')} />}
@@ -1222,6 +1224,20 @@ export default function Dashboard() {
                 }}
               />
             ))}
+            {user?.role === 'USER' && (
+              <QuickCard
+                card={{
+                  title: 'My Profile',
+                  desc: 'Update your delivery address, phone number, and contact details for faster checkout.',
+                  icon: 'user',
+                  color: '#8b5cf6',
+                  bg: '#f5f3ff',
+                  path: '/profile',
+                  cta: 'Edit Profile',
+                }}
+                onClick={() => navigate('/profile')}
+              />
+            )}
           </div>
 
           {/* ── Info / Support card ── */}

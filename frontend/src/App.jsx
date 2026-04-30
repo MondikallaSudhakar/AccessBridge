@@ -9,6 +9,7 @@ import Dashboard from './pages/dashboard/Dashboard'
 import Marketplace from './pages/marketplace/Marketplace'
 import Cart from './pages/marketplace/Cart'
 import Orders from './pages/marketplace/Orders'
+import UserProfile from './pages/profile/UserProfile'
 import Search from './pages/search/Search'
 import AdminApproval from './pages/dashboard/AdminApproval'
 import SchoolProfile from './pages/school/SchoolProfile'
@@ -58,6 +59,7 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/profile" element={<RoleRoute><UserProfile /></RoleRoute>} />
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />

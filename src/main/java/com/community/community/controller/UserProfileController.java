@@ -22,6 +22,7 @@ public class UserProfileController {
         User user = new User();
         user.setName(request.getName());
         user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
         user.setBio(request.getBio());
         user.setDisabilityType(request.getDisabilityType());
         user.setSkills(request.getSkills());
