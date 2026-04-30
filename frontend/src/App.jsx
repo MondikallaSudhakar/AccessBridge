@@ -60,6 +60,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/profile" element={<RoleRoute><UserProfile /></RoleRoute>} />
+        <Route path="/dashboard/profile" element={<RoleRoute><UserProfile /></RoleRoute>} />
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
