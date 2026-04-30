@@ -38,6 +38,7 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setStatus(Order.OrderStatus.PENDING);
+        order.setDeliveryAddress(user.getAddress());
         
         BigDecimal totalPrice = BigDecimal.ZERO;
         order = orderRepository.save(order);
@@ -151,6 +152,7 @@ public class OrderService {
 
                     String buyerName = order.getUser() != null ? order.getUser().getName() : null;
                     String buyerEmail = order.getUser() != null ? order.getUser().getEmail() : null;
+                    String buyerAddress = order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "";
 
                     return new OrderSummaryDto(
                             order.getId(),
@@ -160,6 +162,7 @@ public class OrderService {
                             order.getCreatedAt(),
                             buyerName,
                             buyerEmail,
+                            buyerAddress,
                             itemDtos
                     );
                 })

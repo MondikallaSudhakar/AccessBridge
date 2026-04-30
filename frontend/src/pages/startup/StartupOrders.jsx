@@ -168,6 +168,12 @@ export default function StartupOrders() {
                   <span>Placed on</span>
                   <span className="font-medium text-gray-700">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</span>
                 </div>
+                {order.buyerAddress && (
+                  <div className="mt-3 border-t border-gray-100 pt-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Delivery Address</p>
+                    <p className="text-xs text-gray-700 leading-relaxed">{order.buyerAddress}</p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 rounded-lg bg-orange-50 p-3">

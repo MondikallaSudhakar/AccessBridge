@@ -2199,6 +2199,17 @@ export default function NgoProfile() {
                             </div>
                           </div>
 
+                          {/* Delivery Address */}
+                          {order.buyerAddress && (
+                            <>
+                              <Divider/>
+                              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                                <p style={{margin:0,fontSize:10,fontWeight:700,color:'#64748b',letterSpacing:'0.05em',textTransform:'uppercase'}}>Delivery Address</p>
+                                <p style={{margin:0,fontSize:12,color:NAVY,lineHeight:1.5}}>{order.buyerAddress}</p>
+                              </div>
+                            </>
+                          )}
+
                           {/* Items */}
                           <div style={{borderRadius:radius.md,background:`${G}10`,border:`1px solid ${G}25`,padding:12}}>
                             <p style={{margin:'0 0 8px',fontSize:10,fontWeight:700,color:G,letterSpacing:'0.05em',textTransform:'uppercase'}}>Items ({(order.items||[]).length})</p>

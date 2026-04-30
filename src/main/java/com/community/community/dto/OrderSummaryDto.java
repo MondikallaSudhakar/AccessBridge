@@ -14,5 +14,6 @@ public record OrderSummaryDto(
         LocalDateTime createdAt,
         String buyerName,
         String buyerEmail,
+        String buyerAddress,
         List<OrderItemSummaryDto> items
 ) {}
