@@ -20,7 +20,6 @@ import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
 import NgoWorkspaceHome from './pages/ngo/NgoWorkspaceHome'
 import NgoWorkspaceFeaturePage from './pages/ngo/NgoWorkspaceFeaturePage'
-import NGOOrders from './pages/ngo/NGOOrders'
 import VolunteerLayout from './pages/volunteer/VolunteerLayout'
 import VolunteerHome from './pages/volunteer/VolunteerHome'
 import VolunteerFeaturePage from './pages/volunteer/VolunteerFeaturePage'
@@ -105,7 +104,6 @@ function App() {
           <Route index element={<NgoWorkspaceHome />} />
           <Route path="requirements" element={<NgoWorkspaceFeaturePage type="requirements" />} />
           <Route path="support-requests" element={<NgoWorkspaceFeaturePage type="support-requests" />} />
-          <Route path="orders" element={<NGOOrders />} />
           <Route path="volunteers" element={<NgoWorkspaceFeaturePage type="volunteers" />} />
           <Route path="campaigns" element={<NgoWorkspaceFeaturePage type="campaigns" />} />
           <Route path="events" element={<NgoWorkspaceFeaturePage type="events" />} />
