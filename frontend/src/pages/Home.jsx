@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
@@ -149,20 +150,20 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
         <nav className="flex items-center justify-end gap-2">
           {user ? (
             navItems.map((item) => (
-              <a key={item.label} href={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
+              <Link key={item.label} to={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
                 <item.Icon />
                 <span className="text-xs font-medium">{item.label}</span>
-              </a>
+              </Link>
             ))
           ) : (
             <>
-              <a href="/login" className="hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 md:inline-flex" style={{ borderColor: COLORS.blueBorder }}>
+              <Link to="/login" className="hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 md:inline-flex" style={{ borderColor: COLORS.blueBorder }}>
                 <Icons.User />
                 <span>Sign In</span>
-              </a>
-              <a href="/register" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+              </Link>
+              <Link to="/register" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
                 Join Now
-              </a>
+              </Link>
             </>
           )}
         </nav>
@@ -211,9 +212,9 @@ function EmptyFeed({ activeTab }) {
     <div className="rounded-2xl border border-dashed p-8 text-center" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.white }}>
       <h3 className="text-lg font-bold text-slate-800">No {activeTab === 'all' ? 'entries' : activeTab} found right now.</h3>
       <p className="mt-2 text-sm text-slate-500">Try another tab or upgrade from viewer-only access to an active role.</p>
-      <a href="/register" className="mt-4 inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+      <Link to="/register" className="mt-4 inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
         Upgrade Now
-      </a>
+      </Link>
     </div>
   )
 }
@@ -315,12 +316,12 @@ function TimelineItem({ item, index, isLast }) {
 
             {/* Right side buttons */}
             <div className="flex flex-col gap-2 shrink-0 ml-4">
-              <a href={item.href} className="rounded-lg px-4 py-2.5 text-sm font-bold text-white text-center transition-all hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap" style={{ backgroundColor: COLORS.blue }}>
+              <Link to={item.href} className="rounded-lg px-4 py-2.5 text-sm font-bold text-white text-center transition-all hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap" style={{ backgroundColor: COLORS.blue }}>
                 {item.cta}
-              </a>
-              <a href="/search" className="rounded-lg border-2 px-4 py-2.5 text-sm font-bold text-center transition-all hover:bg-green-50 hover:-translate-y-0.5 whitespace-nowrap" style={{ borderColor: COLORS.green, color: COLORS.green }}>
+              </Link>
+              <Link to="/search" className="rounded-lg border-2 px-4 py-2.5 text-sm font-bold text-center transition-all hover:bg-green-50 hover:-translate-y-0.5 whitespace-nowrap" style={{ borderColor: COLORS.green, color: COLORS.green }}>
                 Similar
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -473,7 +474,7 @@ export default function Home() {
       const products = [
         ...ngoProductsGroups.flatMap(({ ngo, items }) =>
           items
-            .filter((product) => product.available !== false)
+            .filter((product) => product.available !== false && Number(product.stockQuantity ?? 0) > 0)
             .map((product) => ({
               id: `ngo-product-${product.id}`,
               type: 'products',
@@ -488,7 +489,7 @@ export default function Home() {
             }))
         ),
         ...(Array.isArray(startupProducts) ? startupProducts
-          .filter((product) => product.available !== false)
+          .filter((product) => product.available !== false && Number(product.stockQuantity ?? 0) > 0)
           .map((product) => ({
             id: `startup-product-${product.id}`,
             type: 'products',
@@ -599,15 +600,15 @@ export default function Home() {
               Discover opportunities, success stories, innovative products, and meaningful events in our inclusive community. Browse freely or join as an active member to make a real impact.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="/register" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style={{ backgroundColor: COLORS.green }}>
+              <Link to="/register" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style={{ backgroundColor: COLORS.green }}>
                 Join the Community
-              </a>
-              <a href="/marketplace" className="inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
+              </Link>
+              <Link to="/marketplace" className="inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
                 Browse Marketplace
-              </a>
-              <a href="/login" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10">
+              </Link>
+              <Link to="/login" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10">
                 Sign In
-              </a>
+              </Link>
             </div>
           </div>
         </section>
