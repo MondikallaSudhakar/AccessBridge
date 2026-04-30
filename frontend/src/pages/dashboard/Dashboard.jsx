@@ -23,6 +23,8 @@ const ICONS = {
   shield:    'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"',
   search:    'd="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"',
   shop:      'd="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"',
+  bag:       'd="M6 8h12l-1 12H7L6 8zm3 0V6a3 3 0 016 0v2"',
+  cart:      'd="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1 5h12m-11 0a1 1 0 100 2 1 1 0 000-2zm10 0a1 1 0 100 2 1 1 0 000-2z"',
   check:     'd="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"',
   logout:    'd="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"',
   user:      'd="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"',
@@ -74,6 +76,13 @@ const roleLabel = {
   SPECIAL_ABLED_PERSON: 'Special Abled',
   GUARDIAN_CAREGIVER: 'Guardian',
 }
+
+const USER_NAV_ITEMS = [
+  { id: 'home', label: 'Dashboard', icon: 'home', path: '/dashboard' },
+  { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
+  { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
+  { id: 'cart', label: 'Cart', icon: 'shop', path: '/cart' },
+]
 
 // Fetch org by email helper
 async function fetchOrgByEmail(email, role) {
@@ -667,15 +676,32 @@ export default function Dashboard() {
           </div>
 
           {/* Role badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, background: `${roleInfo.color}12`, border: `1px solid ${roleInfo.color}30` }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: roleInfo.color, display: 'inline-block' }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: roleInfo.color }}>{roleInfo.label}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, background: `${user?.role === 'USER' ? G : roleInfo.color}12`, border: `1px solid ${user?.role === 'USER' ? G : roleInfo.color}30` }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: user?.role === 'USER' ? G : roleInfo.color, display: 'inline-block' }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: user?.role === 'USER' ? G : roleInfo.color }}>{user?.role === 'USER' ? 'Community Marketplace' : roleInfo.label}</span>
           </div>
         </div>
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '14px 12px 8px' }}>
-          {NAV_GROUPS.map(group => {
+          {user?.role === 'USER' ? (
+            <div>
+              <p style={{ margin: '0 0 4px 8px', fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.10em', textTransform: 'uppercase' }}>
+                Navigation
+              </p>
+              {USER_NAV_ITEMS.map(item => (
+                <SidebarItem
+                  key={item.id}
+                  item={item}
+                  active={activeNav === item.id}
+                  onClick={() => {
+                    setActiveNav(item.id)
+                    navigate(item.path)
+                  }}
+                />
+              ))}
+            </div>
+          ) : NAV_GROUPS.map(group => {
             // Check if group itself requires a role
             if (group.role && group.role !== user?.role) return null
             const visibleItems = group.items.filter(i => !i.role || i.role === user?.role)
