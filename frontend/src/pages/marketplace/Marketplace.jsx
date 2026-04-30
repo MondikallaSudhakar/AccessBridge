@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import { useCart } from '../../context/CartContext'
 import UserNavbar from '../../components/common/UserNavbar'
@@ -20,8 +21,30 @@ const normalizeProduct = (product) => ({
   source: String(product?.source || product?.sourceType || 'UNKNOWN').toUpperCase(),
 })
 
+const NAV_ITEMS = [
+  { label: 'Dashboard', path: '/dashboard', icon: 'home' },
+  { label: 'Marketplace', path: '/marketplace', icon: 'shop' },
+  { label: 'Orders', path: '/orders', icon: 'bag' },
+  { label: 'Cart', path: '/cart', icon: 'cart' },
+]
+
+function SidebarIcon({ name }) {
+  const icons = {
+    home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6',
+    shop: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+    bag: 'M6 8h12l-1 12H7L6 8zm3 0V6a3 3 0 016 0v2',
+    cart: 'M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1 5h12m-11 0a1 1 0 100 2 1 1 0 000-2zm10 0a1 1 0 100 2 1 1 0 000-2z',
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ display: 'block', flexShrink: 0 }}>
+      <path strokeLinecap="round" strokeLinejoin="round" d={icons[name]} />
+    </svg>
+  )
+}
+
 // Marketplace - Product Listing
 export default function Marketplace() {
+  const navigate = useNavigate()
   const { addToCart, getTotalItems } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -71,7 +94,51 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <UserNavbar currentPage="marketplace" cartCount={getTotalItems()} />
+      <div className="lg:flex lg:min-h-screen">
+        <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col lg:border-r lg:border-slate-200 lg:bg-white">
+          <div className="border-b border-slate-100 px-5 pb-4 pt-6">
+            <div className="mb-4 flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/dashboard')}>
+              <div className="flex items-center">
+                <div style={{ width: 14, height: 24, backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
+                <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: '#5BCB2B', clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
+              </div>
+              <span className="text-sm font-black tracking-tight text-slate-900">Inclusive Connect</span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: '#5BCB2B50', backgroundColor: '#5BCB2B12' }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: '#5BCB2B' }} />
+              <span className="text-xs font-bold" style={{ color: '#5BCB2B' }}>Community Marketplace</span>
+            </div>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Navigation</p>
+            {NAV_ITEMS.map((item) => {
+              const active = item.path === '/marketplace'
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className="mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                  style={{
+                    backgroundColor: active ? '#0d9488' : 'transparent',
+                    color: active ? '#fff' : '#374151',
+                    fontWeight: active ? 700 : 500,
+                  }}
+                >
+                  <SidebarIcon name={item.icon} />
+                  <span>{item.label}</span>
+                </button>
+              )
+            })}
+          </nav>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <div className="lg:hidden">
+            <UserNavbar currentPage="marketplace" cartCount={getTotalItems()} />
+          </div>
 
       {cartMessage && (
         <div className="fixed right-6 top-20 z-40 rounded-xl bg-emerald-600 px-6 py-3 text-white shadow-lg animate-pulse">
@@ -224,6 +291,8 @@ export default function Marketplace() {
             )})}
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   )
