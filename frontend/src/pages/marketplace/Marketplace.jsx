@@ -137,7 +137,7 @@ export default function Marketplace() {
               })}
             </div>
           </div>
-        </div>
+        </section>
 
         {loading ? (
           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
