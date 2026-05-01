@@ -93,44 +93,25 @@ export default function StartupOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href="/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-gray-700 text-sm transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Dashboard
-            </a>
-            <span className="text-gray-200 text-xs">|</span>
-            <span className="text-sm font-bold text-gray-900">Startup Orders</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400 hidden md:block">{user?.email}</span>
-            <button onClick={() => navigate('/startup/profile')}
-              className="text-xs font-semibold text-white px-3 py-1.5 rounded transition-colors"
-              style={{ backgroundColor: '#e65100' }}>
-              Profile
-            </button>
-          </div>
+    <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0d9488' }}>Startup Admin</p>
+          <h1 className="text-3xl font-black text-slate-900">Product Orders</h1>
+          <p className="text-sm text-slate-500 mt-1">Review customer orders placed for your startup products.</p>
         </div>
-      </nav>
-
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#e65100' }}>Startup Admin</p>
-            <h1 className="text-3xl font-black text-gray-900">Product Orders</h1>
-            <p className="text-sm text-gray-500 mt-1">Review customer orders placed for your startup products.</p>
-          </div>
-        </div>
+        <button onClick={() => navigate('/startup/profile')}
+          className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+          style={{ backgroundColor: '#5BCB2B' }}>
+          Back to Profile
+        </button>
+      </div>
 
       {loading ? (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 text-center text-gray-500">Loading orders...</div>
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -176,15 +157,15 @@ export default function StartupOrders() {
                 )}
               </div>
 
-              <div className="mt-4 rounded-lg bg-orange-50 p-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">Items</p>
+                <div className="mt-4 rounded-lg bg-emerald-50 p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Items</p>
                 <div className="mt-2 space-y-2">
                   {(order.items || []).length > 0 ? (
                     (order.items || []).map((item) => (
-                      <div key={item.id ?? `${item.productId}-${item.productName}`} className="rounded-md border border-orange-100 bg-white/80 px-3 py-2 text-sm text-gray-700">
+                      <div key={item.id ?? `${item.productId}-${item.productName}`} className="rounded-md border border-emerald-100 bg-white/80 px-3 py-2 text-sm text-gray-700">
                         <div className="flex items-start justify-between gap-3">
                           <span className="font-semibold text-gray-900">{item.productName || item.name || 'Item'}</span>
-                          <span className="text-xs font-bold text-orange-700">x{item.quantity ?? 0}</span>
+                          <span className="text-xs font-bold text-emerald-700">x{item.quantity ?? 0}</span>
                         </div>
                         <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
                           <span>{item.source || 'Source'}</span>
@@ -221,7 +202,6 @@ export default function StartupOrders() {
           ))}
         </div>
       )}
-      </div>
     </div>
   )
 }

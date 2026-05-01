@@ -17,6 +17,7 @@ import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
 import StartupOrders from './pages/startup/StartupOrders'
+import StartupWorkspaceLayout from './pages/startup/StartupWorkspaceLayout'
 import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
 import NgoWorkspaceHome from './pages/ngo/NgoWorkspaceHome'
@@ -139,8 +140,11 @@ function App() {
         <Route path="/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />
         <Route path="/admin/approvals" element={<RoleRoute allowedRoles={['SUPER_ADMIN']}><AdminApproval /></RoleRoute>} />
         <Route path="/school/profile" element={<RoleRoute allowedRoles={['SCHOOL_ADMIN', 'SUPER_ADMIN']}><SchoolProfile /></RoleRoute>} />
-        <Route path="/startup/profile" element={<RoleRoute allowedRoles={['STARTUP_ADMIN', 'SUPER_ADMIN']}><StartupProfile /></RoleRoute>} />
-        <Route path="/startup/orders" element={<RoleRoute allowedRoles={['STARTUP_ADMIN', 'SUPER_ADMIN']}><StartupOrders /></RoleRoute>} />
+        <Route path="/startup" element={<RoleRoute allowedRoles={['STARTUP_ADMIN', 'SUPER_ADMIN']}><StartupWorkspaceLayout /></RoleRoute>}>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<StartupProfile />} />
+          <Route path="orders" element={<StartupOrders />} />
+        </Route>
         <Route path="/ngo/profile" element={<RoleRoute allowedRoles={['NGO_ADMIN', 'SUPER_ADMIN']}><NgoProfile /></RoleRoute>} />
 
         {/* 404 Not Found */}

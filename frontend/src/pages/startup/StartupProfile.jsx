@@ -135,68 +135,37 @@ export default function StartupProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href="/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-gray-700 text-sm transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Dashboard
-            </a>
-            <span className="text-gray-200 text-xs">|</span>
-            <span className="text-sm font-bold text-gray-900">Startup Manage</span>
-          </div>
-          <div className="flex items-center gap-3">
+    <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+      {profileLoading ? (
+         <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-14 bg-gray-200 rounded-lg animate-pulse"></div>)}</div>
+      ) : (
+        <div>
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0d9488' }}>Startup Admin</p>
+              <h1 className="text-3xl font-black text-slate-900">{startup?.name || 'My Startup'}</h1>
+              {startup?.city && <p className="text-sm text-slate-500 mt-1">{[startup.city, startup.state].filter(Boolean).join(', ')}</p>}
+            </div>
             <button
               onClick={() => navigate('/startup/orders')}
-              className="text-xs font-semibold text-white px-3 py-1.5 rounded transition-colors"
-              style={{ backgroundColor: '#e65100' }}
+              className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#5BCB2B' }}
             >
-              Orders Details
-            </button>
-            <span className="text-xs text-gray-400 hidden md:block">{user?.email}</span>
-            <button onClick={() => { logout(); navigate('/') }}
-              className="text-xs font-semibold text-red-500 border border-red-100 px-3 py-1.5 rounded transition-colors hover:bg-red-50">
-              Logout
+              View Orders
             </button>
           </div>
-        </div>
-      </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        {profileLoading ? (
-           <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="h-14 bg-gray-200 rounded-lg animate-pulse"></div>)}</div>
-        ) : (
-          <div>
-            <div className="mb-8 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#e65100' }}>Startup Admin</p>
-                <h1 className="text-3xl font-black text-gray-900">{startup?.name || 'My Startup'}</h1>
-                {startup?.city && <p className="text-sm text-gray-400 mt-1">{[startup.city, startup.state].filter(Boolean).join(', ')}</p>}
-              </div>
-              <button
-                onClick={() => navigate('/startup/orders')}
-                className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#e65100' }}
-              >
-                View Orders Details
-              </button>
-            </div>
-
-            <div className="space-y-6">
+          <div className="space-y-6">
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
                   <div>
-                    <h2 className="font-bold text-gray-900">Manage Products</h2>
+                    <h2 className="font-bold text-slate-900">Manage Products</h2>
                     <p className="text-xs text-gray-400 mt-0.5">Add and edit products to display them on the community marketplace</p>
                   </div>
                   {!showProductForm && (
                      <button onClick={openNewProductForm}
                        className="text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                       style={{ backgroundColor: '#e65100' }}>
+                       style={{ backgroundColor: '#5BCB2B' }}>
                        + Add Product
                      </button>
                   )}
@@ -253,7 +222,7 @@ export default function StartupProfile() {
                      <div className="flex gap-3 pt-2">
                        <button type="submit" disabled={submittingProduct}
                          className="text-sm font-semibold text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
-                         style={{ backgroundColor: '#e65100' }}>
+                         style={{ backgroundColor: '#5BCB2B' }}>
                          {submittingProduct ? 'Saving...' : (editingProductId ? 'Update Product' : 'Add Product')}
                        </button>
                        <button type="button" onClick={() => { setShowProductForm(false); setEditingProductId(null); }}
@@ -270,7 +239,7 @@ export default function StartupProfile() {
                   ) : products.length === 0 ? (
                     <div className="text-center py-6">
                       <p className="text-xs text-gray-400 mb-3">No products added yet.</p>
-                      <button onClick={() => setShowProductForm(true)} className="text-sm font-semibold rounded-lg px-4 py-2 text-white" style={{ backgroundColor: '#e65100' }}>
+                      <button onClick={() => setShowProductForm(true)} className="text-sm font-semibold rounded-lg px-4 py-2 text-white" style={{ backgroundColor: '#5BCB2B' }}>
                         Add your first product
                       </button>
                     </div>
@@ -314,7 +283,7 @@ export default function StartupProfile() {
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
                   <div>
-                    <h2 className="font-bold text-gray-900">Manage Events</h2>
+                    <h2 className="font-bold text-slate-900">Manage Events</h2>
                     <p className="text-xs text-gray-400 mt-0.5">Post startup events and review registrations</p>
                   </div>
                 </div>
@@ -325,7 +294,6 @@ export default function StartupProfile() {
             </div>
           </div>
         )}
-      </div>
     </div>
   )
 }
