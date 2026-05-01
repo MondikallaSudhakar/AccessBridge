@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import StartupEventsSection from './StartupEventsSection'
 
 export default function StartupProfile() {
   const { user, logout } = useAuth()
@@ -154,7 +155,7 @@ export default function StartupProfile() {
               className="text-xs font-semibold text-white px-3 py-1.5 rounded transition-colors"
               style={{ backgroundColor: '#e65100' }}
             >
-              Orders
+              Orders Details
             </button>
             <span className="text-xs text-gray-400 hidden md:block">{user?.email}</span>
             <button onClick={() => { logout(); navigate('/') }}
@@ -181,7 +182,7 @@ export default function StartupProfile() {
                 className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#e65100' }}
               >
-                View Orders
+                View Orders Details
               </button>
             </div>
 
@@ -307,6 +308,18 @@ export default function StartupProfile() {
                        ))}
                     </div>
                   )}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
+                  <div>
+                    <h2 className="font-bold text-gray-900">Manage Events</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Post startup events and review registrations</p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <StartupEventsSection startupId={startup?.id} />
                 </div>
               </div>
             </div>

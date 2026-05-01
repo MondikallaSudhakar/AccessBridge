@@ -3,10 +3,13 @@ package com.community.community.controller;
 import com.community.community.model.Event;
 import com.community.community.model.EventApplication;
 import com.community.community.model.NGO;
+import com.community.community.model.Role;
+import com.community.community.model.Startup;
 import com.community.community.model.User;
 import com.community.community.repository.EventRepository;
 import com.community.community.repository.EventApplicationRepository;
 import com.community.community.repository.NGORepository;
+import com.community.community.repository.StartupRepository;
 import com.community.community.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,6 +33,7 @@ public class EventController {
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
     private final NGORepository ngoRepository;
+    private final StartupRepository startupRepository;
     private final UserRepository userRepository;
 
     // ── Public Event Endpoints ────────────────────────────────────────────
@@ -106,6 +110,23 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
+    @GetMapping("/startup/{startupId}")
+    public ResponseEntity<List<Event>> getStartupEvents(@PathVariable Long startupId) {
+        if (!canAccessStartup(startupId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Optional<Startup> startup = startupRepository.findById(startupId);
+        if (startup.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Event> events = eventRepository.findByStartup(startup.get())
+                .stream()
+                .sorted(Comparator.comparing(Event::getEventDate).reversed())
+                .toList();
+        return ResponseEntity.ok(events);
+    }
+
     private boolean canAccessNgo(Long ngoId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -127,6 +148,30 @@ public class EventController {
 
         return ngoRepository.findById(ngoId)
                 .map(ngo -> ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
+    }
+
+    private boolean canAccessStartup(Long startupId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(authentication.getName());
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        if (currentUser.get().getRole() == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (currentUser.get().getRole() != Role.STARTUP_ADMIN) {
+            return false;
+        }
+
+        return startupRepository.findById(startupId)
+                .map(startup -> startup.getEmail() != null && startup.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
                 .orElse(false);
     }
 
@@ -154,6 +199,34 @@ public class EventController {
         event.setNgo(ngo.get());
         event.setOrganizer(organizer.get());
         event.setStatus("UPCOMING");
+        event.setCreatedAt(LocalDateTime.now());
+
+        Event savedEvent = eventRepository.save(event);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedEvent);
+    }
+
+    @PostMapping("/startup/{startupId}/create")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> createEventForStartup(
+            @PathVariable Long startupId,
+            @RequestBody Event event) {
+        Optional<Startup> startup = startupRepository.findById(startupId);
+        if (startup.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Startup not found");
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User> organizer = userRepository.findByEmail(auth.getName());
+        if (organizer.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("User not found");
+        }
+
+        event.setStartup(startup.get());
+        event.setOrganizer(organizer.get());
+        event.setStatus("UPCOMING");
+        event.setRegisteredParticipants(0);
         event.setCreatedAt(LocalDateTime.now());
 
         Event savedEvent = eventRepository.save(event);
@@ -206,6 +279,60 @@ public class EventController {
         }
 
         if (event.get().getNgo() == null || !event.get().getNgo().getId().equals(ngoId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You are not authorized to delete this event");
+        }
+
+        eventApplicationRepository.deleteByEvent(event.get());
+        eventRepository.deleteById(eventId);
+        return ResponseEntity.ok("Event deleted successfully");
+    }
+
+    @PutMapping("/startup/{startupId}/events/{eventId}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> updateStartupEvent(
+            @PathVariable Long startupId,
+            @PathVariable Long eventId,
+            @RequestBody Event updatedEvent) {
+        Optional<Event> existingEvent = eventRepository.findById(eventId);
+        if (existingEvent.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Event not found");
+        }
+
+        Event event = existingEvent.get();
+        if (event.getStartup() == null || !event.getStartup().getId().equals(startupId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You are not authorized to update this event");
+        }
+
+        if (updatedEvent.getTitle() != null) event.setTitle(updatedEvent.getTitle());
+        if (updatedEvent.getDescription() != null) event.setDescription(updatedEvent.getDescription());
+        if (updatedEvent.getEventDate() != null) event.setEventDate(updatedEvent.getEventDate());
+        if (updatedEvent.getLocation() != null) event.setLocation(updatedEvent.getLocation());
+        if (updatedEvent.getCity() != null) event.setCity(updatedEvent.getCity());
+        if (updatedEvent.getState() != null) event.setState(updatedEvent.getState());
+        if (updatedEvent.getEventType() != null) event.setEventType(updatedEvent.getEventType());
+        if (updatedEvent.getMaxParticipants() != null) event.setMaxParticipants(updatedEvent.getMaxParticipants());
+        if (updatedEvent.getStatus() != null) event.setStatus(updatedEvent.getStatus());
+
+        event.setUpdatedAt(LocalDateTime.now());
+        Event saved = eventRepository.save(event);
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/startup/{startupId}/events/{eventId}")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> deleteStartupEvent(
+            @PathVariable Long startupId,
+            @PathVariable Long eventId) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Event not found");
+        }
+
+        if (event.get().getStartup() == null || !event.get().getStartup().getId().equals(startupId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("You are not authorized to delete this event");
         }
@@ -310,6 +437,28 @@ public class EventController {
         return ResponseEntity.ok(applications);
     }
 
+    @GetMapping("/startup/{startupId}/events/{eventId}/applications")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getStartupEventApplications(
+            @PathVariable Long startupId,
+            @PathVariable Long eventId,
+            @RequestParam(required = false) String status) {
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty() || event.get().getStartup() == null || !event.get().getStartup().getId().equals(startupId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Event not found");
+        }
+
+        List<EventApplication> applications;
+        if (status != null && !status.isBlank()) {
+            applications = eventApplicationRepository.findByEventAndStatus(event.get(), status);
+        } else {
+            applications = eventApplicationRepository.findByEvent(event.get());
+        }
+
+        return ResponseEntity.ok(applications);
+    }
+
     @PatchMapping("/{eventId}/applications/{appId}/approve")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> approveApplication(
@@ -353,6 +502,65 @@ public class EventController {
         EventApplication saved = eventApplicationRepository.save(application.get());
 
         // Decrement registered participants if rejecting
+        Event event = application.get().getEvent();
+        if (event.getRegisteredParticipants() != null && event.getRegisteredParticipants() > 0) {
+            event.setRegisteredParticipants(event.getRegisteredParticipants() - 1);
+            eventRepository.save(event);
+        }
+
+        return ResponseEntity.ok(saved);
+    }
+
+    @PatchMapping("/startup/{startupId}/events/{eventId}/applications/{appId}/approve")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> approveStartupApplication(
+            @PathVariable Long startupId,
+            @PathVariable Long eventId,
+            @PathVariable Long appId,
+            @RequestBody(required = false) Map<String, String> request) {
+        Optional<EventApplication> application = eventApplicationRepository.findById(appId);
+        if (application.isEmpty() || application.get().getEvent() == null
+                || application.get().getEvent().getStartup() == null
+                || !application.get().getEvent().getStartup().getId().equals(startupId)
+                || !application.get().getEvent().getId().equals(eventId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Application not found");
+        }
+
+        application.get().setStatus("APPROVED");
+        if (request != null && request.containsKey("notes")) {
+            application.get().setApprovalNotes(request.get("notes"));
+        }
+        application.get().setUpdatedAt(LocalDateTime.now());
+
+        EventApplication saved = eventApplicationRepository.save(application.get());
+        return ResponseEntity.ok(saved);
+    }
+
+    @PatchMapping("/startup/{startupId}/events/{eventId}/applications/{appId}/reject")
+    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> rejectStartupApplication(
+            @PathVariable Long startupId,
+            @PathVariable Long eventId,
+            @PathVariable Long appId,
+            @RequestBody(required = false) Map<String, String> request) {
+        Optional<EventApplication> application = eventApplicationRepository.findById(appId);
+        if (application.isEmpty() || application.get().getEvent() == null
+                || application.get().getEvent().getStartup() == null
+                || !application.get().getEvent().getStartup().getId().equals(startupId)
+                || !application.get().getEvent().getId().equals(eventId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Application not found");
+        }
+
+        application.get().setStatus("REJECTED");
+        if (request != null && request.containsKey("notes")) {
+            application.get().setApprovalNotes(request.get("notes"));
+        }
+        application.get().setUpdatedAt(LocalDateTime.now());
+
+        EventApplication saved = eventApplicationRepository.save(application.get());
+
         Event event = application.get().getEvent();
         if (event.getRegisteredParticipants() != null && event.getRegisteredParticipants() > 0) {
             event.setRegisteredParticipants(event.getRegisteredParticipants() - 1);
