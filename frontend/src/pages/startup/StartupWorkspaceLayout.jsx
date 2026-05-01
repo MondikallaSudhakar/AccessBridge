@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const GREEN = '#5BCB2B'
-const BLUE = '#0197B2'
+const BLUE = '#1A8FD1'
 const NAVY = '#0f172a'
 
 const ICONS = {
@@ -92,32 +92,6 @@ export default function StartupWorkspaceLayout() {
       </aside>
 
       <section className="min-w-0 flex-1">
-        <header className="border-b border-slate-200 bg-white lg:hidden">
-          <div className="px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${GREEN}12` }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>Startup Workspace</span>
-              </div>
-            </div>
-            <h1 className="mt-2 text-lg font-black text-slate-900">Workspace</h1>
-          </div>
-          <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
-            <NavLink to="/startup/profile" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
-              Profile
-            </NavLink>
-            <NavLink to="/startup/products" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
-              Products
-            </NavLink>
-            <NavLink to="/startup/events" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
-              Events
-            </NavLink>
-            <NavLink to="/startup/orders" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
-              Orders
-            </NavLink>
-          </nav>
-        </header>
-
         <main className="w-full px-4 py-6 sm:px-6 lg:px-8">
           <Outlet />
         </main>
