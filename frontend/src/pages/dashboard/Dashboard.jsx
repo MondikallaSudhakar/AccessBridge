@@ -622,6 +622,7 @@ export default function Dashboard() {
         .ds-sidebar { display: flex; }
         .ds-main    { flex: 1; min-width: 0; padding-bottom: 0; }
         .ds-bottom-nav { display: none; }
+        .dashboard-mobile-topbar { display: none !important; }
 
         /* ── Mobile: ≤ 767px ── */
         @media (max-width: 767px) {
@@ -633,6 +634,11 @@ export default function Dashboard() {
           .ds-card-grid  { grid-template-columns: 1fr !important; gap: 12px !important; }
           .ds-topbar     { padding: 0 14px !important; }
           .ds-welcome-text h1 { font-size: 22px !important; }
+          .dashboard-mobile-topbar { display: flex !important; }
+        }
+
+        @media (min-width: 768px) {
+          .dashboard-mobile-topbar { display: none !important; }
         }
 
         /* ── Tablet: 768–1023px ── */
@@ -666,7 +672,7 @@ export default function Dashboard() {
       <main className="ds-main" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
         {/* Top bar */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #e9ecef', height: 58, alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,.05)', position: 'sticky', top: 0, zIndex: 40, padding: '0 24px' }} className="ds-topbar lg:hidden">
+        <header style={{ background: '#fff', borderBottom: '1px solid #e9ecef', height: 58, alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,.05)', position: 'sticky', top: 0, zIndex: 40, padding: '0 24px' }} className="dashboard-mobile-topbar ds-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Mobile menu toggle (shown via media query) */}
             <button
