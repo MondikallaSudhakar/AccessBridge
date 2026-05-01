@@ -16,6 +16,8 @@ import SchoolProfile from './pages/school/SchoolProfile'
 import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
+import StartupProductsPage from './pages/startup/StartupProductsPage'
+import StartupEventsPage from './pages/startup/StartupEventsPage'
 import StartupOrders from './pages/startup/StartupOrders'
 import StartupWorkspaceLayout from './pages/startup/StartupWorkspaceLayout'
 import NgoProfile from './pages/dashboard/NgoProfile'
@@ -143,6 +145,8 @@ function App() {
         <Route path="/startup" element={<RoleRoute allowedRoles={['STARTUP_ADMIN', 'SUPER_ADMIN']}><StartupWorkspaceLayout /></RoleRoute>}>
           <Route index element={<Navigate to="profile" replace />} />
           <Route path="profile" element={<StartupProfile />} />
+          <Route path="products" element={<StartupProductsPage />} />
+          <Route path="events" element={<StartupEventsPage />} />
           <Route path="orders" element={<StartupOrders />} />
         </Route>
         <Route path="/ngo/profile" element={<RoleRoute allowedRoles={['NGO_ADMIN', 'SUPER_ADMIN']}><NgoProfile /></RoleRoute>} />

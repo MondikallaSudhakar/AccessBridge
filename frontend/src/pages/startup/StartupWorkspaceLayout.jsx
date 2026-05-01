@@ -74,8 +74,8 @@ export default function StartupWorkspaceLayout() {
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
           <SidebarLink to="/startup/profile" label="Profile" icon="home" />
-          <SidebarLink to="/startup/profile#products" label="Products" icon="box" />
-          <SidebarLink to="/startup/profile#events" label="Events" icon="calendar" />
+          <SidebarLink to="/startup/products" label="Products" icon="box" />
+          <SidebarLink to="/startup/events" label="Events" icon="calendar" />
           <SidebarLink to="/startup/orders" label="Orders" icon="orders" />
         </nav>
 
@@ -106,10 +106,10 @@ export default function StartupWorkspaceLayout() {
             <NavLink to="/startup/profile" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
               Profile
             </NavLink>
-            <NavLink to="/startup/profile#products" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
+            <NavLink to="/startup/products" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
               Products
             </NavLink>
-            <NavLink to="/startup/profile#events" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
+            <NavLink to="/startup/events" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
               Events
             </NavLink>
             <NavLink to="/startup/orders" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
