@@ -378,180 +378,44 @@ export default function Home() {
   useEffect(() => {
     const load = async () => {
       setLoading(true)
-      const [schools, ngos] = await Promise.all([
-        fetchPublic('/schools'),
-        fetchPublic('/ngos'),
-      ])
-
-      const events = await fetchPublic('/events/public')
-      const startupProducts = await fetchPublic('/products').catch(() => [])
-
-      const ngoNeedsGroups = await Promise.all(
-        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/needs`) }))
-      )
-
-      const schoolNeedsGroups = await Promise.all(
-        schools.map(async (school) => ({ school, items: await fetchPublic(`/schools/${school.id}/needs`) }))
-      )
-
-      const ngoJobsGroups = await Promise.all(
-        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/jobs`) }))
-      )
-
-      const ngoProductsGroups = await Promise.all(
-        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/products`) }))
-      )
-
-      const ngoCampaignGroups = await Promise.all(
-        ngos.map(async (ngo) => ({ ngo, items: await fetchPublic(`/ngos/${ngo.id}/campaigns`) }))
-      )
-
-      const schoolAchievementGroups = await Promise.all(
-        schools.map(async (school) => ({ school, items: await fetchPublic(`/schools/${school.id}/achievements`) }))
-      )
-
-      const requirements = [
-        ...ngoNeedsGroups.flatMap(({ ngo, items }) =>
-          items
-            .filter((need) => need.status !== 'CLOSED')
-            .map((need) => ({
-              id: `ngo-need-${need.id}`,
-              type: 'requirements',
-              title: need.title,
-              subtitle: need.description || 'Support request from NGO.',
-              meta: `${ngo.name} • ${formatLocation(ngo)}`,
-              verified: ngo.verified,
-              cta: 'View NGO Profile',
-              href: `/ngos/${ngo.id}`,
-              accent: COLORS.green,
-              openDate: need.openDate || need.createdAt || null,
-              closeDate: need.closeDate || need.deadline || null,
-              applied: need.applicantCount ?? null,
-              logo: ngo.logoUrl,
-            }))
-        ),
-        ...schoolNeedsGroups.flatMap(({ school, items }) =>
-          items
-            .filter((need) => need.status !== 'CLOSED')
-            .map((need) => ({
-              id: `school-need-${need.id}`,
-              type: 'requirements',
-              title: need.title,
-              subtitle: need.description || 'Support request from school.',
-              meta: `${school.name} • ${formatLocation(school)}`,
-              verified: school.verified,
-              cta: 'View School Profile',
-              href: `/schools/${school.id}`,
-              accent: COLORS.blue,
-              openDate: need.openDate || need.createdAt || null,
-              closeDate: need.closeDate || need.deadline || null,
-              applied: need.applicantCount ?? null,
-              logo: school.logoUrl,
-            }))
-        ),
-      ]
-
-      const jobs = ngoJobsGroups.flatMap(({ ngo, items }) =>
-        items
-          .filter((job) => job.status !== 'CLOSED')
-          .map((job) => ({
-            id: `job-${job.id}`,
-            type: 'jobs',
-            title: job.title,
-            subtitle: job.description || 'Hiring requirement posted by NGO.',
-            meta: `${ngo.name} • ${job.location || formatLocation(ngo)}`,
-            verified: ngo.verified,
-            cta: 'View NGO Profile',
-            href: `/ngos/${ngo.id}`,
-            accent: COLORS.green,
-            openDate: job.openDate || job.createdAt || null,
-            closeDate: job.lastDateToApply || job.closeDate || job.deadline || null,
-            applied: job.applicantCount ?? null,
-            logo: ngo.logoUrl,
-          }))
-      )
-
-      const products = [
-        ...ngoProductsGroups.flatMap(({ ngo, items }) =>
-          items
-            .filter((product) => product.available !== false && Number(product.stockQuantity ?? 0) > 0)
-            .map((product) => ({
-              id: `ngo-product-${product.id}`,
-              type: 'products',
-              title: product.name,
-              subtitle: product.description || 'Product listed by NGO.',
-              meta: `${ngo.name} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
-              verified: ngo.verified,
-              cta: 'View NGO Profile',
-              href: `/ngos/${ngo.id}`,
-              accent: COLORS.green,
-              logo: product.imageUrl || ngo.logoUrl,
-            }))
-        ),
-        ...(Array.isArray(startupProducts) ? startupProducts
-          .filter((product) => product.available !== false && Number(product.stockQuantity ?? 0) > 0)
-          .map((product) => ({
-            id: `startup-product-${product.id}`,
-            type: 'products',
-            title: product.name,
-            subtitle: product.description || 'Product listed by startup.',
-            meta: `${product.startup?.name || 'Startup'} • Rs ${Number(product.price || 0).toLocaleString('en-IN')} • Stock ${product.stockQuantity ?? 0}`,
-            verified: true,
-            cta: 'View Marketplace',
-            href: '/marketplace',
-            accent: COLORS.orange,
-            logo: product.imageUrl,
-          })) : [])
-      ]
-
-      const stories = [
-        ...schoolAchievementGroups.flatMap(({ school, items }) =>
-          items.slice(0, 2).map((story) => ({
-            id: `school-story-${story.id}`,
-            type: 'stories',
-            title: story.title,
-            subtitle: story.description || 'School success story.',
-            meta: `${school.name} • ${story.category || 'Achievement'}`,
-            verified: school.verified,
-            cta: 'View School Profile',
-            href: `/schools/${school.id}`,
-            accent: COLORS.blue,
-            logo: school.logoUrl,
-          }))
-        ),
-        ...ngoCampaignGroups.flatMap(({ ngo, items }) =>
-          items.slice(0, 2).map((campaign) => ({
-            id: `ngo-campaign-${campaign.id}`,
-            type: 'stories',
-            title: campaign.campaignName,
-            subtitle: campaign.campaignDescription || 'Community success story.',
-            meta: `${ngo.name} • ${campaign.status || 'Campaign'}`,
-            verified: ngo.verified,
-            cta: 'View NGO Profile',
-            href: `/ngos/${ngo.id}`,
-            accent: COLORS.green,
-            logo: ngo.logoUrl,
-          }))
-        ),
-      ]
-
-      const publicEvents = events.map((event) => ({
-        id: `event-${event.id}`,
-        type: 'events',
-        title: event.title,
-        subtitle: event.description || 'Public event.',
-        meta: `${event.location || 'Location not specified'}${event.city ? ` • ${event.city}` : ''}`,
-        verified: true,
-        cta: 'View Event',
-        href: '/search',
-        accent: COLORS.blue,
-        openDate: event.startDate || null,
-        closeDate: event.endDate || null,
-        logo: event.imageUrl,
-      }))
-
-      setDirectory({ schools, ngos, requirements, jobs, products, events: publicEvents, stories })
-      setLoading(false)
+      try {
+        // Fetch the last 50 recent items from the public feed
+        const recentData = await fetchPublic('/public/recent')
+        
+        // Organize data by type
+        const organized = {
+          products: [],
+          schools: [],
+          ngos: [],
+          jobs: [],
+          requirements: [],
+          events: [],
+          stories: []
+        }
+        
+        if (Array.isArray(recentData)) {
+          recentData.forEach((item) => {
+            if (item.type === 'events') {
+              organized.events.push(item)
+            } else if (item.type === 'jobs') {
+              organized.jobs.push(item)
+            } else if (item.type === 'requirements') {
+              organized.requirements.push(item)
+            } else if (item.type === 'products') {
+              organized.products.push(item)
+            } else if (item.type === 'stories') {
+              organized.stories.push(item)
+            }
+          })
+        }
+        
+        setDirectory(organized)
+      } catch (err) {
+        console.error('Failed to load recent data:', err)
+        setDirectory({ products: [], schools: [], ngos: [], jobs: [], requirements: [], events: [], stories: [] })
+      } finally {
+        setLoading(false)
+      }
     }
 
     load()

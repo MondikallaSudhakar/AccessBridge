@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/ngos/**").permitAll()
                         .requestMatchers("/api/startups/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/donations/**").permitAll()
                         .requestMatchers("/api/messages/stream").permitAll()
                         .requestMatchers("/api/messages/**").authenticated()

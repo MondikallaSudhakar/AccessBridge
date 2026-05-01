@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (ExpiredJwtException e) {
-                logger.debug("JWT expired: {}", e.getMessage());
+                logger.debug("JWT expired", e);
             } catch (Exception e) {
                 logger.error("JWT Token extraction failed: " + e.getMessage());
             }
