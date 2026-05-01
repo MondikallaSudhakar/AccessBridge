@@ -23,11 +23,16 @@ import com.community.community.repository.NeedRepository;
 import com.community.community.repository.JobApplicationRepository;
 import com.community.community.repository.EventRepository;
 import com.community.community.repository.EventApplicationRepository;
+import com.community.community.repository.UserRepository;
+import com.community.community.model.Role;
+import com.community.community.model.User;
 import com.community.community.service.NGOService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -55,6 +60,7 @@ public class NGOController {
     private final JobApplicationRepository jobApplicationRepository;
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
+    private final UserRepository userRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -125,8 +131,11 @@ public class NGOController {
     // ── NGO Support Requests (user help requests) ──────────────────────────
 
     @GetMapping("/{id}/support-requests")
-    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NGOSupportRequest>> getSupportRequests(@PathVariable Long id) {
+        if (!canAccessNgo(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(ngoSupportRequestRepository.findByNgoIdOrderByCreatedAtDesc(id));
     }
 
@@ -179,8 +188,11 @@ public class NGOController {
     // ── Volunteer Profiles Endpoints ───────────────────────────────────────
 
     @GetMapping("/{id}/volunteers")
-    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NGOVolunteerProfile>> getVolunteerProfiles(@PathVariable Long id) {
+        if (!canAccessNgo(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(ngoVolunteerProfileRepository.findByNgoIdOrderByCreatedAtDesc(id));
     }
 
@@ -583,6 +595,9 @@ public class NGOController {
 
     @GetMapping("/{id}/events")
     public ResponseEntity<List<Event>> getNGOEvents(@PathVariable Long id) {
+        if (!canAccessNgo(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         Optional<NGO> ngo = ngoService.getNGOById(id) != null ? Optional.of(ngoService.getNGOById(id)) : Optional.empty();
         if (ngo.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -725,5 +740,28 @@ public class NGOController {
         }
 
         return ResponseEntity.ok(saved);
+    }
+
+    private boolean canAccessNgo(Long ngoId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        User currentUser = userRepository.findByEmail(authentication.getName()).orElse(null);
+        if (currentUser == null) {
+            return false;
+        }
+
+        if (currentUser.getRole() == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (currentUser.getRole() != Role.NGO_ADMIN) {
+            return false;
+        }
+
+        NGO ngo = ngoService.getNGOById(ngoId);
+        return ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.getEmail());
     }
 }

@@ -91,6 +91,10 @@ public class EventController {
 
     @GetMapping("/ngo/{ngoId}")
     public ResponseEntity<List<Event>> getNgoEvents(@PathVariable Long ngoId) {
+        if (!canAccessNgo(ngoId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Optional<NGO> ngo = ngoRepository.findById(ngoId);
         if (ngo.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -100,6 +104,30 @@ public class EventController {
                 .sorted(Comparator.comparing(Event::getEventDate).reversed())
                 .toList();
         return ResponseEntity.ok(events);
+    }
+
+    private boolean canAccessNgo(Long ngoId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(authentication.getName());
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        if (currentUser.get().getRole() == com.community.community.model.Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (currentUser.get().getRole() != com.community.community.model.Role.NGO_ADMIN) {
+            return false;
+        }
+
+        return ngoRepository.findById(ngoId)
+                .map(ngo -> ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
     }
 
     // ── NGO Event Management Endpoints ────────────────────────────────────

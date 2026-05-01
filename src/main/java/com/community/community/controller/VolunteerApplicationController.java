@@ -1,15 +1,23 @@
 package com.community.community.controller;
 
 import com.community.community.model.VolunteerApplication;
+import com.community.community.model.NGO;
+import com.community.community.model.Role;
+import com.community.community.model.User;
+import com.community.community.repository.NGORepository;
+import com.community.community.repository.UserRepository;
 import com.community.community.repository.VolunteerApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/volunteer-applications")
@@ -17,6 +25,8 @@ import java.util.Map;
 public class VolunteerApplicationController {
 
     private final VolunteerApplicationRepository volunteerApplicationRepository;
+    private final NGORepository ngoRepository;
+    private final UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<?> submitApplication(@RequestBody Map<String, Object> payload) {
@@ -68,8 +78,11 @@ public class VolunteerApplicationController {
     }
 
     @GetMapping("/ngo/{ngoId}")
-    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getApplicationsByNgo(@PathVariable Long ngoId) {
+        if (!canAccessNgo(ngoId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return ResponseEntity.ok(volunteerApplicationRepository.findByNgoIdOrderByCreatedAtDesc(ngoId));
     }
 
@@ -104,5 +117,29 @@ public class VolunteerApplicationController {
         } catch (NumberFormatException ex) {
             return null;
         }
+    }
+
+    private boolean canAccessNgo(Long ngoId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(authentication.getName());
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        if (currentUser.get().getRole() == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (currentUser.get().getRole() != Role.NGO_ADMIN) {
+            return false;
+        }
+
+        return ngoRepository.findById(ngoId)
+                .map(ngo -> ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
     }
 }

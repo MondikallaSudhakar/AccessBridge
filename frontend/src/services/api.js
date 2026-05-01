@@ -1,8 +1,30 @@
 const BASE_URL = 'http://localhost:8081/api';
 
+const isTokenExpired = (token) => {
+    if (!token) return true;
+
+    try {
+        const [, payload] = token.split('.');
+        if (!payload) return true;
+
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const json = atob(normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '='));
+        const decoded = JSON.parse(json);
+        return !decoded.exp || Date.now() >= decoded.exp * 1000;
+    } catch {
+        return true;
+    }
+};
+
 const api = {
     async request(endpoint, options = {}) {
         const token = localStorage.getItem('token');
+        if (token && isTokenExpired(token)) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            throw new Error('Session expired. Please sign in again.')
+        }
+
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -25,6 +47,10 @@ const api = {
 
             if (!response.ok) {
                 const errorMessage = data?.error || data?.message || `Error ${response.status}: ${response.statusText}`;
+                if (response.status === 401 && token) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                }
                 throw new Error(errorMessage);
             }
 

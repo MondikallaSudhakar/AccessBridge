@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
 @RequiredArgsConstructor
@@ -38,6 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authorizationHeader.substring(7); // Remove "Bearer " prefix
             try {
                 username = jwtUtil.extractUsername(jwt);
+            } catch (ExpiredJwtException e) {
+                logger.debug("JWT expired: {}", e.getMessage());
             } catch (Exception e) {
                 logger.error("JWT Token extraction failed: " + e.getMessage());
             }

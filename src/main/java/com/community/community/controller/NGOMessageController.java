@@ -2,6 +2,11 @@ package com.community.community.controller;
 
 import com.community.community.dto.NGOMessageRequest;
 import com.community.community.dto.NGOMessageResponse;
+import com.community.community.model.NGO;
+import com.community.community.model.Role;
+import com.community.community.model.User;
+import com.community.community.repository.NGORepository;
+import com.community.community.repository.UserRepository;
 import com.community.community.service.NGOMessageRealtimeService;
 import com.community.community.service.NGOMessageService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.security.Principal;
 import java.util.Map;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -23,6 +29,8 @@ public class NGOMessageController {
 
     private final NGOMessageService ngoMessageService;
     private final NGOMessageRealtimeService ngoMessageRealtimeService;
+    private final NGORepository ngoRepository;
+    private final UserRepository userRepository;
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@RequestParam String token) {
@@ -59,6 +67,10 @@ public class NGOMessageController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        if (!canAccessNgo(ngoId, principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             return ResponseEntity.ok(ngoMessageService.getMessagesForNGO(ngoId, principal.getName()));
         } catch (RuntimeException ex) {
@@ -73,6 +85,10 @@ public class NGOMessageController {
             Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (!canAccessNgo(ngoId, principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         try {
@@ -98,5 +114,24 @@ public class NGOMessageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", message));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", message));
+    }
+
+    private boolean canAccessNgo(Long ngoId, String email) {
+        Optional<User> currentUser = userRepository.findByEmail(email);
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        if (currentUser.get().getRole() == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (currentUser.get().getRole() != Role.NGO_ADMIN) {
+            return false;
+        }
+
+        return ngoRepository.findById(ngoId)
+                .map(ngo -> ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
     }
 }

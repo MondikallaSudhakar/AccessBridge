@@ -1,16 +1,26 @@
 package com.community.community.controller;
 
 import com.community.community.dto.OrderSummaryDto;
+import com.community.community.model.NGO;
 import com.community.community.model.Order;
 import com.community.community.model.OrderItem;
+import com.community.community.model.Startup;
+import com.community.community.model.Role;
+import com.community.community.model.User;
+import com.community.community.repository.NGORepository;
+import com.community.community.repository.StartupRepository;
+import com.community.community.repository.UserRepository;
 import com.community.community.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 
 @RestController
@@ -19,6 +29,9 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final NGORepository ngoRepository;
+    private final StartupRepository startupRepository;
+    private final UserRepository userRepository;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
@@ -49,15 +62,23 @@ public class OrderController {
     }
 
     @GetMapping("/ngo/{ngoId}/orders")
-    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<OrderSummaryDto>> getOrdersForNGO(@PathVariable Long ngoId) {
+        if (!canAccessNgoOrders(ngoId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         List<OrderSummaryDto> orders = orderService.getOrdersForNGO(ngoId);
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/startup/{startupId}/orders")
-    @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<OrderSummaryDto>> getOrdersForStartup(@PathVariable Long startupId) {
+        if (!canAccessStartupOrders(startupId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         List<OrderSummaryDto> orders = orderService.getOrdersForStartup(startupId);
         return ResponseEntity.ok(orders);
     }
@@ -75,5 +96,55 @@ public class OrderController {
     public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean canAccessNgoOrders(Long ngoId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(authentication.getName());
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        Role role = currentUser.get().getRole();
+        if (role == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (role != Role.NGO_ADMIN) {
+            return false;
+        }
+
+        return ngoRepository.findById(ngoId)
+                .map(ngo -> ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
+    }
+
+    private boolean canAccessStartupOrders(Long startupId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(authentication.getName());
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        Role role = currentUser.get().getRole();
+        if (role == Role.SUPER_ADMIN) {
+            return true;
+        }
+
+        if (role != Role.STARTUP_ADMIN) {
+            return false;
+        }
+
+        return startupRepository.findById(startupId)
+                .map(startup -> startup.getEmail() != null && startup.getEmail().equalsIgnoreCase(currentUser.get().getEmail()))
+                .orElse(false);
     }
 }

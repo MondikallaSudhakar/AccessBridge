@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.server.ResponseStatusException;
+import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -38,9 +39,14 @@ public class NGOMessageRealtimeService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing token");
         }
 
-        String email = jwtUtil.extractUsername(token);
-        if (email == null || !jwtUtil.validateToken(token, email)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        final String email;
+        try {
+            email = jwtUtil.extractUsername(token);
+            if (email == null || !jwtUtil.validateToken(token, email)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+            }
+        } catch (ExpiredJwtException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token expired");
         }
 
         ClientEmitter clientEmitter = new ClientEmitter(new SseEmitter(SSE_TIMEOUT_MILLIS));
