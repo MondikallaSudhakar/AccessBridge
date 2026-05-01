@@ -120,81 +120,88 @@ export default function StartupOrders() {
           <p className="text-gray-500">Orders will appear here once customers buy your products.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {orders.map((order) => (
             <div
               key={order.orderId ?? order.id}
               onClick={() => setSelectedOrder(selectedOrder?.orderId === (order.orderId ?? order.id) ? null : order)}
-              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId ?? order.id ?? '—'}</p>
-                  <p className="mt-1 text-sm font-bold text-gray-900">{order.buyerName || 'Community User'}</p>
-                  <p className="text-xs text-gray-500">{order.buyerEmail || 'No email provided'}</p>
-                </div>
-                <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusColor(order.status || 'PENDING')}`}>{order.status || 'PENDING'}</span>
-              </div>
-
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Order total</span>
-                  <span className="font-bold text-gray-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                  <span>Your share</span>
-                  <span className="font-bold text-orange-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                  <span>Placed on</span>
-                  <span className="font-medium text-gray-700">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</span>
-                </div>
-                {order.buyerAddress && (
-                  <div className="mt-3 border-t border-gray-100 pt-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Delivery Address</p>
-                    <p className="text-xs text-gray-700 leading-relaxed">{order.buyerAddress}</p>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-50 text-xl">📦</div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId ?? order.id ?? '—'}</p>
+                    <h3 className="text-base font-bold text-gray-900">{order.buyerName || 'Community User'}</h3>
+                    <p className="text-xs text-gray-500">{order.buyerEmail || 'No email provided'}</p>
                   </div>
-                )}
-              </div>
-
-                <div className="mt-4 rounded-lg bg-emerald-50 p-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Items</p>
-                <div className="mt-2 space-y-2">
-                  {(order.items || []).length > 0 ? (
-                    (order.items || []).map((item) => (
-                      <div key={item.id ?? `${item.productId}-${item.productName}`} className="rounded-md border border-emerald-100 bg-white/80 px-3 py-2 text-sm text-gray-700">
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="font-semibold text-gray-900">{item.productName || item.name || 'Item'}</span>
-                          <span className="text-xs font-bold text-emerald-700">x{item.quantity ?? 0}</span>
-                        </div>
-                        <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                          <span>{item.source || 'Source'}</span>
-                          <span>₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-600">No item details were returned for this order.</p>
-                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4 md:gap-8">
+                  <div className="text-left md:text-right">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Placed On</p>
+                    <p className="text-sm font-medium text-gray-700">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</p>
+                  </div>
+                  <div className="text-left md:text-right">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Your Share</p>
+                    <p className="text-sm font-bold text-orange-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div className="text-left md:text-right">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Total Amount</p>
+                    <p className="text-base font-black text-gray-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusColor(order.status || 'PENDING')}`}>{order.status || 'PENDING'}</span>
                 </div>
               </div>
 
               {selectedOrder?.orderId === (order.orderId ?? order.id) && (
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">Update Status</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['CONFIRMED', 'SHIPPED', 'DELIVERED'].map((status) => (
-                      <button
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleStatusUpdate(order.orderId ?? order.id, status)
-                        }}
-                        className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200"
-                      >
-                        {status}
-                      </button>
-                    ))}
+                <div className="mt-6 border-t border-gray-100 pt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Order Items</h4>
+                      <div className="space-y-2">
+                        {(order.items || []).length > 0 ? (
+                          (order.items || []).map((item) => (
+                            <div key={item.id ?? `${item.productId}-${item.productName}`} className="flex items-center justify-between rounded-lg border border-emerald-50 bg-emerald-50/30 px-4 py-3">
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">{item.productName || item.name || 'Item'}</p>
+                                <p className="text-[11px] text-emerald-700 font-medium">Qty: {item.quantity ?? 0}</p>
+                              </div>
+                              <p className="text-sm font-bold text-gray-900">₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-600">No item details were returned for this order.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      {order.buyerAddress && (
+                        <div className="mb-6">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Delivery Details</h4>
+                          <div className="rounded-lg bg-slate-50 p-4">
+                            <p className="text-sm text-gray-700 leading-relaxed">{order.buyerAddress}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Update Order Status</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {['CONFIRMED', 'SHIPPED', 'DELIVERED'].map((status) => (
+                          <button
+                            key={status}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleStatusUpdate(order.orderId ?? order.id, status)
+                            }}
+                            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition-all hover:border-emerald-500 hover:text-emerald-600"
+                          >
+                            {status}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

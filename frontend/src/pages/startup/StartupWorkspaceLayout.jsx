@@ -1,8 +1,8 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
+const TEAL = '#0d9488'
 const GREEN = '#5BCB2B'
-const BLUE = '#1A8FD1'
 const NAVY = '#0f172a'
 
 const ICONS = {
@@ -30,7 +30,7 @@ function SidebarLink({ to, label, icon }) {
       to={to}
       end={to === '/startup/profile'}
       className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all ${isActive ? 'text-white shadow-sm' : 'text-slate-700'}`}
-      style={({ isActive }) => ({ backgroundColor: isActive ? GREEN : 'transparent', fontWeight: isActive ? 700 : 500 })}
+      style={({ isActive }) => ({ backgroundColor: isActive ? TEAL : 'transparent', fontWeight: isActive ? 700 : 500 })}
     >
       {({ isActive }) => (
         <>
@@ -57,15 +57,15 @@ export default function StartupWorkspaceLayout() {
         <div className="border-b border-slate-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
             <div className="flex items-center">
-              <div style={{ width: 14, height: 24, backgroundColor: BLUE, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
+              <div style={{ width: 14, height: 24, backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
               <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: GREEN, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
             </div>
             <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>Inclusive Connect</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${GREEN}50`, backgroundColor: `${GREEN}12` }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GREEN }} />
-            <span className="text-xs font-bold" style={{ color: GREEN }}>Startup Workspace</span>
+          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${TEAL}50`, backgroundColor: `${TEAL}12` }}>
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: TEAL }} />
+            <span className="text-xs font-bold" style={{ color: TEAL }}>Startup Workspace</span>
           </div>
 
           <p className="mt-3 truncate text-xs text-slate-500">{user?.email || user?.name || 'Startup Admin'}</p>

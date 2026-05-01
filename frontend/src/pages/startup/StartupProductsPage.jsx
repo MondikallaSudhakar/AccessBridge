@@ -207,25 +207,27 @@ export default function StartupProductsPage() {
               No products added yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="flex flex-col gap-4">
               {products.map((product) => (
-                <div key={product.id} className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                  <div className="flex h-32 items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50">
+                <div key={product.id} className="flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+                  <div className="flex h-40 w-full sm:h-auto sm:w-48 shrink-0 items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50">
                     {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <span className="text-4xl text-slate-300">📦</span>}
                   </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="line-clamp-1 font-semibold text-slate-900">{product.name}</h3>
-                      <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase text-orange-700">{product.category}</span>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase text-orange-700">{product.category}</span>
+                        <h3 className="mt-1 text-lg font-bold text-slate-900">{product.name}</h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-black text-slate-900">₹{parseFloat(product.price).toLocaleString()}</p>
+                        <p className="text-[11px] font-medium text-slate-400">In Stock: {product.stockQuantity}</p>
+                      </div>
                     </div>
-                    <p className="mt-2 flex-1 text-xs text-slate-500 line-clamp-2">{product.description}</p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-lg font-black text-slate-900">₹{parseFloat(product.price).toLocaleString()}</span>
-                      <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Stock: {product.stockQuantity}</span>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <button onClick={() => openEditProductForm(product)} className="flex-1 rounded-lg border border-indigo-200 px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50">Edit</button>
-                      <button onClick={() => handleDeleteProduct(product.id)} className="flex-1 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50">Delete</button>
+                    <p className="mt-2 flex-1 text-sm text-slate-500 leading-relaxed line-clamp-2 sm:line-clamp-none">{product.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                      <button onClick={() => openEditProductForm(product)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Edit Product</button>
+                      <button onClick={() => handleDeleteProduct(product.id)} className="rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors">Delete</button>
                     </div>
                   </div>
                 </div>
