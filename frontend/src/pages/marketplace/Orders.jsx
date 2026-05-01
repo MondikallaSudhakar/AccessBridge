@@ -58,30 +58,29 @@ export default function Orders() {
 
   return (
     <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <section className="relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 p-8 text-white shadow-xl">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.16),_transparent_30%)]" />
-            <div className="relative max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/85">
-                <span className="h-2 w-2 rounded-full bg-white/90" />
-                Order Center
-              </div>
-              <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">My Orders</h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
-                Review your purchases, track status updates, and check every item in one place.
-              </p>
-            </div>
-          </section>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-teal-600">
+            <span className="h-2 w-2 rounded-full bg-teal-500" />
+            Order Center
+          </div>
+          <div className="mt-4 max-w-3xl">
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">My Orders</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+              Review your purchases, track status updates, and check every item in one place.
+            </p>
+          </div>
+        </section>
 
         {loading ? (
           <div className="mt-8 grid grid-cols-1 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-2xl bg-white p-6 shadow-sm"></div>
+              <div key={i} className="h-24 animate-pulse rounded-2xl bg-white p-6 shadow-sm border border-slate-100"></div>
             ))}
           </div>
         ) : orders.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-16 text-center shadow-sm">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 text-teal-600">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -91,7 +90,7 @@ export default function Orders() {
             <button
               onClick={() => navigate('/marketplace')}
               className="inline-block rounded-lg px-8 py-3 font-bold text-white transition-colors"
-              style={{ backgroundColor: BRAND.teal }}
+              style={{ backgroundColor: '#0d9488' }}
             >
               Shop Now
             </button>
@@ -102,11 +101,7 @@ export default function Orders() {
             <div className="lg:col-span-2">
               <div className="space-y-4">
                 {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    onClick={() => handleViewOrder(order)}
-                    className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                  >
+                  <div key={order.id} onClick={() => handleViewOrder(order)} className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <p className="mb-1 text-xs font-semibold text-slate-400">ORDER #{order.id}</p>
@@ -141,7 +136,7 @@ export default function Orders() {
             {/* Order Details */}
             <div className="lg:col-span-1">
               {selectedOrder ? (
-                <div className="sticky top-24 rounded-2xl bg-white p-6 shadow-sm">
+                <div className="sticky top-24 rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
                   <h2 className="mb-6 text-lg font-bold text-slate-900">Order Details</h2>
 
                   <div className="mb-6 border-b border-slate-200 pb-6">
@@ -192,7 +187,7 @@ export default function Orders() {
                   </p>
                 </div>
               ) : (
-                <div className="sticky top-24 rounded-2xl bg-slate-100 p-6 text-center">
+                <div className="sticky top-24 rounded-2xl bg-white p-6 text-center border border-slate-200 shadow-sm">
                   <p className="text-sm font-semibold text-slate-600">Select an order to view details</p>
                 </div>
               )}

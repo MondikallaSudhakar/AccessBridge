@@ -98,9 +98,9 @@ export default function Cart() {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center p-6" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <div className="bg-white rounded-[24px] shadow-[0_20px_60px_rgba(15,23,42,.12)] p-10 max-w-md w-full text-center border border-slate-100">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: 'linear-gradient(135deg, #e2f8ea, #c8f1d7)' }}>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="bg-white rounded-[24px] shadow-sm p-10 max-w-md w-full text-center border border-slate-200">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-emerald-50">
             <svg className="w-8 h-8" style={{ color: '#16a34a' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -110,7 +110,7 @@ export default function Cart() {
           <button
             onClick={() => navigate('/orders')}
             className="w-full text-white font-bold py-3 rounded-xl transition-all"
-            style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}
+            style={{ backgroundColor: '#0d9488' }}
           >
             View Orders
           </button>
@@ -120,14 +120,12 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb]" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="container mx-auto px-4 sm:px-6 py-10 max-w-7xl">
-        <div className="mb-8 rounded-[28px] bg-gradient-to-r from-[#0f766e] to-[#115e59] text-white p-8 shadow-[0_18px_40px_rgba(15,118,110,.22)] relative overflow-hidden">
-          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10" />
-          <div className="absolute right-20 bottom-0 w-24 h-24 rounded-full bg-white/5" />
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-white/70 mb-2">Checkout</p>
-          <h1 className="text-3xl sm:text-4xl font-black mb-3">Shopping Cart</h1>
-          <p className="text-white/75 max-w-2xl">Review your items, confirm your saved address, and place the order without leaving the flow.</p>
+        <div className="mb-8 rounded-[28px] bg-white p-8 shadow-sm border border-slate-200">
+          <p className="text-xs font-bold uppercase tracking-[0.28em] text-teal-600 mb-2">Checkout</p>
+          <h1 className="text-3xl sm:text-4xl font-black mb-3 text-slate-900">Shopping Cart</h1>
+          <p className="text-slate-600 max-w-2xl">Review your items, confirm your saved address, and place the order without leaving the flow.</p>
         </div>
 
         {error && (
@@ -137,8 +135,8 @@ export default function Cart() {
         )}
 
         {cart.length === 0 ? (
-          <div className="bg-white rounded-[24px] border border-dashed border-slate-200 p-16 text-center shadow-[0_10px_30px_rgba(15,23,42,.06)]">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #fff7ed, #ffedd5)', color: '#ea580c' }}>
+          <div className="bg-white rounded-[24px] border border-dashed border-slate-200 p-16 text-center shadow-sm">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-amber-50" style={{ color: '#ea580c' }}>
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
@@ -148,7 +146,7 @@ export default function Cart() {
             <button
               onClick={() => navigate('/marketplace')}
               className="inline-flex items-center justify-center text-white font-bold py-3 px-8 rounded-xl transition-all"
-              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}
+              style={{ backgroundColor: '#0d9488' }}
             >
               Continue Shopping
             </button>
@@ -157,7 +155,7 @@ export default function Cart() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-[24px] shadow-[0_10px_30px_rgba(15,23,42,.06)] overflow-hidden border border-slate-100">
+              <div className="bg-white rounded-[24px] shadow-sm overflow-hidden border border-slate-200">
                 <div className="border-b border-slate-100 p-6">
                   <h2 className="text-lg font-black text-slate-900">{getTotalItems()} Item(s) in Cart</h2>
                 </div>
@@ -231,7 +229,7 @@ export default function Cart() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-[24px] shadow-[0_10px_30px_rgba(15,23,42,.06)] p-6 sticky top-24 border border-slate-100">
+              <div className="bg-white rounded-[24px] shadow-sm p-6 sticky top-24 border border-slate-200">
                 <h2 className="text-lg font-black text-slate-900 mb-6">Order Summary</h2>
 
                 <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-4">
@@ -243,7 +241,7 @@ export default function Cart() {
                     <button
                       onClick={() => navigate('/profile')}
                       className="shrink-0 text-sm font-bold rounded-xl px-3 py-2 transition-all"
-                      style={{ color: '#0f766e', background: '#ecfdf5' }}
+                      style={{ color: '#0d9488', background: '#f0fdfa' }}
                     >
                       Edit
                     </button>
@@ -283,7 +281,7 @@ export default function Cart() {
                       ? 'bg-slate-300 cursor-not-allowed'
                       : 'shadow-md hover:shadow-lg'
                   }`}
-                  style={!loading && cart.length > 0 ? { background: 'linear-gradient(135deg, #0f766e, #14b8a6)' } : undefined}
+                  style={!loading && cart.length > 0 ? { backgroundColor: '#0d9488' } : undefined}
                 >
                   {loading ? 'Processing...' : 'Place Order'}
                 </button>
