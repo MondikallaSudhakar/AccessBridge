@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -2135,128 +2135,136 @@ export default function NgoProfile() {
                 {orders.length===0 ? (
                   <EmptyPane iconName="box" title="No orders yet" body="Orders placed for your products will appear here."/>
                 ) : (
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:16}}>
-                    {orders.map((order) => {
-                      const orderId = order.orderId ?? order.id
-                      const isSelected = selectedOrder?.orderId === orderId
-                      const orderTotal = order.orderTotalPrice ?? order.totalPrice ?? 0
-                      const shareTotal = order.sourceTotalPrice ?? order.sourceTotal ?? 0
-                      const statusColor = () => {
-                        const colors = {
-                          PENDING: '#fef9c3',
-                          CONFIRMED: '#dbeafe',
-                          SHIPPED: '#e9d5ff',
-                          DELIVERED: '#d1fae5',
-                          CANCELLED: '#fee2e2',
-                        }
-                        const textColors = {
-                          PENDING: '#854d0e',
-                          CONFIRMED: '#1d4ed8',
-                          SHIPPED: '#7c3aed',
-                          DELIVERED: '#065f46',
-                          CANCELLED: '#dc2626',
-                        }
-                        const status = order.status || 'PENDING'
-                        return {background:colors[status]||'#f3f4f6',color:textColors[status]||'#6b7280'}
-                      }
-                      const sc = statusColor()
-                      
-                      return (
-                        <div key={orderId}
-                          onClick={() => setSelectedOrder(isSelected ? null : order)}
-                          style={{borderRadius:radius.lg,border:'1.5px solid #e9ecef',background:'#fafbfc',padding:'16px 18px',display:'flex',flexDirection:'column',gap:12,cursor:'pointer',transition:'all .18s'}}
-                          onMouseEnter={e=>{e.currentTarget.style.borderColor='#cbd5e1';e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow=shadow.md}}
-                          onMouseLeave={e=>{e.currentTarget.style.borderColor='#e9ecef';e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow='none'}}
-                        >
-                          {/* Header */}
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
-                            <div>
-                              <p style={{margin:'0 0 4px',fontSize:10,fontWeight:700,color:'#94a3b8',letterSpacing:'0.05em',textTransform:'uppercase'}}>Order #{orderId || '—'}</p>
-                              <p style={{margin:'0 0 2px',fontSize:14,fontWeight:700,color:NAVY}}>{order.buyerName || 'Community User'}</p>
-                              <p style={{margin:0,fontSize:12,color:'#64748b'}}>{order.buyerEmail || 'No email'}</p>
-                            </div>
-                            <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:sc.background,color:sc.color,whiteSpace:'nowrap'}}>
-                              {order.status || 'PENDING'}
-                            </span>
-                          </div>
+                  <div style={{overflowX:'auto',borderRadius:radius.lg,border:'1px solid #e9ecef',boxShadow:shadow.sm}}>
+                    <table style={{width:'100%',fontSize:13,borderCollapse:'collapse'}}>
+                      <thead style={{borderBottom:'1px solid #f1f5f9',background:'#f8fafc'}}>
+                        <tr>
+                          <th style={{padding:'12px 16px',textAlign:'left',fontWeight:700,color:NAVY}}>Order ID</th>
+                          <th style={{padding:'12px 16px',textAlign:'left',fontWeight:700,color:NAVY}}>Customer</th>
+                          <th style={{padding:'12px 16px',textAlign:'left',fontWeight:700,color:NAVY}}>Status</th>
+                          <th style={{padding:'12px 16px',textAlign:'right',fontWeight:700,color:NAVY}}>Order Total</th>
+                          <th style={{padding:'12px 16px',textAlign:'right',fontWeight:700,color:NAVY}}>Your Share</th>
+                          <th style={{padding:'12px 16px',textAlign:'left',fontWeight:700,color:NAVY}}>Date</th>
+                          <th style={{padding:'12px 16px',textAlign:'center',fontWeight:700,color:NAVY}}>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody style={{borderTop:'1px solid #f1f5f9',divideY:'1px solid #f1f5f9'}}>
+                        {orders.map((order) => {
+                          const orderId = order.orderId ?? order.id
+                          const isSelected = selectedOrder?.orderId === orderId
+                          const orderTotal = order.orderTotalPrice ?? order.totalPrice ?? 0
+                          const shareTotal = order.sourceTotalPrice ?? order.sourceTotal ?? 0
+                          const statusColor = () => {
+                            const colors = {
+                              PENDING: '#fef9c3',
+                              CONFIRMED: '#dbeafe',
+                              SHIPPED: '#e9d5ff',
+                              DELIVERED: '#d1fae5',
+                              CANCELLED: '#fee2e2',
+                            }
+                            const textColors = {
+                              PENDING: '#854d0e',
+                              CONFIRMED: '#1d4ed8',
+                              SHIPPED: '#7c3aed',
+                              DELIVERED: '#065f46',
+                              CANCELLED: '#dc2626',
+                            }
+                            const status = order.status || 'PENDING'
+                            return {background:colors[status]||'#f3f4f6',color:textColors[status]||'#6b7280'}
+                          }
+                          const sc = statusColor()
+                          
+                          return (
+                            <React.Fragment key={orderId}>
+                              <tr style={{borderBottom:'1px solid #f1f5f9',cursor:'pointer',transition:'all .18s'}}
+                                onClick={() => setSelectedOrder(isSelected ? null : order)}
+                                onMouseEnter={e=>{e.currentTarget.style.background='#f8fafc'}}
+                                onMouseLeave={e=>{e.currentTarget.style.background='#fff'}}
+                              >
+                                <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:12,fontWeight:600,color:NAVY}}>#{orderId || '—'}</td>
+                                <td style={{padding:'14px 16px'}}>
+                                  <div style={{fontWeight:600,color:NAVY}}>{order.buyerName || 'Community User'}</div>
+                                  <div style={{fontSize:11,color:'#64748b',marginTop:2}}>{order.buyerEmail || 'No email'}</div>
+                                </td>
+                                <td style={{padding:'14px 16px'}}>
+                                  <span style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:sc.background,color:sc.color,whiteSpace:'nowrap'}}>
+                                    {order.status || 'PENDING'}
+                                  </span>
+                                </td>
+                                <td style={{padding:'14px 16px',textAlign:'right',fontWeight:600,color:NAVY}}>₹{Number(orderTotal).toLocaleString('en-IN')}</td>
+                                <td style={{padding:'14px 16px',textAlign:'right',fontWeight:600,color:G}}>₹{Number(shareTotal).toLocaleString('en-IN')}</td>
+                                <td style={{padding:'14px 16px',fontSize:12,color:'#64748b'}}>{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+                                <td style={{padding:'14px 16px',textAlign:'center'}}>
+                                  <button
+                                    onClick={e=>{e.stopPropagation();setSelectedOrder(isSelected ? null : order)}}
+                                    style={{color:G,fontWeight:700,fontSize:11,background:'none',border:'none',cursor:'pointer',transition:'color .15s'}}
+                                    onMouseEnter={e=>{e.currentTarget.style.color=B}}
+                                    onMouseLeave={e=>{e.currentTarget.style.color=G}}
+                                  >
+                                    {isSelected ? 'Hide' : 'View'}
+                                  </button>
+                                </td>
+                              </tr>
+                              {isSelected && (
+                                <tr style={{borderBottom:'1px solid #f1f5f9',background:`${G}04`}}>
+                                  <td colSpan="7" style={{padding:'20px 16px'}}>
+                                    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+                                      {/* Delivery Address */}
+                                      {order.buyerAddress && (
+                                        <div>
+                                          <p style={{margin:'0 0 6px',fontSize:10,fontWeight:700,color:'#64748b',letterSpacing:'0.05em',textTransform:'uppercase'}}>Delivery Address</p>
+                                          <p style={{margin:0,fontSize:12,color:NAVY,lineHeight:1.5}}>{order.buyerAddress}</p>
+                                        </div>
+                                      )}
 
-                          {/* Divider */}
-                          <Divider/>
+                                      {/* Items */}
+                                      <div>
+                                        <p style={{margin:'0 0 8px',fontSize:10,fontWeight:700,color:G,letterSpacing:'0.05em',textTransform:'uppercase'}}>Items ({(order.items||[]).length})</p>
+                                        {(order.items||[]).length===0 ? (
+                                          <p style={{margin:0,fontSize:12,color:'#64748b'}}>No item details</p>
+                                        ) : (
+                                          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                                            {(order.items||[]).map((item,i)=>(
+                                              <div key={i} style={{borderRadius:radius.md,background:'#fff',border:`1px solid ${G}25`,padding:'10px 12px',fontSize:12}}>
+                                                <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:4}}>
+                                                  <span style={{fontWeight:600,color:NAVY,flex:1}}>{item.productName || item.name || 'Item'}</span>
+                                                  <span style={{fontWeight:700,color:G}}>x{item.quantity || 0}</span>
+                                                </div>
+                                                <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'#64748b'}}>
+                                                  <span>{item.source || 'N/A'}</span>
+                                                  <span>₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
 
-                          {/* Totals */}
-                          <div style={{display:'flex',flexDirection:'column',gap:6,fontSize:12}}>
-                            <div style={{display:'flex',justifyContent:'space-between',color:'#64748b'}}>
-                              <span>Order Total</span>
-                              <span style={{fontWeight:700,color:NAVY}}>₹{Number(orderTotal).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div style={{display:'flex',justifyContent:'space-between',color:'#64748b'}}>
-                              <span>Your Share</span>
-                              <span style={{fontWeight:700,color:G}}>₹{Number(shareTotal).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div style={{display:'flex',justifyContent:'space-between',color:'#64748b'}}>
-                              <span>Order Date</span>
-                              <span style={{fontWeight:600,color:NAVY}}>{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</span>
-                            </div>
-                          </div>
-
-                          {/* Delivery Address */}
-                          {order.buyerAddress && (
-                            <>
-                              <Divider/>
-                              <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                                <p style={{margin:0,fontSize:10,fontWeight:700,color:'#64748b',letterSpacing:'0.05em',textTransform:'uppercase'}}>Delivery Address</p>
-                                <p style={{margin:0,fontSize:12,color:NAVY,lineHeight:1.5}}>{order.buyerAddress}</p>
-                              </div>
-                            </>
-                          )}
-
-                          {/* Items */}
-                          <div style={{borderRadius:radius.md,background:`${G}10`,border:`1px solid ${G}25`,padding:12}}>
-                            <p style={{margin:'0 0 8px',fontSize:10,fontWeight:700,color:G,letterSpacing:'0.05em',textTransform:'uppercase'}}>Items ({(order.items||[]).length})</p>
-                            {(order.items||[]).length===0 ? (
-                              <p style={{margin:0,fontSize:12,color:'#64748b'}}>No item details</p>
-                            ) : (
-                              <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                                {(order.items||[]).map((item,i)=>(
-                                  <div key={i} style={{borderRadius:radius.sm,background:'#fff',border:`1px solid ${G}25`,padding:'8px 10px',fontSize:11}}>
-                                    <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:3}}>
-                                      <span style={{fontWeight:700,color:NAVY,flex:1}}>{item.productName || item.name || 'Item'}</span>
-                                      <span style={{fontWeight:700,color:G}}>x{item.quantity || 0}</span>
+                                      {/* Status update buttons */}
+                                      <div>
+                                        <p style={{margin:'0 0 8px',fontSize:10,fontWeight:700,color:'#64748b',letterSpacing:'0.05em',textTransform:'uppercase'}}>Update Status</p>
+                                        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                                          {['CONFIRMED','SHIPPED','DELIVERED'].map(status=>(
+                                            <GhostBtn
+                                              key={status}
+                                              onClick={e=>{e.stopPropagation();handleOrderStatusUpdate(orderId,status)}}
+                                              color={G}
+                                              style={{fontSize:11,padding:'6px 14px'}}
+                                            >
+                                              {status}
+                                            </GhostBtn>
+                                          ))}
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#64748b'}}>
-                                      <span>{item.source || 'N/A'}</span>
-                                      <span>₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Status update buttons (shown when selected) */}
-                          {isSelected && (
-                            <>
-                              <Divider/>
-                              <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                                <p style={{margin:0,fontSize:10,fontWeight:700,color:'#64748b',letterSpacing:'0.05em',textTransform:'uppercase'}}>Update Status</p>
-                                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                                  {['CONFIRMED','SHIPPED','DELIVERED'].map(status=>(
-                                    <GhostBtn
-                                      key={status}
-                                      onClick={e=>{e.stopPropagation();handleOrderStatusUpdate(orderId,status)}}
-                                      color={G}
-                                      style={{fontSize:11,padding:'5px 12px'}}
-                                    >
-                                      {status}
-                                    </GhostBtn>
-                                  ))}
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </Panel>

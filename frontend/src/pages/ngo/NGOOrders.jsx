@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
@@ -147,80 +147,97 @@ export default function NGOOrders() {
           <p className="text-gray-500">Orders will appear here once customers buy your products.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-100 bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left font-bold text-gray-700">Order ID</th>
+                <th className="px-6 py-3 text-left font-bold text-gray-700">Customer</th>
+                <th className="px-6 py-3 text-left font-bold text-gray-700">Status</th>
+                <th className="px-6 py-3 text-right font-bold text-gray-700">Order Total</th>
+                <th className="px-6 py-3 text-right font-bold text-gray-700">Your Share</th>
+                <th className="px-6 py-3 text-left font-bold text-gray-700">Date</th>
+                <th className="px-6 py-3 text-center font-bold text-gray-700">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
           {filteredOrders.map((order) => (
-            <div
-              key={order.orderId ?? order.id}
-              onClick={() => setSelectedOrder(selectedOrder?.orderId === (order.orderId ?? order.id) ? null : order)}
-              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId ?? order.id ?? '—'}</p>
-                  <p className="mt-1 text-sm font-bold text-gray-900">{order.buyerName || 'Community User'}</p>
-                  <p className="text-xs text-gray-500">{order.buyerEmail || 'No email provided'}</p>
-                </div>
-                <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusColor(order.status || 'PENDING')}`}>{order.status || 'PENDING'}</span>
-              </div>
-
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Order total</span>
-                  <span className="font-bold text-gray-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                  <span>Your share</span>
-                  <span className="font-bold text-emerald-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                  <span>Placed on</span>
-                  <span className="font-medium text-gray-700">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-lg bg-emerald-50 p-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Items</p>
-                <div className="mt-2 space-y-2">
-                  {(order.items || []).length > 0 ? (
-                    (order.items || []).map((item) => (
-                      <div key={item.id ?? `${item.productId}-${item.productName}`} className="rounded-md border border-emerald-100 bg-white/80 px-3 py-2 text-sm text-gray-700">
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="font-semibold text-gray-900">{item.productName || item.name || 'Item'}</span>
-                          <span className="text-xs font-bold text-emerald-700">x{item.quantity ?? 0}</span>
-                        </div>
-                        <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
-                          <span>{item.source || 'Source'}</span>
-                          <span>₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</span>
+            <React.Fragment key={order.orderId ?? order.id}>
+              <tr 
+                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => setSelectedOrder(selectedOrder?.orderId === (order.orderId ?? order.id) ? null : order)}
+              >
+                <td className="px-6 py-4 font-mono text-xs font-semibold text-gray-900">#{order.orderId ?? order.id ?? '—'}</td>
+                <td className="px-6 py-4">
+                  <div className="font-semibold text-gray-900">{order.buyerName || 'Community User'}</div>
+                  <div className="text-xs text-gray-500">{order.buyerEmail || 'No email'}</div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusColor(order.status || 'PENDING')}`}>
+                    {order.status || 'PENDING'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right font-semibold text-gray-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</td>
+                <td className="px-6 py-4 text-right font-semibold text-emerald-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+                <td className="px-6 py-4 text-center">
+                  <button
+                    onClick={(e) => {e.stopPropagation(); setSelectedOrder(selectedOrder?.orderId === (order.orderId ?? order.id) ? null : order)}}
+                    className="text-emerald-600 hover:text-emerald-700 font-bold text-xs transition-colors"
+                  >
+                    {selectedOrder?.orderId === (order.orderId ?? order.id) ? 'Hide' : 'View'}
+                  </button>
+                </td>
+              </tr>
+              {selectedOrder?.orderId === (order.orderId ?? order.id) && (
+                <tr className="bg-emerald-50 border-t border-emerald-100">
+                  <td colSpan="7" className="px-6 py-6">
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3 text-emerald-700">Items in this order</p>
+                        <div className="space-y-2">
+                          {(order.items || []).length > 0 ? (
+                            (order.items || []).map((item) => (
+                              <div key={item.id ?? `${item.productId}-${item.productName}`} className="flex items-center justify-between rounded-lg bg-white border border-emerald-100 px-4 py-3 text-sm">
+                                <div>
+                                  <div className="font-semibold text-gray-900">{item.productName || item.name || 'Item'}</div>
+                                  <div className="text-xs text-gray-500">{item.source || 'Source'} • Qty: {item.quantity ?? 0}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-bold text-gray-900">₹{Number(item.totalPrice ?? item.total_price ?? 0).toLocaleString('en-IN')}</div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-gray-600">No item details available</p>
+                          )}
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-600">No item details were returned for this order.</p>
-                  )}
-                </div>
-              </div>
-
-              {selectedOrder?.orderId === (order.orderId ?? order.id) && (
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500">Update Status</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['CONFIRMED', 'SHIPPED', 'DELIVERED'].map((status) => (
-                      <button
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleStatusUpdate(order.orderId ?? order.id, status)
-                        }}
-                        className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200"
-                      >
-                        {status}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                      <div className="border-t border-emerald-200 pt-4">
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3 text-emerald-700">Update Status</p>
+                        <div className="flex flex-wrap gap-2">
+                          {['CONFIRMED', 'SHIPPED', 'DELIVERED'].map((status) => (
+                            <button
+                              key={status}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleStatusUpdate(order.orderId ?? order.id, status)
+                              }}
+                              className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-xs font-bold transition-colors hover:bg-emerald-700"
+                            >
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
               )}
-            </div>
+            </React.Fragment>
           ))}
+            </tbody>
+          </table>
         </div>
       )}
       </div>
