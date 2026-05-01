@@ -2,6 +2,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '../../services/api'
+import SidebarNav from '../../components/common/UserNavbar'
 
 /* ── brand tokens ─────────────────────────────────────────────────────── */
 const G    = '#5BCB2B'   // brand green
@@ -83,6 +84,13 @@ const USER_NAV_ITEMS = [
   { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
   { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
   { id: 'cart', label: 'Cart', icon: 'shop', path: '/cart' },
+]
+
+const GENERAL_USER_NAV_GROUP = [
+  {
+    label: 'Navigation',
+    items: USER_NAV_ITEMS,
+  },
 ]
 
 // Fetch org by email helper
@@ -225,30 +233,6 @@ const CARDS = [
   },
 ]
 
-/* ── Sidebar nav item ─────────────────────────────────────────────────── */
-function SidebarItem({ item, active, onClick }) {
-  const [hov, setHov] = useState(false)
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 11,
-        width: '100%', padding: '9px 10px', borderRadius: 9,
-        border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 1,
-        background: active ? TEAL : hov ? '#f8fafc' : 'transparent',
-        transition: 'background .15s',
-      }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-    >
-      <Ic n={item.icon} s={17} c={active ? '#fff' : '#64748b'} sw={active ? 2 : 1.7} />
-      <span style={{ fontSize: 13.5, fontWeight: active ? 700 : 500, color: active ? '#fff' : '#374151' }}>
-        {item.label}
-      </span>
-    </button>
-  )
-}
-
 /* ── Quick-access card ────────────────────────────────────────────────── */
 function QuickCard({ card, onClick }) {
   const [hov, setHov] = useState(false)
@@ -362,6 +346,17 @@ export default function Dashboard() {
   const roleInfo = ROLE_MAP[user?.role] || { label: user?.role, icon: 'user', color: '#64748b' }
 
   const visibleCards = CARDS.filter(c => !c.role || c.role === user?.role)
+
+  const sidebarSections = user?.role === 'USER'
+    ? GENERAL_USER_NAV_GROUP
+    : NAV_GROUPS
+    .map((group) => {
+      if (group.role && group.role !== user?.role) return null
+      const visibleItems = group.items.filter((item) => !item.role || item.role === user?.role)
+      if (visibleItems.length === 0) return null
+      return { label: group.label, items: visibleItems }
+    })
+    .filter(Boolean)
 
   const handleNavClick = (item) => {
     setActiveNav(item.id)
@@ -655,106 +650,28 @@ export default function Dashboard() {
         .fade-in { animation: fadeIn .3s ease forwards; }
       `}</style>
 
-      {/* ══════════════ SIDEBAR (desktop) ══════════════ */}
-      <aside className="ds-sidebar" style={{
-        width: 250, minWidth: 250, background: '#fff',
-        borderRight: '1px solid #e9ecef',
-        flexDirection: 'column',
-        position: 'sticky', top: 0, height: '100vh',
-        overflowY: 'auto', zIndex: 50,
-      }}>
-        {/* Brand */}
-        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid #f1f5f9' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, cursor: 'pointer' }}
-            onClick={() => navigate('/')}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ width: 16, height: 28, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-              <div style={{ width: 16, height: 28, marginLeft: -6, backgroundColor: G, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
-            </div>
-            <span style={{ fontSize: 15, fontWeight: 900, color: NAVY, letterSpacing: '-0.02em' }}>
-              Inclusive Connect
-            </span>
-          </div>
-
-          {/* Role badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, background: `${user?.role === 'USER' ? G : roleInfo.color}12`, border: `1px solid ${user?.role === 'USER' ? G : roleInfo.color}30` }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: user?.role === 'USER' ? G : roleInfo.color, display: 'inline-block' }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: user?.role === 'USER' ? G : roleInfo.color }}>{user?.role === 'USER' ? 'Community Marketplace' : roleInfo.label}</span>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '14px 12px 8px' }}>
-          {user?.role === 'USER' ? (
-            <div>
-              <p style={{ margin: '0 0 4px 8px', fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.10em', textTransform: 'uppercase' }}>
-                Navigation
-              </p>
-              {USER_NAV_ITEMS.map(item => (
-                <SidebarItem
-                  key={item.id}
-                  item={item}
-                  active={activeNav === item.id}
-                  onClick={() => {
-                    setActiveNav(item.id)
-                    navigate(item.path)
-                  }}
-                />
-              ))}
-            </div>
-          ) : NAV_GROUPS.map(group => {
-            // Check if group itself requires a role
-            if (group.role && group.role !== user?.role) return null
-            const visibleItems = group.items.filter(i => !i.role || i.role === user?.role)
-            if (visibleItems.length === 0) return null
-            return (
-              <div key={group.label} style={{ marginBottom: 16 }}>
-                <p style={{ margin: '0 0 4px 8px', fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.10em', textTransform: 'uppercase' }}>
-                  {group.label}
-                </p>
-                {visibleItems.map(item => (
-                  <SidebarItem
-                    key={item.id}
-                    item={item}
-                    active={activeNav === item.id || tab === item.tabId}
-                    onClick={() => handleNavClick(item)}
-                  />
-                ))}
-              </div>
-            )
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div style={{ padding: '8px 12px 20px', borderTop: '1px solid #f1f5f9' }}>
-          <div style={{ padding: '10px 10px', borderRadius: 10, background: '#f8fafc', marginBottom: 8 }}>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: NAVY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.email}
-            </p>
-            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{roleInfo.label}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'background .15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <Ic n="logout" s={16} c="#ef4444" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#ef4444' }}>Sign Out</span>
-          </button>
-        </div>
-      </aside>
+      <SidebarNav
+        brandBadgeText={user?.role === 'USER' ? 'Community Marketplace' : roleInfo.label}
+        brandBadgeColor={user?.role === 'USER' ? G : roleInfo.color}
+        sections={sidebarSections}
+        footerLabel={user?.role === 'USER' ? 'General User' : roleInfo.label}
+        footerEmail={user?.email}
+        onBrandClick={() => navigate('/')}
+        onLogout={handleLogout}
+        isItemActive={(item) => (user?.role === 'USER' ? activeNav === item.id : activeNav === item.id || tab === item.tabId)}
+        onItemClick={(item) => handleNavClick(item)}
+      />
 
       {/* ══════════════ MAIN CONTENT ══════════════ */}
       <main className="ds-main" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
         {/* Top bar */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #e9ecef', height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,.05)', position: 'sticky', top: 0, zIndex: 40, padding: '0 24px' }} className="ds-topbar">
+        <header style={{ background: '#fff', borderBottom: '1px solid #e9ecef', height: 58, alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,.05)', position: 'sticky', top: 0, zIndex: 40, padding: '0 24px' }} className="ds-topbar lg:hidden">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Mobile menu toggle (shown via media query) */}
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
-              style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 9, border: 'none', background: '#f8fafc', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 9, border: 'none', background: '#f8fafc', cursor: 'pointer' }}
               className="mobile-menu-btn"
             >
               <Ic n={mobileMenuOpen ? 'x' : 'menu'} s={18} c="#374151" />
