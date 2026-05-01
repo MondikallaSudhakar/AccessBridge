@@ -63,11 +63,13 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/dashboard/profile" element={<UserProfile />} />
+          <Route path="/search" element={<Search />} />
         </Route>
-        <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
-        <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON', 'GUARDIAN_CAREGIVER']}><UserMessages /></RoleRoute>} />
+        <Route path="/messages" element={<RoleRoute allowedRoles={['USER', 'SPECIAL_ABLED_PERSON', 'GUARDIAN_CAREGIVER']}><GeneralUserLayout /></RoleRoute>}>
+          <Route index element={<UserMessages />} />
+        </Route>
         <Route path="/volunteer/dashboard" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><Navigate to="/volunteer" replace /></RoleRoute>} />
         <Route path="/volunteer" element={<RoleRoute allowedRoles={['VOLUNTEER', 'SUPER_ADMIN']}><VolunteerLayout /></RoleRoute>}>
           <Route index element={<VolunteerHome />} />
