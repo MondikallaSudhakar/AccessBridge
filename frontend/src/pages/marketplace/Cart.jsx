@@ -4,7 +4,6 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import authService from '../../services/authService'
 import api from '../../services/api'
-import UserNavbar from '../../components/common/UserNavbar'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -122,8 +121,6 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-[#f5f7fb]" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <UserNavbar currentPage="cart" cartCount={getTotalItems()} />
-
       <div className="container mx-auto px-4 sm:px-6 py-10 max-w-7xl">
         <div className="mb-8 rounded-[28px] bg-gradient-to-r from-[#0f766e] to-[#115e59] text-white p-8 shadow-[0_18px_40px_rgba(15,118,110,.22)] relative overflow-hidden">
           <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10" />

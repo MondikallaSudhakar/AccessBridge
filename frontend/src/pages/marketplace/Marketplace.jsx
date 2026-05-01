@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from '../../services/api'
 import { useCart } from '../../context/CartContext'
-import UserNavbar from '../../components/common/UserNavbar'
 
 const BRAND = {
   green: '#5BCB2B',
@@ -21,7 +20,7 @@ const normalizeProduct = (product) => ({
 })
 
 export default function Marketplace() {
-  const { addToCart, getTotalItems } = useCart()
+  const { addToCart } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [cartMessage, setCartMessage] = useState('')
@@ -70,8 +69,6 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <UserNavbar currentPage="marketplace" cartCount={getTotalItems()} />
-
       {cartMessage && (
         <div className="fixed right-6 top-20 z-40 rounded-xl bg-emerald-600 px-6 py-3 text-white shadow-lg">
           {cartMessage}

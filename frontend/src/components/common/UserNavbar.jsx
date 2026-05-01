@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 function Brand({ onClick }) {
   return (
@@ -11,10 +12,10 @@ function Brand({ onClick }) {
 }
 
 function NavButton({ active, children, onClick, tone = 'neutral', badge }) {
-  const baseStyles = 'relative text-sm font-bold px-4 py-2 rounded-lg transition-colors flex items-center gap-2'
+  const baseStyles = 'relative w-full text-sm font-bold px-4 py-3 rounded-xl transition-colors flex items-center gap-3 text-left'
   const toneStyles = {
-    neutral: active ? 'bg-gray-900 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900',
-    brand: active ? 'bg-orange-600 text-white' : 'bg-orange-500 hover:bg-orange-600 text-white',
+    neutral: active ? 'bg-teal-600 text-white shadow-sm' : 'bg-white hover:bg-slate-50 text-slate-700 border border-transparent',
+    brand: active ? 'bg-teal-600 text-white shadow-sm' : 'bg-white hover:bg-slate-50 text-slate-700 border border-transparent',
   }
 
   return (
@@ -31,13 +32,41 @@ function NavButton({ active, children, onClick, tone = 'neutral', badge }) {
 
 export default function UserNavbar({ currentPage = 'marketplace', cartCount = 0 }) {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
   return (
-    <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Brand onClick={() => navigate('/')} />
+    <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-white shadow-sm lg:flex">
+      <div className="border-b border-slate-100 px-5 pb-5 pt-6">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
+          <Brand />
+        </div>
 
-        <div className="flex items-center gap-3 flex-wrap justify-end">
+        <div className="mt-5 inline-flex items-center gap-2 rounded-full border px-3 py-1.5" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }}>
+          <span className="h-2.5 w-2.5 rounded-full bg-lime-500" />
+          <span className="text-xs font-bold tracking-wide text-lime-700">Community Marketplace</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-4 py-5">
+        <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Navigation</p>
+
+        <div className="space-y-1">
+          <NavButton
+            active={currentPage === 'dashboard'}
+            onClick={() => navigate('/dashboard')}
+            tone={currentPage === 'dashboard' ? 'brand' : 'neutral'}
+          >
+            Dashboard
+          </NavButton>
+
+          <NavButton
+            active={currentPage === 'profile'}
+            onClick={() => navigate('/profile')}
+            tone={currentPage === 'profile' ? 'brand' : 'neutral'}
+          >
+            Profile
+          </NavButton>
+
           <NavButton
             active={currentPage === 'marketplace'}
             onClick={() => navigate('/marketplace')}
@@ -62,15 +91,24 @@ export default function UserNavbar({ currentPage = 'marketplace', cartCount = 0 
           >
             Cart
           </NavButton>
-
-          <NavButton
-            onClick={() => navigate('/dashboard')}
-            tone="neutral"
-          >
-            Dashboard
-          </NavButton>
         </div>
+      </nav>
+
+      <div className="border-t border-slate-100 p-4">
+        <div className="rounded-2xl bg-slate-50 p-4">
+          <p className="text-sm font-bold text-slate-900">{user?.email || 'General User'}</p>
+          <p className="mt-1 text-xs text-slate-500">{user?.role === 'USER' ? 'General User' : user?.role || 'Guest'}</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => logout('/login')}
+          className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-50"
+        >
+          <span className="text-base">↪</span>
+          Sign Out
+        </button>
       </div>
-    </nav>
+    </aside>
   )
 }

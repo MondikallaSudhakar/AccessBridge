@@ -47,6 +47,7 @@ import SchoolWorkspaceLayout from './pages/school-workspace/SchoolWorkspaceLayou
 import SchoolWorkspaceHome from './pages/school-workspace/SchoolWorkspaceHome'
 import SchoolWorkspaceFeaturePage from './pages/school-workspace/SchoolWorkspaceFeaturePage'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
+import GeneralUserLayout from './layouts/GeneralUserLayout'
 
 function App() {
   return (
@@ -56,11 +57,13 @@ function App() {
         <Route path="/" element={<PublicOnlyRoute><Home /></PublicOnlyRoute>} />
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/profile" element={<RoleRoute><UserProfile /></RoleRoute>} />
-        <Route path="/dashboard/profile" element={<RoleRoute><UserProfile /></RoleRoute>} />
+        <Route element={<RoleRoute><GeneralUserLayout /></RoleRoute>}>
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/dashboard/profile" element={<UserProfile />} />
+        </Route>
         <Route path="/search" element={<Search />} />
         <Route path="/schools/:id" element={<SchoolDetail />} />
         <Route path="/ngos/:id" element={<NgoDetail />} />
