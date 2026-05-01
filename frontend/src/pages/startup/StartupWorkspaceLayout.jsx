@@ -7,6 +7,7 @@ const NAVY = '#0f172a'
 
 const ICONS = {
   home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6',
+  box: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   orders: 'M3 7h18M3 12h18M3 17h18',
   calendar: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
   logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
@@ -73,6 +74,8 @@ export default function StartupWorkspaceLayout() {
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
           <SidebarLink to="/startup/profile" label="Profile" icon="home" />
+          <SidebarLink to="/startup/profile#products" label="Products" icon="box" />
+          <SidebarLink to="/startup/profile#events" label="Events" icon="calendar" />
           <SidebarLink to="/startup/orders" label="Orders" icon="orders" />
         </nav>
 
@@ -102,6 +105,12 @@ export default function StartupWorkspaceLayout() {
           <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
             <NavLink to="/startup/profile" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
               Profile
+            </NavLink>
+            <NavLink to="/startup/profile#products" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
+              Products
+            </NavLink>
+            <NavLink to="/startup/profile#events" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
+              Events
             </NavLink>
             <NavLink to="/startup/orders" className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}>
               Orders

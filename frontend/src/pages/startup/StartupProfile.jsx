@@ -33,6 +33,20 @@ export default function StartupProfile() {
     fetchStartup()
   }, [user])
 
+  useEffect(() => {
+    const section = window.location.hash.replace('#', '')
+    if (!section) return
+
+    const timer = window.setTimeout(() => {
+      const element = document.getElementById(section)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 50)
+
+    return () => window.clearTimeout(timer)
+  }, [startup?.id, productsLoading, profileLoading])
+
   const fetchStartup = async () => {
     setProfileLoading(true)
     try {
@@ -156,7 +170,7 @@ export default function StartupProfile() {
           </div>
 
           <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <div id="products" className="scroll-mt-6 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
                   <div>
                     <h2 className="font-bold text-slate-900">Manage Products</h2>
@@ -280,7 +294,7 @@ export default function StartupProfile() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <div id="events" className="scroll-mt-6 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
                   <div>
                     <h2 className="font-bold text-slate-900">Manage Events</h2>
