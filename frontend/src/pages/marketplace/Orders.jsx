@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
@@ -99,37 +99,50 @@ export default function Orders() {
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Orders List */}
             <div className="lg:col-span-2">
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order.id} onClick={() => handleViewOrder(order)} className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="mb-1 text-xs font-semibold text-slate-400">ORDER #{order.id}</p>
-                        <p className="text-sm text-slate-600">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-bold text-slate-700">Order ID</th>
+                      <th className="px-6 py-4 text-left font-bold text-slate-700">Date</th>
+                      <th className="px-6 py-4 text-left font-bold text-slate-700">Status</th>
+                      <th className="px-6 py-4 text-right font-bold text-slate-700">Total</th>
+                      <th className="px-6 py-4 text-center font-bold text-slate-700">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {orders.map((order) => (
+                      <tr 
+                        key={order.id}
+                        onClick={() => handleViewOrder(order)}
+                        className="cursor-pointer transition-colors hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-4 font-mono text-xs font-semibold text-slate-900">#{order.id}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">
                           {new Date(order.createdAt).toLocaleDateString('en-IN', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
                           })}
-                        </p>
-                      </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="mb-1 text-xs font-semibold text-slate-400">Total Amount</p>
-                        <p className="text-2xl font-black text-slate-900">₹{parseFloat(order.totalPrice).toLocaleString()}</p>
-                      </div>
-                      <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(order.status)}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-bold text-slate-900">₹{parseFloat(order.totalPrice).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={(e) => {e.stopPropagation(); handleViewOrder(order)}}
+                            className="text-teal-600 hover:text-teal-700 font-bold text-xs transition-colors"
+                          >
+                            {selectedOrder?.id === order.id ? 'Hide' : 'View'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
