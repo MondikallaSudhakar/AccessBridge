@@ -41,21 +41,21 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('USER', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Order> getOrder(@PathVariable Long orderId) {
         Order order = orderService.getOrderById(orderId);
         return ResponseEntity.ok(order);
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAnyRole('USER', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
         List<Order> orders = orderService.getUserOrders(userId);
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{orderId}/items")
-    @PreAuthorize("hasAnyRole('USER', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<OrderItem>> getOrderItems(@PathVariable Long orderId) {
         List<OrderItem> items = orderService.getOrderItems(orderId);
         return ResponseEntity.ok(items);
@@ -92,7 +92,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('USER', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'SUPER_ADMIN')")
     public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.noContent().build();
