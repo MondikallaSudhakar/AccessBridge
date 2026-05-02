@@ -89,6 +89,8 @@ function App() {
           <Route path="profile" element={<SpecialProfilePage />} />
           <Route path="jobs" element={<SpecialJobsPage />} />
           <Route path="marketplace" element={<SpecialFeaturePage type="marketplace" />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="orders" element={<Orders />} />
           <Route path="ngos" element={<SpecialFeaturePage type="ngos" />} />
           <Route path="training" element={<SpecialFeaturePage type="training" />} />
           <Route path="events" element={<SpecialFeaturePage type="events" />} />

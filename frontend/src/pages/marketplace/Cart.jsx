@@ -15,6 +15,10 @@ export default function Cart() {
   const [savedAddress, setSavedAddress] = useState('')
   const [addressLoading, setAddressLoading] = useState(false)
   const currentUserId = user?.userId ?? user?.id
+  const isSpecialUser = user?.role === 'SPECIAL_ABLED_PERSON'
+  const marketplacePath = isSpecialUser ? '/special/marketplace' : '/marketplace'
+  const profilePath = isSpecialUser ? '/special/profile' : '/profile'
+  const ordersPath = isSpecialUser ? '/special/orders' : '/orders'
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -53,7 +57,7 @@ export default function Cart() {
 
     if (!savedAddress?.trim()) {
       setError('Add a delivery address in your profile before placing the order.')
-      navigate('/profile')
+      navigate(profilePath)
       return
     }
 
@@ -85,7 +89,7 @@ export default function Cart() {
         
         // Show success message
         setTimeout(() => {
-          navigate('/orders')
+          navigate(ordersPath)
         }, 2000)
       }
     } catch (err) {
@@ -144,7 +148,7 @@ export default function Cart() {
             <h3 className="text-xl font-black text-slate-900 mb-2">Your Cart is Empty</h3>
             <p className="text-slate-500 mb-6">Browse the marketplace to find products for your next order.</p>
             <button
-              onClick={() => navigate('/marketplace')}
+              onClick={() => navigate(marketplacePath)}
               className="inline-flex items-center justify-center text-white font-bold py-3 px-8 rounded-xl transition-all"
               style={{ backgroundColor: '#0d9488' }}
             >
@@ -239,7 +243,7 @@ export default function Cart() {
                       <p className="text-sm font-semibold text-slate-900">{addressLoading ? 'Loading saved address...' : (savedAddress || 'No address saved yet')}</p>
                     </div>
                     <button
-                      onClick={() => navigate('/profile')}
+                      onClick={() => navigate(profilePath)}
                       className="shrink-0 text-sm font-bold rounded-xl px-3 py-2 transition-all"
                       style={{ color: '#0d9488', background: '#f0fdfa' }}
                     >

@@ -539,7 +539,7 @@ function MarketplaceTab() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." style={{ flex: 1, minWidth: 160, border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '9px 14px', fontSize: 13, outline: 'none' }} />
         {cats.map(c => <button key={c} onClick={() => setCat(c)} style={{ border: 'none', borderRadius: 20, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: cat === c ? G : '#f1f5f9', color: cat === c ? '#fff' : '#64748b' }}>{c}</button>)}
-        <button type="button" onClick={() => navigate('/cart')} style={{ border: 'none', borderRadius: 20, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: NAVY, color: '#fff' }}>Go to Cart</button>
+        <button type="button" onClick={() => navigate('/special/cart')} style={{ border: 'none', borderRadius: 20, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: NAVY, color: '#fff' }}>Go to Cart</button>
       </div>
       {cartMessage && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: '#ecfdf5', color: G, fontSize: 13, fontWeight: 600 }}>{cartMessage}</div>}
       {loading ? <Spinner /> : filtered.length === 0 ? <Empty msg={products.length === 0 ? 'No products listed yet.' : 'No products match your search.'} /> : (

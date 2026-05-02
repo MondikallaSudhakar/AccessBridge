@@ -11,6 +11,8 @@ export default function Orders() {
   const [orderItems, setOrderItems] = useState([])
   const [loading, setLoading] = useState(true)
   const currentUserId = user?.userId ?? user?.id
+  const isSpecialUser = user?.role === 'SPECIAL_ABLED_PERSON'
+  const marketplacePath = isSpecialUser ? '/special/marketplace' : '/marketplace'
 
   useEffect(() => {
     if (!currentUserId) {
@@ -88,7 +90,7 @@ export default function Orders() {
             <h3 className="mb-2 text-xl font-bold text-slate-900">No Orders Yet</h3>
             <p className="mb-6 text-slate-500">Start shopping to place your first order.</p>
             <button
-              onClick={() => navigate('/marketplace')}
+              onClick={() => navigate(marketplacePath)}
               className="inline-block rounded-lg px-8 py-3 font-bold text-white transition-colors"
               style={{ backgroundColor: '#0d9488' }}
             >
