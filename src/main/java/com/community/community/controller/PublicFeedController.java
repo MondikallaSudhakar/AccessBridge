@@ -190,7 +190,7 @@ public class PublicFeedController {
         item.put("title", job.getTitle() != null ? job.getTitle() : "Untitled Job");
         item.put("subtitle", job.getDescription() != null ? job.getDescription() : "Job posting by NGO.");
         item.put("location", job.getLocation() != null ? job.getLocation() : "Not specified");
-        item.put("verified", job.getNgo() != null && job.getNgo().isVerified());
+        item.put("verified", job.getNgo() != null && job.getNgo().getVerified());
         item.put("cta", "View NGO Profile");
         item.put("href", "/ngos/" + (job.getNgo() != null ? job.getNgo().getId() : ""));
         item.put("logo", job.getNgo() != null ? job.getNgo().getLogoUrl() : null);
@@ -219,7 +219,7 @@ public class PublicFeedController {
         item.put("type", "requirements");
         item.put("title", need.getTitle() != null ? need.getTitle() : "Untitled Requirement");
         item.put("subtitle", need.getDescription() != null ? need.getDescription() : "Support request from organization.");
-        item.put("verified", need.getNgo() != null ? need.getNgo().isVerified() : (need.getSchool() != null && need.getSchool().isVerified()));
+        item.put("verified", need.getNgo() != null ? need.getNgo().getVerified() : (need.getSchool() != null && need.getSchool().getVerified()));
         item.put("cta", "View Profile");
         
         String meta = "Organization";
@@ -264,7 +264,7 @@ public class PublicFeedController {
         item.put("type", "products");
         item.put("title", product.getName() != null ? product.getName() : "Untitled Product");
         item.put("subtitle", product.getDescription() != null ? product.getDescription() : "Product listed by NGO.");
-        item.put("verified", product.getNgo() != null && product.getNgo().isVerified());
+        item.put("verified", product.getNgo() != null && product.getNgo().getVerified());
         item.put("cta", "View NGO Profile");
         item.put("href", "/ngos/" + (product.getNgo() != null ? product.getNgo().getId() : ""));
         item.put("logo", product.getImageUrl() != null ? product.getImageUrl() : (product.getNgo() != null ? product.getNgo().getLogoUrl() : null));
