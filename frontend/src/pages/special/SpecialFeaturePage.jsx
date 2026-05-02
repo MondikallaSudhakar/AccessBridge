@@ -614,7 +614,7 @@ function MarketplaceTab() {
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>Stock: {p.stockQuantity}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: p.stockQuantity > 0 ? G : '#dc2626' }}>{p.stockQuantity > 0 ? 'Available' : 'Out of stock'}</span>
                   </div>
-                  {!p.available || p.stockQuantity === 0 ? (
+                  {p.stockQuantity <= 0 ? (
                     <button disabled style={{ ...btn('#94a3b8'), cursor: 'not-allowed' }}>Out of Stock</button>
                   ) : (
                     <button
