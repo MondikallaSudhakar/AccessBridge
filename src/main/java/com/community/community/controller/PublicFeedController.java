@@ -73,10 +73,10 @@ public class PublicFeedController {
             item.put("title", job.getTitle() != null ? job.getTitle() : "Untitled Job");
             item.put("subtitle", job.getDescription() != null ? job.getDescription() : "Open role.");
             item.put("meta", job.getLocation() != null ? job.getLocation() : "Location not specified");
-            item.put("verified", false);
+            item.put("verified", job.getNgo() != null && job.getNgo().getVerified());
             item.put("cta", "View Details");
             item.put("href", "/search");
-            item.put("logo", null);
+            item.put("logo", job.getNgo() != null ? job.getNgo().getLogoUrl() : null);
             item.put("openDate", toText(job.getCreatedAt()));
             item.put("closeDate", toText(job.getLastDateToApply()));
             item.put("createdTimestamp", job.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -116,10 +116,10 @@ public class PublicFeedController {
             item.put("title", product.getName() != null ? product.getName() : "Untitled Product");
             item.put("subtitle", product.getDescription() != null ? product.getDescription() : "Product listing.");
             item.put("meta", product.getPrice() != null ? ("Rs " + product.getPrice()) : "Price not specified");
-            item.put("verified", false);
+            item.put("verified", product.getNgo() != null && product.getNgo().getVerified());
             item.put("cta", "View Marketplace");
             item.put("href", "/marketplace");
-            item.put("logo", product.getImageUrl());
+            item.put("logo", product.getImageUrl() != null ? product.getImageUrl() : (product.getNgo() != null ? product.getNgo().getLogoUrl() : null));
             item.put("createdTimestamp", product.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
             recentItems.add(item);
         }
@@ -139,7 +139,7 @@ public class PublicFeedController {
             item.put("verified", true);
             item.put("cta", "View Marketplace");
             item.put("href", "/marketplace");
-            item.put("logo", product.getImageUrl());
+            item.put("logo", product.getImageUrl() != null ? product.getImageUrl() : (product.getStartup() != null ? product.getStartup().getLogoUrl() : null));
             item.put("createdTimestamp", product.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
             recentItems.add(item);
         }
