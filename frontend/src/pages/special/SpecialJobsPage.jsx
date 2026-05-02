@@ -104,14 +104,14 @@ function JobCard({ job, bookmarked, onBookmark, onApply, ngoName }) {
   )
 }
 
-function ApplicationModal({ job, ngoName, onClose, onSuccess }) {
+function ApplicationModal({ job, orgName, source, onClose, onSuccess }) {
   const { user } = useAuth()
   const [form, setForm] = useState({
     applicantName: user?.name || '',
     applicantEmail: user?.email || '',
     applicantPhone: '',
     disabilityType: '',
-    coverLetter: `Hello,\n\nI am interested in the role: ${job.title} at ${ngoName}.\nPlease consider my profile and accessibility needs.\n\n`,
+    coverLetter: `Hello,\n\nI am interested in the role: ${job.title} at ${orgName}.\nPlease consider my profile and accessibility needs.\n\n`,
     resumeText: '',
   })
   const [audioFile, setAudioFile] = useState(null)
@@ -132,7 +132,10 @@ function ApplicationModal({ job, ngoName, onClose, onSuccess }) {
         ...form,
         audioNoteFileName: audioFile?.name || null,
       }
-      const res = await fetch(`${API}/ngos/jobs/${job.id}/apply`, {
+      const endpoint = source === 'startup'
+        ? `${API}/startups/jobs/${job.id}/apply`
+        : `${API}/ngos/jobs/${job.id}/apply`
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify(payload),
@@ -275,7 +278,7 @@ function SuccessBanner({ job, onClose }) {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">✓</div>
         <h3 className="mt-4 text-xl font-extrabold text-slate-900">Application Submitted!</h3>
         <p className="mt-2 text-sm text-slate-600">
-          Your application for <strong>{job.title}</strong> has been submitted successfully. The NGO will review and respond via the platform.
+          Your application for <strong>{job.title}</strong> has been submitted successfully. The organisation will review and respond via the platform.
         </p>
         <button
           type="button"
@@ -302,17 +305,32 @@ export default function SpecialJobsPage() {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API}/ngos`)
-        const ngos = res.ok ? await res.json() : []
         const allJobs = []
-        await Promise.all(
-          ngos.map(async (ngo) => {
+
+        // load NGO jobs
+        try {
+          const res = await fetch(`${API}/ngos`)
+          const ngos = res.ok ? await res.json() : []
+          await Promise.all(ngos.map(async (ngo) => {
             const jr = await fetch(`${API}/ngos/${ngo.id}/jobs`)
             if (!jr.ok) return
             const jobList = await jr.json()
-            jobList.forEach((j) => allJobs.push({ job: j, ngoName: ngo.name, ngoId: ngo.id }))
-          })
-        )
+            jobList.forEach((j) => allJobs.push({ job: j, orgName: ngo.name, orgId: ngo.id, source: 'ngo' }))
+          }))
+        } catch (e) { /* ignore NGO load errors */ }
+
+        // load Startup jobs
+        try {
+          const sr = await fetch(`${API}/startups`)
+          const startups = sr.ok ? await sr.json() : []
+          await Promise.all(startups.map(async (startup) => {
+            const jr = await fetch(`${API}/startups/${startup.id}/jobs`)
+            if (!jr.ok) return
+            const jobList = await jr.json()
+            jobList.forEach((j) => allJobs.push({ job: j, orgName: startup.name, orgId: startup.id, source: 'startup' }))
+          }))
+        } catch (e) { /* ignore startup load errors */ }
+
         // Sort: open first, then by creation date desc
         allJobs.sort((a, b) => {
           if (a.job.status === 'OPEN' && b.job.status !== 'OPEN') return -1
@@ -320,7 +338,9 @@ export default function SpecialJobsPage() {
           return new Date(b.job.createdAt) - new Date(a.job.createdAt)
         })
         setJobs(allJobs)
-      } catch { /* silent */ }
+      } catch (err) {
+        console.error('Failed loading jobs', err)
+      }
       setLoading(false)
     }
     load()
@@ -388,16 +408,19 @@ export default function SpecialJobsPage() {
 
         {!loading && (
           <div className="grid gap-4 md:grid-cols-2">
-            {visible.map(({ job, ngoName }) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                ngoName={ngoName}
-                bookmarked={bookmarkSet.has(`job-${job.id}`)}
-                onBookmark={() => setBookmarks((b) => toggleBookmark(b, `job-${job.id}`))}
-                onApply={(j, n) => setSelectedJob({ job: j, ngoName: n })}
-              />
-            ))}
+            {visible.map(({ job, orgName, source }) => {
+              const key = `${source}-job-${job.id}`
+              return (
+                <JobCard
+                  key={key}
+                  job={job}
+                  ngoName={orgName}
+                  bookmarked={bookmarkSet.has(key)}
+                  onBookmark={() => setBookmarks((b) => toggleBookmark(b, key))}
+                  onApply={(j, n) => setSelectedJob({ job: j, orgName: n, source })}
+                />
+              )
+            })}
           </div>
         )}
       </section>
