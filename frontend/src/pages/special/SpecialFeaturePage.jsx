@@ -516,9 +516,51 @@ function MarketplaceTab() {
   const [cartMessage, setCartMessage] = useState('')
 
   useEffect(() => {
-    get(`${BASE}/products/all-available`).then((rows) => {
-      setProducts(Array.isArray(rows) ? rows.map(normalizeProduct) : [])
-    }).finally(() => setLoading(false))
+    const loadProducts = async () => {
+      try {
+        const [availableProducts, startups] = await Promise.all([
+          get(`${BASE}/products/all-available`),
+          get(`${BASE}/startups`),
+        ])
+
+        const merged = new Map()
+        const addProduct = (product, sourceDetails, sourceOverride) => {
+          if (!product) return
+          const normalized = normalizeProduct({
+            ...product,
+            ...(sourceOverride ? { source: sourceOverride } : {}),
+            ...(sourceDetails ? { sourceDetails } : {}),
+          })
+          const key = `${normalized.source || 'UNKNOWN'}-${normalized.id}`
+          if (!merged.has(key)) {
+            merged.set(key, normalized)
+          }
+        }
+
+        const startupList = Array.isArray(startups) ? startups : []
+        await Promise.all(startupList.map(async (startup) => {
+          try {
+            const rows = await get(`${BASE}/products/startup/${startup.id}`)
+            const startupProducts = Array.isArray(rows) ? rows : []
+            startupProducts.forEach((product) => addProduct(product, { id: startup.id, name: startup.name }, 'STARTUP'))
+          } catch (error) {
+            console.error(`Failed to load startup products for ${startup.id}`, error)
+          }
+        }))
+
+        const availableList = Array.isArray(availableProducts) ? availableProducts : []
+        availableList.forEach((product) => addProduct(product))
+
+        setProducts([...merged.values()])
+      } catch (error) {
+        console.error('Failed to load marketplace products', error)
+        setProducts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
   }, [])
 
   const cats = useMemo(() => ['ALL', ...Array.from(new Set(products.map((p) => p.category).filter(Boolean)))], [products])

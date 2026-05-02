@@ -30,8 +30,42 @@ export default function Marketplace() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await api.get('/products/all-available')
-        setProducts(Array.isArray(data) ? data.map(normalizeProduct) : [])
+        const [availableProducts, startups] = await Promise.all([
+          api.get('/products/all-available').catch(() => []),
+          api.get('/startups').catch(() => []),
+        ])
+
+        const merged = new Map()
+        const addProduct = (product, sourceDetails, sourceOverride) => {
+          if (!product) return
+          const normalized = normalizeProduct({
+            ...product,
+            ...(sourceOverride ? { source: sourceOverride } : {}),
+            ...(sourceDetails ? { sourceDetails } : {}),
+          })
+          const key = `${normalized.source || 'UNKNOWN'}-${normalized.id}`
+          if (!merged.has(key)) {
+            merged.set(key, normalized)
+          }
+        }
+
+        const startupList = Array.isArray(startups) ? startups : []
+        await Promise.all(startupList.map(async (startup) => {
+          try {
+            const rows = await api.get(`/products/startup/${startup.id}`).catch(() => [])
+            const productsForStartup = Array.isArray(rows) ? rows : []
+            productsForStartup.forEach((product) => {
+              addProduct(product, { id: startup.id, name: startup.name }, 'STARTUP')
+            })
+          } catch (error) {
+            console.error(`Failed to load products for startup ${startup.id}`, error)
+          }
+        }))
+
+        const availableList = Array.isArray(availableProducts) ? availableProducts : []
+        availableList.forEach((product) => addProduct(product))
+
+        setProducts([...merged.values()])
       } catch (error) {
         console.error('Failed to fetch products', error)
         setProducts([])
