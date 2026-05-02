@@ -75,6 +75,7 @@ export default function StartupWorkspaceLayout() {
           <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
           <SidebarLink to="/startup/profile" label="Profile" icon="home" />
           <SidebarLink to="/startup/products" label="Products" icon="box" />
+          <SidebarLink to="/startup/jobs" label="Jobs" icon="orders" />
           <SidebarLink to="/startup/events" label="Events" icon="calendar" />
           <SidebarLink to="/startup/orders" label="Orders" icon="orders" />
         </nav>

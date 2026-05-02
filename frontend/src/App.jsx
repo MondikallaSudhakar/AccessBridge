@@ -19,6 +19,7 @@ import StartupProfile from './pages/startup/StartupProfile'
 import StartupProductsPage from './pages/startup/StartupProductsPage'
 import StartupEventsPage from './pages/startup/StartupEventsPage'
 import StartupOrders from './pages/startup/StartupOrders'
+import StartupJobsPage from './pages/startup/StartupJobsPage'
 import StartupWorkspaceLayout from './pages/startup/StartupWorkspaceLayout'
 import NgoProfile from './pages/dashboard/NgoProfile'
 import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
@@ -146,6 +147,7 @@ function App() {
           <Route index element={<Navigate to="profile" replace />} />
           <Route path="profile" element={<StartupProfile />} />
           <Route path="products" element={<StartupProductsPage />} />
+          <Route path="jobs" element={<StartupJobsPage />} />
           <Route path="events" element={<StartupEventsPage />} />
           <Route path="orders" element={<StartupOrders />} />
         </Route>
