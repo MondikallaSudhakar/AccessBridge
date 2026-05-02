@@ -27,6 +27,8 @@ const NAV_ICON = {
   Profile: 'user',
   Jobs: 'briefcase',
   Marketplace: 'shop',
+  Cart: 'shop',
+  Orders: 'shop',
   NGOs: 'ngo',
   Training: 'school',
   Events: 'calendar',

@@ -15,6 +15,8 @@ export const SPECIAL_NAV = [
   { to: '/special/profile', label: 'Profile' },
   { to: '/special/jobs', label: 'Jobs' },
   { to: '/special/marketplace', label: 'Marketplace' },
+  { to: '/special/cart', label: 'Cart' },
+  { to: '/special/orders', label: 'Orders' },
   { to: '/special/ngos', label: 'NGOs' },
   { to: '/special/training', label: 'Training' },
   { to: '/special/events', label: 'Events' },
