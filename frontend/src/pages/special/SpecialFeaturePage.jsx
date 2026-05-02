@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useCart } from '../../context/CartContext'
 
 const BASE = 'http://localhost:8081/api'
 const G = '#16a34a'
@@ -11,6 +12,13 @@ const authHdr = () => {
   return t ? { ...hdr, Authorization: `Bearer ${t}` } : hdr
 }
 const get = url => fetch(url, { headers: authHdr() }).then(r => r.ok ? r.json() : []).catch(() => [])
+
+const normalizeProduct = (product) => ({
+  ...product,
+  stockQuantity: Number(product?.stockQuantity ?? 0),
+  price: Number(product?.price ?? 0),
+  source: String(product?.source || 'UNKNOWN').toUpperCase(),
+})
 
 /* ── tiny shared styles ── */
 const card = { background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }
@@ -500,28 +508,30 @@ function SchemesTab() {
 /* ═══════════════════════════════ MARKETPLACE TAB ════════════════════════ */
 function MarketplaceTab() {
   const navigate = useNavigate()
+  const { addToCart } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [cat, setCat] = useState('ALL')
-  const [enquiry, setEnquiry] = useState(null)
+  const [cartMessage, setCartMessage] = useState('')
 
   useEffect(() => {
-    Promise.all([
-      get(`${BASE}/products`),
-      get(`${BASE}/ngos`).then(async ngos => {
-        if (!Array.isArray(ngos)) return []
-        const arr = await Promise.all(ngos.map(n => get(`${BASE}/ngos/${n.id}/products`).then(p => (Array.isArray(p) ? p : []).map(x => ({ ...x, _source: 'NGO', _key: `n-${x.id}` })))))
-        return arr.flat()
-      })
-    ]).then(([sp, np]) => {
-      const startup = (Array.isArray(sp) ? sp : []).filter(p => p.available).map(p => ({ ...p, _source: 'Startup', _key: `s-${p.id}` }))
-      setProducts([...startup, ...np.filter(p => p.available)])
+    get(`${BASE}/products/all-available`).then((rows) => {
+      setProducts(Array.isArray(rows) ? rows.map(normalizeProduct) : [])
     }).finally(() => setLoading(false))
   }, [])
 
-  const cats = ['ALL', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))]
-  const filtered = products.filter(p => (cat === 'ALL' || p.category === cat) && (!search || p.name?.toLowerCase().includes(search.toLowerCase())))
+  const cats = useMemo(() => ['ALL', ...Array.from(new Set(products.map((p) => p.category).filter(Boolean)))], [products])
+  const filtered = products.filter((p) => {
+    const matchesCategory = cat === 'ALL' || p.category === cat
+    if (!matchesCategory) return false
+
+    if (!search) return true
+    const q = search.toLowerCase()
+    return [p.name, p.description, p.category, p.source, p.sourceDetails?.name]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(q))
+  })
 
   return (
     <section>
@@ -529,36 +539,57 @@ function MarketplaceTab() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." style={{ flex: 1, minWidth: 160, border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '9px 14px', fontSize: 13, outline: 'none' }} />
         {cats.map(c => <button key={c} onClick={() => setCat(c)} style={{ border: 'none', borderRadius: 20, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: cat === c ? G : '#f1f5f9', color: cat === c ? '#fff' : '#64748b' }}>{c}</button>)}
+        <button type="button" onClick={() => navigate('/cart')} style={{ border: 'none', borderRadius: 20, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: NAVY, color: '#fff' }}>Go to Cart</button>
       </div>
+      {cartMessage && <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: '#ecfdf5', color: G, fontSize: 13, fontWeight: 600 }}>{cartMessage}</div>}
       {loading ? <Spinner /> : filtered.length === 0 ? <Empty msg={products.length === 0 ? 'No products listed yet.' : 'No products match your search.'} /> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 14 }}>
-          {filtered.map(p => (
-            <div key={p._key || p.id} style={{ ...card, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: NAVY }}>{p.name}</h4>
-                <span style={{ fontSize: 14, fontWeight: 900, color: G, whiteSpace: 'nowrap' }}>{p.price != null ? `₹${Number(p.price).toLocaleString('en-IN')}` : 'Free'}</span>
+          {filtered.map((p) => {
+            const sourceLabel = p.source === 'STARTUP' ? 'Startup' : 'NGO'
+            const accent = p.source === 'STARTUP' ? B : G
+
+            return (
+              <div key={`${p.source || 'UNKNOWN'}-${p.id}`} style={{ ...card, display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
+                <div style={{ position: 'relative', height: 170, background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                  {p.imageUrl ? (
+                    <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', fontSize: 42 }}>📦</div>
+                  )}
+                  <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={chip(accent)}>{sourceLabel}</span>
+                    {p.category && <span style={{ ...chip('#6366f1'), background: '#eef2ff', color: '#4f46e5' }}>{p.category}</span>}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: NAVY }}>{p.name}</h4>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: G, whiteSpace: 'nowrap' }}>₹{Number(p.price || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  <p style={{ margin: '0 0 6px', fontSize: 12, color: '#64748b', fontWeight: 600 }}>By: {p.sourceDetails?.name || sourceLabel}</p>
+                  <p style={{ margin: '0 0 12px', fontSize: 12, color: '#64748b', lineHeight: 1.6, flex: 1 }}>{p.description || 'No description.'}</p>
+                  <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>Stock: {p.stockQuantity}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: p.stockQuantity > 0 ? G : '#dc2626' }}>{p.stockQuantity > 0 ? 'Available' : 'Out of stock'}</span>
+                  </div>
+                  {!p.available || p.stockQuantity === 0 ? (
+                    <button disabled style={{ ...btn('#94a3b8'), cursor: 'not-allowed' }}>Out of Stock</button>
+                  ) : (
+                    <button
+                      style={btn(G)}
+                      onClick={() => {
+                        addToCart(p)
+                        setCartMessage('Added to cart. Checkout from your cart to place the order.')
+                        window.setTimeout(() => setCartMessage(''), 2200)
+                      }}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
               </div>
-              <span style={chip(p._source === 'NGO' ? G : B)}>{p._source}</span>
-              {p.category && <span style={{ ...chip('#6366f1'), marginLeft: 6 }}>{p.category}</span>}
-              <p style={{ margin: '8px 0 12px', fontSize: 12, color: '#64748b', lineHeight: 1.6, flex: 1 }}>{p.description || 'No description.'}</p>
-              {!p.available || p.stockQuantity === 0
-                ? <button disabled style={{ ...btn('#94a3b8'), cursor: 'not-allowed' }}>Out of Stock</button>
-                : <button style={btn(G)} onClick={() => setEnquiry(p)}>Enquire / Buy</button>}
-            </div>
-          ))}
-        </div>
-      )}
-      {enquiry && (
-        <div onClick={() => setEnquiry(null)} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15,23,42,.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, boxSizing: 'border-box' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 18, maxWidth: 400, width: '100%', padding: 24, position: 'relative' }}>
-            <button onClick={() => setEnquiry(null)} style={{ position: 'absolute', top: 12, right: 14, border: 'none', background: '#f1f5f9', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontWeight: 700, color: '#64748b' }}>x</button>
-            <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: G, textTransform: 'uppercase' }}>Product Enquiry</p>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 900, color: NAVY }}>{enquiry.name}</h3>
-            <p style={{ margin: '0 0 4px', fontSize: 13, color: NAVY, fontWeight: 700 }}>Price: <span style={{ color: G }}>{enquiry.price != null ? `₹${Number(enquiry.price).toLocaleString('en-IN')}` : 'Free'}</span></p>
-            <p style={{ margin: '0 0 14px', fontSize: 12, color: '#64748b' }}>Stock: {enquiry.stockQuantity} units | Source: {enquiry._source}</p>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b' }}>To purchase, contact the listing organisation via the Help section.</p>
-            <button style={{ ...btn(G, '#fff'), width: '100%', padding: '12px' }} onClick={() => { setEnquiry(null); navigate('/special/help') }}>Go to Help / Contact</button>
-          </div>
+            )
+          })}
         </div>
       )}
     </section>
