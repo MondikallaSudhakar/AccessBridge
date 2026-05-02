@@ -21,12 +21,14 @@ public class PublicFeedController {
 
     private final EventRepository eventRepository;
     private final NGOJobRepository ngoJobRepository;
+    private final com.community.community.repository.StartupJobRepository startupJobRepository;
     private final NeedRepository needRepository;
     private final NGOProductRepository ngoProductRepository;
     private final ProductRepository productRepository;
     private final NGORepository ngoRepository;
     private final SchoolRepository schoolRepository;
     private final StartupRepository startupRepository;
+    private final com.community.community.repository.StartupJobApplicationRepository startupJobApplicationRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final DonationRepository donationRepository;
 
@@ -82,6 +84,32 @@ public class PublicFeedController {
             item.put("createdTimestamp", job.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
             recentItems.add(item);
         }
+
+        // Startup jobs
+        try {
+            for (var job : startupJobRepository.findAll()) {
+                if (job.getCreatedAt() == null) continue;
+                if ("CLOSED".equals(job.getStatus())) continue;
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", "startup-job-" + job.getId());
+                item.put("type", "jobs");
+                item.put("title", job.getTitle() != null ? job.getTitle() : "Untitled Job");
+                item.put("subtitle", job.getDescription() != null ? job.getDescription() : "Open role.");
+                item.put("meta", job.getLocation() != null ? job.getLocation() : "Location not specified");
+                item.put("verified", job.getStartup() != null && job.getStartup().getVerified());
+                item.put("cta", "View Details");
+                item.put("href", "/search");
+                item.put("logo", job.getStartup() != null ? job.getStartup().getLogoUrl() : null);
+                item.put("openDate", toText(job.getCreatedAt()));
+                item.put("closeDate", toText(job.getLastDateToApply()));
+                long ts = job.getCreatedAt() != null ? job.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : System.currentTimeMillis();
+                item.put("createdTimestamp", ts);
+                // applicant count if available
+                try { long ac = startupJobApplicationRepository.countByJobId(job.getId()); if (ac>0) item.put("applied", ac); } catch (Throwable ex) {}
+                recentItems.add(item);
+            }
+        } catch (Throwable ignore) {}
 
         // Requirements
         for (Need need : needRepository.findAll()) {

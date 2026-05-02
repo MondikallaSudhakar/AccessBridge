@@ -8,4 +8,5 @@ import java.util.List;
 public interface StartupJobApplicationRepository extends JpaRepository<StartupJobApplication, Long> {
     List<StartupJobApplication> findByJobIdOrderByAppliedAtDesc(Long jobId);
     boolean existsByJobIdAndApplicantEmail(Long jobId, String email);
+    long countByJobId(Long jobId);
 }
