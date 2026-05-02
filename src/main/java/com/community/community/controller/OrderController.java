@@ -34,7 +34,7 @@ public class OrderController {
     private final UserRepository userRepository;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Order> createOrder(@RequestParam Long userId, @RequestBody List<Map<String, Object>> cartItems) {
         Order order = orderService.createOrder(userId, cartItems);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
