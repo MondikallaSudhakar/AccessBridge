@@ -11,7 +11,7 @@ const COLORS = {
   blue: '#0197B2',
   blueSoft: '#f0f8fc',
   blueBorder: '#c8e6f0',
-  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #0a4b5a 100%)',
+  heroSolid: '#0197B2',
 }
 
 export default function Login() {
@@ -39,14 +39,14 @@ export default function Login() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
+    <div className="relative min-h-screen overflow-hidden px-4 py-10 md:py-14" style={{ background: '#f4fbfd' }}>
       <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
       <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
 
       <div className="relative mx-auto flex w-full max-w-md items-center justify-center">
         <div className="w-full overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.blueBorder }}>
           <div className="px-6 pb-6 pt-7 text-center sm:px-8">
-            <div className="mx-auto mb-4 h-11 w-11 rounded-2xl text-sm font-black text-white grid place-items-center" style={{ background: COLORS.heroGradient }}>
+            <div className="mx-auto mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[#0197B2] text-sm font-black text-white">
               IC
             </div>
             <h2 className="text-3xl font-black tracking-tight text-slate-900">Welcome back</h2>
@@ -90,7 +90,7 @@ export default function Login() {
               type="submit"
               disabled={loading}
               className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
-              style={{ background: COLORS.heroGradient }}
+              style={{ backgroundColor: COLORS.heroSolid }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
