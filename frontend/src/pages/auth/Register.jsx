@@ -52,13 +52,12 @@ const ORG_FIELDS = {
 }
 
 const COLORS = {
-  green: '#0197B2',
-  greenSoft: '#f0f8fc',
-  greenBorder: '#c8e6f0',
-  blue: '#0197B2',
-  blueSoft: '#f0f8fc',
-  blueBorder: '#c8e6f0',
-  heroSolid: '#0197B2',
+  primary: '#0197B2',
+  primarySoft: '#e6f8fc',
+  primaryBorder: '#a8dce8',
+  accent: '#5BCB2B',
+  accentSoft: '#ecfbe3',
+  accentBorder: '#c9eeb5',
 }
 
 export default function Register() {
@@ -123,9 +122,9 @@ export default function Register() {
   const totalSteps = requiresExtraStep ? 2 : 1
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:py-14" style={{ background: '#f4fbfd' }}>
-      <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
-      <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:py-14" style={{ background: '#f3fbff' }}>
+      <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.primary }} />
+      <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.accent }} />
 
       <div className="mx-auto w-full max-w-xl">
 
@@ -144,21 +143,21 @@ export default function Register() {
               <span>Step {step} of {totalSteps}</span>
               <span>{Math.round((step / totalSteps) * 100)}%</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full" style={{ backgroundColor: COLORS.blueBorder }}>
+            <div className="h-1 overflow-hidden rounded-full" style={{ backgroundColor: COLORS.primaryBorder }}>
               <div
                 className="h-1 rounded-full transition-all duration-500"
-                style={{ width: `${(step / totalSteps) * 100}%`, backgroundColor: COLORS.heroSolid }}
+                style={{ width: `${(step / totalSteps) * 100}%`, backgroundColor: COLORS.accent }}
               ></div>
             </div>
           </div>
         )}
 
-        <div className="overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.blueBorder }}>
+        <div className="overflow-hidden rounded-3xl border bg-white shadow-xl" style={{ borderColor: COLORS.primaryBorder }}>
 
           {/* ── Step 1: Basic Account Info ─────────── */}
           {step === 1 && (
             <form onSubmit={handleBasicSubmit}>
-              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
+              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.primaryBorder }}>
                 <div>
                   <h2 className="text-xl font-black text-slate-900">Create your account</h2>
                   <p className="text-xs text-slate-500">Simple details to get started.</p>
@@ -179,7 +178,7 @@ export default function Register() {
                       onChange={handleChange}
                       required
                       className="w-full border rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2"
-                      style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.blueSoft }}
+                      style={{ borderColor: COLORS.primaryBorder, backgroundColor: COLORS.primarySoft }}
                     >
                       <option value="">Select your role</option>
                       {ROLES.map((role) => (
@@ -218,7 +217,7 @@ export default function Register() {
                 </div>
 
                 {selectedRole && (
-                  <div className="rounded-xl border p-4 text-sm" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.greenSoft }}>
+                  <div className="rounded-xl border p-4 text-sm" style={{ borderColor: COLORS.accentBorder, backgroundColor: COLORS.accentSoft }}>
                     <p className="font-semibold text-slate-900">Role summary</p>
                     <p className="mt-1 text-xs text-slate-600">{selectedRole.loginPurpose}</p>
                   </div>
@@ -228,13 +227,13 @@ export default function Register() {
               <div className="px-8 pb-8">
                 <button type="submit"
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95"
-                    style={{ backgroundColor: COLORS.heroSolid }}
+                    style={{ backgroundColor: COLORS.accent }}
                 >
                   {isSpecial || isGuardian ? 'Continue to profile details ->' : isOrg ? 'Continue to organization details ->' : 'Create account'}
                 </button>
                 <p className="mt-4 text-center text-sm text-slate-600">
                   Already have an account?{' '}
-                  <a href="/login" className="font-semibold hover:opacity-80" style={{ color: COLORS.blue }}>Sign in</a>
+                  <a href="/login" className="font-semibold hover:opacity-80" style={{ color: COLORS.primary }}>Sign in</a>
                 </p>
               </div>
             </form>
@@ -243,7 +242,7 @@ export default function Register() {
           {/* ── Step 2: Role-Specific Info ────────── */}
           {step === 2 && requiresExtraStep && (
             <form onSubmit={handleFinalSubmit}>
-              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.blueBorder }}>
+              <div className="border-b px-8 py-6" style={{ borderColor: COLORS.primaryBorder }}>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => setStep(1)} className="text-slate-400 transition-colors hover:text-slate-700">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -282,15 +281,15 @@ export default function Register() {
                 ))}
 
                 {isSpecial ? (
-                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.primarySoft }}>
                     Your account is approved automatically. You can start exploring opportunities right away.
                   </p>
                 ) : isGuardian ? (
-                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.primarySoft }}>
                     Your account is approved automatically. You can start supporting your dependent immediately.
                   </p>
                 ) : (
-                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.blueSoft }}>
+                  <p className="rounded-lg p-3 text-xs leading-relaxed text-slate-600" style={{ backgroundColor: COLORS.primarySoft }}>
                     After submission, your account will be reviewed by admin. You can sign in once approved.
                   </p>
                 )}
@@ -299,7 +298,7 @@ export default function Register() {
               <div className="px-8 pb-8">
                 <button type="submit" disabled={loading}
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
-                  style={{ backgroundColor: COLORS.heroSolid }}
+                  style={{ backgroundColor: COLORS.accent }}
                 >
                   {loading ? 'Submitting...' : isSpecial ? 'Create specially abled profile' : isGuardian ? 'Create guardian profile' : 'Submit for approval'}
                 </button>
