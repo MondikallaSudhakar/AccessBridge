@@ -58,7 +58,7 @@ const COLORS = {
   blue: '#0197B2',
   blueSoft: '#f0f8fc',
   blueBorder: '#c8e6f0',
-  heroGradient: 'linear-gradient(120deg, #0197B2 0%, #0a4b5a 100%)',
+  heroSolid: '#0197B2',
 }
 
 export default function Register() {
@@ -123,7 +123,7 @@ export default function Register() {
   const totalSteps = requiresExtraStep ? 2 : 1
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:py-14" style={{ background: 'linear-gradient(170deg, #f7fcff 0%, #ebf9ff 45%, #f0fbf2 100%)' }}>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:py-14" style={{ background: '#f4fbfd' }}>
       <div className="pointer-events-none absolute -left-16 top-8 h-52 w-52 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: COLORS.blue }} />
       <div className="pointer-events-none absolute -right-20 bottom-4 h-64 w-64 rounded-full opacity-25 blur-3xl" style={{ backgroundColor: COLORS.green }} />
 
@@ -131,7 +131,7 @@ export default function Register() {
 
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl text-sm font-black text-white" style={{ background: COLORS.heroGradient }}>
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#0197B2] text-sm font-black text-white">
             IC
           </div>
           <span className="text-sm font-extrabold tracking-tight text-slate-900">Inclusive Connect</span>
@@ -147,7 +147,7 @@ export default function Register() {
             <div className="h-1 overflow-hidden rounded-full" style={{ backgroundColor: COLORS.blueBorder }}>
               <div
                 className="h-1 rounded-full transition-all duration-500"
-                style={{ width: `${(step / totalSteps) * 100}%`, background: COLORS.heroGradient }}
+                style={{ width: `${(step / totalSteps) * 100}%`, backgroundColor: COLORS.heroSolid }}
               ></div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function Register() {
               <div className="px-8 pb-8">
                 <button type="submit"
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95"
-                  style={{ background: COLORS.heroGradient }}
+                    style={{ backgroundColor: COLORS.heroSolid }}
                 >
                   {isSpecial || isGuardian ? 'Continue to profile details ->' : isOrg ? 'Continue to organization details ->' : 'Create account'}
                 </button>
@@ -299,7 +299,7 @@ export default function Register() {
               <div className="px-8 pb-8">
                 <button type="submit" disabled={loading}
                   className="w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
-                  style={{ background: COLORS.heroGradient }}
+                  style={{ backgroundColor: COLORS.heroSolid }}
                 >
                   {loading ? 'Submitting...' : isSpecial ? 'Create specially abled profile' : isGuardian ? 'Create guardian profile' : 'Submit for approval'}
                 </button>
