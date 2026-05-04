@@ -8,5 +8,6 @@ public enum Role {
     SCHOOL_ADMIN,
     NGO_ADMIN,
     STARTUP_ADMIN,
+    THERAPY_CENTER_ADMIN,
     SUPER_ADMIN
 }

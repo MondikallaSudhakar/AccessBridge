@@ -16,16 +16,18 @@ function joinLocation(...parts) {
 }
 
 export async function loadGuardianOpportunities() {
-  const [jobsResult, schoolsResult, ngosResult, eventsResult, coursesResult] = await Promise.allSettled([
+  const [jobsResult, schoolsResult, ngosResult, eventsResult, coursesResult, therapyCentersResult] = await Promise.allSettled([
     api.get('/ngos/jobs/all'),
     api.get('/schools'),
     api.get('/ngos'),
     api.get('/events/public'),
     api.get('/schools/courses/all'),
+    api.get('/therapy-centers/approved'),
   ])
 
   const schoolsRaw = asArray(schoolsResult.status === 'fulfilled' ? schoolsResult.value : [])
   const coursesRaw = asArray(coursesResult.status === 'fulfilled' ? coursesResult.value : [])
+  const therapyCentersRaw = asArray(therapyCentersResult.status === 'fulfilled' ? therapyCentersResult.value : [])
   const schoolNameById = new Map(
     schoolsRaw.map((school) => [String(school.id), text(school.name, 'School / Training Center')])
   )
@@ -104,6 +106,17 @@ export async function loadGuardianOpportunities() {
       place: text(course.category, 'Therapy Program'),
       summary: text(course.description, 'Therapy or training course.'),
     }))
+    .concat(
+      therapyCentersRaw
+        .map((center) => ({
+          id: `therapy-center-${center.id}`,
+          sourceId: center.id,
+          title: text(center.name, 'Therapy Center'),
+          org: text(center.specialization, 'Therapy Center'),
+          place: joinLocation(center.address, center.city, center.state) || 'Location not specified',
+          summary: text(center.description || center.bio, text(center.therapistsInfo, 'Professional therapy services available.')),
+        }))
+    )
 
   return {
     jobs,

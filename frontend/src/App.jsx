@@ -50,6 +50,9 @@ import GuardianRequestsHistoryPage from './pages/guardian/GuardianRequestsHistor
 import SchoolWorkspaceLayout from './pages/school-workspace/SchoolWorkspaceLayout'
 import SchoolWorkspaceHome from './pages/school-workspace/SchoolWorkspaceHome'
 import SchoolWorkspaceFeaturePage from './pages/school-workspace/SchoolWorkspaceFeaturePage'
+import TherapyCenterLayout from './pages/therapy-center/TherapyCenterLayout'
+import TherapyCenterHome from './pages/therapy-center/TherapyCenterHome'
+import TherapyCenterFeaturePage from './pages/therapy-center/TherapyCenterFeaturePage'
 import { PublicOnlyRoute, RoleRoute } from './components/common/RoleRoute'
 import GeneralUserLayout from './layouts/GeneralUserLayout'
 
@@ -139,6 +142,19 @@ function App() {
           <Route path="achievements" element={<SchoolWorkspaceFeaturePage type="achievements" />} />
           <Route path="ngo-partners" element={<SchoolWorkspaceFeaturePage type="ngo-partners" />} />
           <Route path="messages" element={<SchoolWorkspaceFeaturePage type="messages" />} />
+        </Route>
+        <Route path="/therapy-center" element={<RoleRoute allowedRoles={['THERAPY_CENTER_ADMIN', 'SUPER_ADMIN']}><TherapyCenterLayout /></RoleRoute>}>
+          <Route index element={<TherapyCenterHome />} />
+          <Route path="profile" element={<TherapyCenterFeaturePage type="profile" />} />
+          <Route path="therapy-types" element={<TherapyCenterFeaturePage type="therapy-types" />} />
+          <Route path="bookings" element={<TherapyCenterFeaturePage type="bookings" />} />
+          <Route path="clients" element={<TherapyCenterFeaturePage type="clients" />} />
+          <Route path="appointments" element={<TherapyCenterFeaturePage type="appointments" />} />
+          <Route path="progress" element={<TherapyCenterFeaturePage type="progress" />} />
+          <Route path="requests" element={<TherapyCenterFeaturePage type="requests" />} />
+          <Route path="events" element={<TherapyCenterFeaturePage type="events" />} />
+          <Route path="campaigns" element={<TherapyCenterFeaturePage type="campaigns" />} />
+          <Route path="messages" element={<TherapyCenterFeaturePage type="messages" />} />
         </Route>
 
         {/* Protected Routes */}

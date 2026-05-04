@@ -49,6 +49,17 @@ const ORG_FIELDS = {
     { name: 'orgWebsiteUrl', label: 'Website URL', placeholder: 'https://...', required: false },
     { name: 'orgDescription', label: 'About the Startup', placeholder: 'Describe your product and social impact...', required: false, textarea: true },
   ],
+  THERAPY_CENTER_ADMIN: [
+    { name: 'orgName', label: 'Therapy Center Name', placeholder: 'e.g. Healing Hearts Therapy Center', required: true },
+    { name: 'orgRegistrationNumber', label: 'Registration / License Number', placeholder: 'Medical registration number', required: false },
+    { name: 'orgAddress', label: 'Center Address', placeholder: 'Full address', required: true },
+    { name: 'orgCity', label: 'City', placeholder: 'e.g. Mumbai', required: false },
+    { name: 'orgState', label: 'State', placeholder: 'e.g. Maharashtra', required: false },
+    { name: 'orgWebsiteUrl', label: 'Website URL', placeholder: 'https://...', required: false },
+    { name: 'orgIndustry', label: 'Specialization', placeholder: 'e.g. Speech Therapy, Physical Therapy, Mental Health', required: false },
+    { name: 'orgDescription', label: 'About the Therapy Center', placeholder: 'Describe your services and expertise...', required: false, textarea: true },
+    { name: 'orgMission', label: 'Therapists Info', placeholder: 'Information about your therapy staff and qualifications', required: false, textarea: true },
+  ],
 }
 
 const COLORS = {
@@ -75,7 +86,7 @@ export default function Register() {
   const selectedRole = ROLES.find(r => r.role === formData.role)
   const isSpecial = formData.role === 'SPECIAL_ABLED_PERSON'
   const isGuardian = formData.role === 'GUARDIAN_CAREGIVER'
-  const isOrg = ['SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN'].includes(formData.role)
+  const isOrg = ['SCHOOL_ADMIN', 'NGO_ADMIN', 'STARTUP_ADMIN', 'THERAPY_CENTER_ADMIN'].includes(formData.role)
   const requiresExtraStep = isOrg || isSpecial || isGuardian
   const orgFields = ORG_FIELDS[formData.role] || []
   const extraFields = isSpecial ? SPECIAL_FIELDS : isGuardian ? GUARDIAN_FIELDS : orgFields

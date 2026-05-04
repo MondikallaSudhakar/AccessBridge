@@ -127,6 +127,28 @@ export const USER_TYPE_GUIDES = [
     ],
   },
   {
+    role: 'THERAPY_CENTER_ADMIN',
+    label: 'Therapy Centers',
+    loginPurpose: 'Join to provide therapeutic services, manage therapy programs, and support specially-abled persons and their guardians.',
+    dashboardPath: '/therapy-center',
+    canView: [
+      'Therapy center profile and booking requests',
+      'Client profiles and therapy progress',
+      'Specially-abled persons needing therapy services',
+      'Guardian support requests and appointments',
+      'Events and awareness programs',
+    ],
+    canDo: [
+      'Create and update therapy center profile and specializations',
+      'Add and manage therapy types with costs and details',
+      'View and manage therapy requests from users and guardians',
+      'Track therapy sessions and client progress',
+      'Communicate with clients and guardians',
+      'Post events and awareness campaigns',
+      'Manage bookings and appointments',
+    ],
+  },
+  {
     role: 'SUPER_ADMIN',
     label: 'Super Admin',
     loginPurpose: 'Join to review applications, approve organizations, and moderate the full platform.',
