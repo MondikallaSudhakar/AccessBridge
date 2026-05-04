@@ -96,6 +96,7 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="ngos" element={<SpecialFeaturePage type="ngos" />} />
           <Route path="training" element={<SpecialFeaturePage type="training" />} />
+          <Route path="therapy" element={<SpecialFeaturePage type="therapy" />} />
           <Route path="events" element={<SpecialFeaturePage type="events" />} />
           <Route path="campaigns" element={<SpecialFeaturePage type="campaigns" />} />
           <Route path="schemes" element={<SpecialFeaturePage type="schemes" />} />

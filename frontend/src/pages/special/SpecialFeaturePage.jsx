@@ -297,6 +297,77 @@ function TrainingTab() {
   )
 }
 
+/* ═══════════════════════════════ THERAPY TAB ════════════════════════════ */
+function TherapyTab() {
+  const [therapyCenters, setTherapyCenters] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    const loadTherapyCenters = async () => {
+      try {
+        const centers = await get(`${BASE}/therapy-centers/approved`)
+        setTherapyCenters(Array.isArray(centers) ? centers : [])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadTherapyCenters()
+  }, [])
+
+  const filtered = therapyCenters.filter(center => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return [center.name, center.specialization, center.city, center.address]
+      .filter(Boolean)
+      .some(value => String(value).toLowerCase().includes(q))
+  })
+
+  return (
+    <section>
+      <SectionHeader title="Therapy Centers" sub="Find and book therapy services provided by specialized centers." />
+      <input 
+        value={search} 
+        onChange={e => setSearch(e.target.value)} 
+        placeholder="Search by center name or specialization..." 
+        style={{ width: '100%', boxSizing: 'border-box', border: '1.5px solid #e2e8f0', borderRadius: 10, padding: '9px 14px', fontSize: 13, marginBottom: 14, outline: 'none' }} 
+      />
+      {loading ? <Spinner /> : filtered.length === 0 ? <Empty msg="No therapy centers available yet." /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 14 }}>
+          {filtered.map(center => (
+            <div key={center.id} style={card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>{center.name}</h4>
+                <span style={chip(G)}>Therapy Center</span>
+              </div>
+              <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b', fontWeight: 600 }}>{center.specialization || 'Multi-specialty therapy'}</p>
+              <p style={{ margin: '0 0 6px', fontSize: 12, color: '#64748b' }}>{[center.city, center.state].filter(Boolean).join(', ') || 'Location not listed'}</p>
+              {center.phone && <p style={{ margin: '0 0 4px', fontSize: 12, color: '#64748b' }}><strong>Phone:</strong> {center.phone}</p>}
+              {center.operatingHours && <p style={{ margin: '0 0 6px', fontSize: 12, color: '#64748b' }}><strong>Hours:</strong> {center.operatingHours}</p>}
+              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{center.description || center.bio || center.therapistsInfo || 'Professional therapy services available.'}</p>
+              {center.therapyTypes && center.therapyTypes.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: NAVY }}>Available Services:</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {center.therapyTypes.slice(0, 3).map((type, idx) => (
+                      <span key={idx} style={chip('#1f2937')}>{type.typeName}</span>
+                    ))}
+                    {center.therapyTypes.length > 3 && <span style={chip('#6b7280')}>+{center.therapyTypes.length - 3}</span>}
+                  </div>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button style={btn(G)}>Book Service</button>
+                <button style={outBtn(B)}>View Details</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
 /* ═══════════════════════════════ EVENTS TAB ═══════════════════════════════ */
 function EventsTab() {
   const [events, setEvents] = useState([])
@@ -644,6 +715,7 @@ export default function SpecialFeaturePage({ type }) {
     marketplace: <MarketplaceTab />,
     ngos: <NgosTab />,
     training: <TrainingTab />,
+    therapy: <TherapyTab />,
     events: <EventsTab />,
     campaigns: <CampaignsTab />,
     schemes: <SchemesTab />,
