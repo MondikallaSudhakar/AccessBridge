@@ -59,7 +59,33 @@ const TherapyCenterFeaturePage = ({ type }) => {
         return
       }
 
-      const centerResponse = await api.get(`/therapy-centers/email/${encodeURIComponent(user.email)}`)
+      let centerResponse
+      try {
+        centerResponse = await api.get(`/therapy-centers/email/${encodeURIComponent(user.email)}`)
+      } catch {
+        const existingCenters = await api.get('/therapy-centers')
+        const matchedCenter = Array.isArray(existingCenters)
+          ? existingCenters.find((item) => String(item?.email || '').toLowerCase() === String(user.email).toLowerCase())
+          : null
+
+        centerResponse = matchedCenter || await api.post('/therapy-centers', {
+          name: user.name || 'Therapy Center',
+          email: user.email,
+          phone: user.phone || '',
+          address: user.address || '',
+          bio: user.bio || '',
+          description: user.bio || '',
+          registrationNumber: '',
+          therapistsInfo: '',
+          capacity: null,
+          operatingHours: '',
+          facilities: '',
+          specialization: '',
+          profileImage: '',
+          website: '',
+        })
+      }
+
       setCenter(centerResponse)
 
       const types = Array.isArray(centerResponse?.therapyTypes) ? centerResponse.therapyTypes : []
