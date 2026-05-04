@@ -69,7 +69,7 @@ public class TherapyCenterController {
 
     @GetMapping("/approved")
     public ResponseEntity<List<TherapyCenterResponse>> getApprovedTherapyCenters() {
-        List<TherapyCenter> centers = therapyCenterRepository.findByStatusAndActiveTrue("APPROVED");
+        List<TherapyCenter> centers = therapyCenterRepository.findByActiveTrue();
         return ResponseEntity.ok(centers.stream().map(this::convertToResponse).collect(Collectors.toList()));
     }
 
