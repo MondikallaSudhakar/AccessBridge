@@ -1,9 +1,42 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 import { THERAPY_CENTER_CAPABILITIES_VIEW, THERAPY_CENTER_CAPABILITIES_DO } from './therapyCenterWorkspaceData'
 
 const TherapyCenterHome = () => {
   const { user } = useAuth()
+  const [center, setCenter] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadCenter = async () => {
+      if (!user?.email) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await api.get(`/therapy-centers/email/${encodeURIComponent(user.email)}`)
+        setCenter(response)
+      } catch {
+        setCenter(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCenter()
+  }, [user?.email])
+
+  const stats = useMemo(() => {
+    const types = Array.isArray(center?.therapyTypes) ? center.therapyTypes : []
+    return {
+      therapyTypes: types.length,
+      activeTypes: types.filter((item) => String(item.status || '').toUpperCase() === 'ACTIVE').length,
+      capacity: center?.capacity ?? 'N/A',
+      status: center?.status || 'PENDING',
+    }
+  }, [center])
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -17,21 +50,30 @@ const TherapyCenterHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <p className="text-gray-500 text-sm font-medium">Active Clients</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">24</p>
+          <p className="text-3xl font-bold text-blue-600 mt-2">N/A</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
           <p className="text-gray-500 text-sm font-medium">Therapy Types</p>
-          <p className="text-3xl font-bold text-green-600 mt-2">8</p>
+          <p className="text-3xl font-bold text-green-600 mt-2">{loading ? '...' : stats.therapyTypes}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <p className="text-gray-500 text-sm font-medium">Appointments This Week</p>
-          <p className="text-3xl font-bold text-purple-600 mt-2">16</p>
+          <p className="text-gray-500 text-sm font-medium">Center Status</p>
+          <p className="text-3xl font-bold text-purple-600 mt-2">{loading ? '...' : stats.status}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <p className="text-gray-500 text-sm font-medium">Pending Requests</p>
-          <p className="text-3xl font-bold text-orange-600 mt-2">3</p>
+          <p className="text-gray-500 text-sm font-medium">Capacity</p>
+          <p className="text-3xl font-bold text-orange-600 mt-2">{loading ? '...' : stats.capacity}</p>
         </div>
       </div>
+
+      {center && (
+        <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="text-xl font-bold text-gray-800">{center.name}</h2>
+          <p className="mt-2 text-gray-600">{center.specialization || 'Therapy center profile'}</p>
+          <p className="mt-1 text-sm text-gray-500">{center.address}</p>
+          <p className="mt-1 text-sm text-gray-500">{stats.activeTypes} active therapy types</p>
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

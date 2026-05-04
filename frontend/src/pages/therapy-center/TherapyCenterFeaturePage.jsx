@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 import { THERAPY_CENTER_FEATURES } from './therapyCenterWorkspaceData'
 
 const TherapyCenterFeaturePage = ({ type }) => {
   const feature = THERAPY_CENTER_FEATURES[type]
+  const { user } = useAuth()
   const [therapyTypes, setTherapyTypes] = useState([])
-  const [bookings, setBookings] = useState([])
-  const [clients, setClients] = useState([])
-  const [appointments, setAppointments] = useState([])
+  const [center, setCenter] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState(null)
 
@@ -44,53 +47,27 @@ const TherapyCenterFeaturePage = ({ type }) => {
 
   useEffect(() => {
     fetchData()
-  }, [type])
+  }, [type, user?.email])
 
   const fetchData = async () => {
     setLoading(true)
+    setError('')
     try {
-      if (type === 'therapy-types') {
-        // Mock data for therapy types
-        setTherapyTypes([
-          {
-            id: 1,
-            typeName: 'Speech Therapy',
-            description: 'Speech and language development',
-            ageGroup: '0-12',
-            sessionDuration: '1 hour',
-            frequency: 'Weekly',
-            cost: 500,
-            status: 'ACTIVE',
-          },
-          {
-            id: 2,
-            typeName: 'Physical Therapy',
-            description: 'Movement and mobility therapy',
-            ageGroup: '5-18',
-            sessionDuration: '1 hour',
-            frequency: 'Twice Weekly',
-            cost: 600,
-            status: 'ACTIVE',
-          },
-        ])
-      } else if (type === 'clients') {
-        setClients([
-          { id: 1, name: 'Rahul Kumar', therapy: 'Speech Therapy', lastSession: '2 days ago', status: 'Active' },
-          { id: 2, name: 'Priya Singh', therapy: 'Physical Therapy', lastSession: '3 days ago', status: 'Active' },
-        ])
-      } else if (type === 'appointments') {
-        setAppointments([
-          { id: 1, clientName: 'Rahul Kumar', therapyType: 'Speech Therapy', date: '2025-05-10', time: '10:00 AM', status: 'SCHEDULED' },
-          { id: 2, clientName: 'Priya Singh', therapyType: 'Physical Therapy', date: '2025-05-10', time: '2:00 PM', status: 'COMPLETED' },
-        ])
-      } else if (type === 'bookings') {
-        setBookings([
-          { id: 1, clientName: 'Arun Singh', therapyType: 'Mental Health Counseling', requestDate: '2025-05-08', status: 'PENDING' },
-          { id: 2, clientName: 'Maya Patel', therapyType: 'Occupational Therapy', requestDate: '2025-05-07', status: 'CONFIRMED' },
-        ])
+      if (!user?.email) {
+        setCenter(null)
+        setTherapyTypes([])
+        return
       }
+
+      const centerResponse = await api.get(`/therapy-centers/email/${encodeURIComponent(user.email)}`)
+      setCenter(centerResponse)
+
+      const types = Array.isArray(centerResponse?.therapyTypes) ? centerResponse.therapyTypes : []
+      setTherapyTypes(types)
     } catch (error) {
-      console.error('Error fetching data:', error)
+      setCenter(null)
+      setTherapyTypes([])
+      setError(error.message || 'Error fetching therapy center data')
     } finally {
       setLoading(false)
     }
@@ -103,9 +80,23 @@ const TherapyCenterFeaturePage = ({ type }) => {
 
   const handleSubmitTherapyForm = async (e) => {
     e.preventDefault()
+    if (!center?.id) {
+      setError('Therapy center profile not found. Please complete your profile first.')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess('')
     try {
-      // In a real app, you'd send this to the API
-      setTherapyTypes([...therapyTypes, { id: Date.now(), ...therapyForm, status: 'ACTIVE' }])
+      await api.post(`/therapy-centers/${center.id}/therapy-types`, {
+        ...therapyForm,
+        cost: therapyForm.cost === '' ? null : Number(therapyForm.cost),
+      })
+
+      const refreshed = await api.get(`/therapy-centers/email/${encodeURIComponent(user.email)}`)
+      setCenter(refreshed)
+      setTherapyTypes(Array.isArray(refreshed?.therapyTypes) ? refreshed.therapyTypes : [])
       setTherapyForm({
         typeName: '',
         description: '',
@@ -117,10 +108,19 @@ const TherapyCenterFeaturePage = ({ type }) => {
         prerequisites: '',
       })
       setShowForm(false)
+      setSuccess('Therapy type saved successfully.')
     } catch (error) {
-      console.error('Error adding therapy type:', error)
+      setError(error.message || 'Error adding therapy type')
+    } finally {
+      setSaving(false)
     }
   }
+
+  const stats = useMemo(() => ({
+    therapyTypes: therapyTypes.length,
+    activeTypes: therapyTypes.filter((item) => String(item.status || '').toUpperCase() === 'ACTIVE').length,
+    approved: center?.status === 'APPROVED' ? 'Approved' : center?.status || 'Pending',
+  }), [center?.status, therapyTypes])
 
   if (!feature) {
     return <div className="text-center text-gray-500">Feature not found</div>
@@ -133,6 +133,38 @@ const TherapyCenterFeaturePage = ({ type }) => {
         <h1 className="text-4xl font-bold text-gray-800">{feature.title}</h1>
         <p className="text-gray-600 mt-2">{feature.subtitle}</p>
       </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {success}
+        </div>
+      )}
+
+      {type !== 'therapy-types' && (
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-lg bg-white p-4 shadow-md">
+            <p className="text-sm text-gray-500">Therapy Center</p>
+            <p className="mt-2 text-xl font-bold text-gray-800">{center?.name || 'Not loaded yet'}</p>
+            <p className="mt-1 text-sm text-gray-600">{center?.specialization || 'No specialization set'}</p>
+          </div>
+          <div className="rounded-lg bg-white p-4 shadow-md">
+            <p className="text-sm text-gray-500">Status</p>
+            <p className="mt-2 text-xl font-bold text-gray-800">{stats.approved}</p>
+            <p className="mt-1 text-sm text-gray-600">{center?.active ? 'Center is visible in listings' : 'Center is not active yet'}</p>
+          </div>
+          <div className="rounded-lg bg-white p-4 shadow-md">
+            <p className="text-sm text-gray-500">Therapy Types</p>
+            <p className="mt-2 text-xl font-bold text-gray-800">{stats.therapyTypes}</p>
+            <p className="mt-1 text-sm text-gray-600">{stats.activeTypes} active therapy types</p>
+          </div>
+        </div>
+      )}
 
       {/* Therapy Types View */}
       {type === 'therapy-types' && (
@@ -208,8 +240,8 @@ const TherapyCenterFeaturePage = ({ type }) => {
                   rows="2"
                 />
                 <div className="flex gap-2">
-                  <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                    Save Therapy Type
+                  <button type="submit" disabled={saving} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60">
+                    {saving ? 'Saving...' : 'Save Therapy Type'}
                   </button>
                   <button
                     type="button"
@@ -224,118 +256,58 @@ const TherapyCenterFeaturePage = ({ type }) => {
           )}
 
           {/* Therapy Types List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {therapyTypes.map((type) => (
-              <div key={type.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                <h3 className="text-lg font-bold text-gray-800">{type.typeName}</h3>
-                <p className="text-sm text-gray-600 mt-2">{type.description}</p>
-                <div className="mt-4 space-y-1 text-sm text-gray-600">
-                  <p><strong>Age Group:</strong> {type.ageGroup}</p>
-                  <p><strong>Duration:</strong> {type.sessionDuration}</p>
-                  <p><strong>Frequency:</strong> {type.frequency}</p>
-                  <p><strong>Cost:</strong> ₹{type.cost}</p>
+          {loading ? (
+            <div className="rounded-lg bg-white p-6 shadow-md text-gray-600">Loading therapy types from the database...</div>
+          ) : therapyTypes.length === 0 ? (
+            <div className="rounded-lg bg-white p-6 shadow-md text-gray-600">No therapy types saved yet.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {therapyTypes.map((therapyType) => (
+                <div key={therapyType.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                  <h3 className="text-lg font-bold text-gray-800">{therapyType.typeName}</h3>
+                  <p className="text-sm text-gray-600 mt-2">{therapyType.description}</p>
+                  <div className="mt-4 space-y-1 text-sm text-gray-600">
+                    <p><strong>Age Group:</strong> {therapyType.ageGroup || 'N/A'}</p>
+                    <p><strong>Duration:</strong> {therapyType.sessionDuration || 'N/A'}</p>
+                    <p><strong>Frequency:</strong> {therapyType.frequency || 'N/A'}</p>
+                    <p><strong>Cost:</strong> {therapyType.cost != null ? `₹${therapyType.cost}` : 'N/A'}</p>
+                    <p><strong>Status:</strong> {therapyType.status || 'ACTIVE'}</p>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button className="bg-blue-50 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-100">Edit</button>
+                    <button className="bg-red-50 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-100">Delete</button>
+                  </div>
                 </div>
-                <div className="mt-4 flex gap-2">
-                  <button className="bg-blue-50 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-100">Edit</button>
-                  <button className="bg-red-50 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-100">Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Clients View */}
       {type === 'clients' && (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Client Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Therapy Type</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Last Session</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((client) => (
-                <tr key={client.id} className="border-t hover:bg-gray-50">
-                  <td className="px-6 py-3 text-sm text-gray-800">{client.name}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{client.therapy}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{client.lastSession}</td>
-                  <td className="px-6 py-3">
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">{client.status}</span>
-                  </td>
-                  <td className="px-6 py-3 text-sm">
-                    <button className="text-blue-600 hover:underline">View Profile</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="p-6 text-gray-600">
+            Client records are not yet stored in a therapy-center table. Add client/booking entities if you want these to load from DB.
+          </div>
         </div>
       )}
 
       {/* Appointments View */}
       {type === 'appointments' && (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Client Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Therapy Type</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date & Time</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {appointments.map((apt) => (
-                <tr key={apt.id} className="border-t hover:bg-gray-50">
-                  <td className="px-6 py-3 text-sm text-gray-800">{apt.clientName}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{apt.therapyType}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{apt.date} at {apt.time}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-3 py-1 rounded-full text-sm ${
-                      apt.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {apt.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="p-6 text-gray-600">
+            Appointment data is not yet backed by a therapy-center database table.
+          </div>
         </div>
       )}
 
       {/* Bookings View */}
       {type === 'bookings' && (
         <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div key={booking.id} className="bg-white p-6 rounded-lg shadow-md border-l-4 border-orange-500">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">{booking.clientName}</h3>
-                  <p className="text-gray-600 mt-1">{booking.therapyType}</p>
-                  <p className="text-sm text-gray-500 mt-2">Request date: {booking.requestDate}</p>
-                </div>
-                <div className="flex gap-2">
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {booking.status}
-                  </span>
-                  {booking.status === 'PENDING' && (
-                    <>
-                      <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Confirm</button>
-                      <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Decline</button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          <div className="rounded-lg bg-white p-6 shadow-md text-gray-600">
+            Booking requests are not yet stored in the database. Connect this page to a bookings table when available.
+          </div>
         </div>
       )}
 
