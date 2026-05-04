@@ -7,11 +7,13 @@ import com.community.community.model.NGO;
 import com.community.community.model.Role;
 import com.community.community.model.School;
 import com.community.community.model.Startup;
+import com.community.community.model.TherapyCenter;
 import com.community.community.model.User;
 import com.community.community.security.JwtUtil;
 import com.community.community.service.NGOService;
 import com.community.community.service.SchoolService;
 import com.community.community.service.StartupService;
+import com.community.community.repository.TherapyCenterRepository;
 import com.community.community.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,6 +37,7 @@ public class AuthController {
     private final SchoolService schoolService;
     private final NGOService ngoService;
     private final StartupService startupService;
+    private final TherapyCenterRepository therapyCenterRepository;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -122,6 +125,22 @@ public class AuthController {
                     startup.setRegistrationNumber(request.getOrgRegistrationNumber());
                     startup.setVerified(false);
                     startupService.createStartup(startup);
+                } else if (request.getRole() == Role.THERAPY_CENTER_ADMIN && request.getOrgName() != null) {
+                    TherapyCenter therapyCenter = new TherapyCenter();
+                    therapyCenter.setName(request.getOrgName());
+                    therapyCenter.setEmail(request.getEmail());
+                    therapyCenter.setPhone(request.getPhone());
+                    therapyCenter.setAddress(request.getOrgAddress() != null ? request.getOrgAddress() : "");
+                    therapyCenter.setBio(request.getOrgDescription());
+                    therapyCenter.setDescription(request.getOrgDescription());
+                    therapyCenter.setRegistrationNumber(request.getOrgRegistrationNumber());
+                    therapyCenter.setTherapistsInfo(request.getOrgMission());
+                    therapyCenter.setSpecialization(request.getOrgIndustry());
+                    therapyCenter.setWebsite(request.getOrgWebsiteUrl());
+                    therapyCenter.setAdminId(String.valueOf(createdUser.getId()));
+                    therapyCenter.setStatus("PENDING");
+                    therapyCenter.setActive(true);
+                    therapyCenterRepository.save(therapyCenter);
                 }
             } catch (Exception orgEx) {
                 // Log but don't fail the user creation if org record fails

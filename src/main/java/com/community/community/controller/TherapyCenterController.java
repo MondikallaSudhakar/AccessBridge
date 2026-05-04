@@ -8,6 +8,9 @@ import com.community.community.model.TherapyCenter;
 import com.community.community.model.TherapyType;
 import com.community.community.repository.TherapyCenterRepository;
 import com.community.community.repository.TherapyTypeRepository;
+import com.community.community.service.UserService;
+import com.community.community.model.User;
+import com.community.community.model.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ public class TherapyCenterController {
 
     private final TherapyCenterRepository therapyCenterRepository;
     private final TherapyTypeRepository therapyTypeRepository;
+    private final UserService userService;
 
     // ── Therapy Center CRUD ──────────────────────────────────────────────────
 
@@ -77,8 +81,24 @@ public class TherapyCenterController {
 
     @GetMapping("/email/{email}")
     public ResponseEntity<TherapyCenterResponse> getTherapyCenterByEmail(@PathVariable String email) {
-        TherapyCenter center = therapyCenterRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Therapy Center not found"));
+        TherapyCenter center = therapyCenterRepository.findByEmail(email).orElseGet(() -> {
+            User user = userService.getUserByEmail(email);
+            if (user.getRole() != Role.THERAPY_CENTER_ADMIN) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Therapy Center not found");
+            }
+
+            TherapyCenter created = new TherapyCenter();
+            created.setName(user.getName());
+            created.setEmail(user.getEmail());
+            created.setPhone(user.getPhone());
+            created.setAddress(user.getAddress());
+            created.setBio(user.getBio());
+            created.setDescription(user.getBio());
+            created.setAdminId(String.valueOf(user.getId()));
+            created.setStatus("PENDING");
+            created.setActive(true);
+            return therapyCenterRepository.save(created);
+        });
         return ResponseEntity.ok(convertToResponse(center));
     }
 
