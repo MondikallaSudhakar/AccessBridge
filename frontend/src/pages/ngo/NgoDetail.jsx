@@ -167,6 +167,7 @@ export default function NgoDetail() {
     { key:'requirements', label:'Requirements',  count: activeNeeds.length },
     { key:'products',     label:'Products',      count: products.length },
     { key:'services',     label:'Services',      count: services.length },
+    { key:'contact',      label:'Mentor Contact', count: 0 },
     { key:'achievements', label:'Achievements',  count: achievements.length },
   ]
 
@@ -227,6 +228,14 @@ export default function NgoDetail() {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button onClick={() => setTab('contact')} className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#0197b2' }}>
+              Mentor Contact
+            </button>
+            <button onClick={() => setTab('services')} className="rounded-xl border border-[#0197b2] bg-white px-5 py-3 text-sm font-bold text-[#0197b2] transition-colors hover:bg-[#f0fbfd]">
+              View Support Services
+            </button>
           </div>
         </div>
 
@@ -293,6 +302,63 @@ export default function NgoDetail() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'contact' && (
+          <div className="flex flex-col gap-4">
+            <div className="rounded-xl border border-[#0197b2] bg-white p-6 shadow-sm">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-[#0197b2] px-3 py-1 text-xs font-bold text-[#0197b2]">Mentor Support</span>
+                <span className="rounded-full border border-[#5bcb2b] px-3 py-1 text-xs font-bold text-[#5bcb2b]">Open for volunteer contact</span>
+              </div>
+              <h3 className="mb-2 text-lg font-black text-slate-900">Contact the NGO for mentorship or support</h3>
+              <p className="mb-4 text-sm font-medium leading-relaxed text-slate-700">
+                {ngo.supportProvidedSummary || ngo.mission || 'This NGO welcomes volunteer contact for mentoring, support, and community collaboration.'}
+              </p>
+              <div className="grid gap-3 md:grid-cols-3">
+                {ngo.email && (
+                  <a href={`mailto:${ngo.email}`} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 transition-colors hover:border-[#0197b2] hover:text-[#0197b2]">
+                    Email: {ngo.email}
+                  </a>
+                )}
+                {ngo.phone && (
+                  <a href={`tel:${ngo.phone}`} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 transition-colors hover:border-[#0197b2] hover:text-[#0197b2]">
+                    Phone: {ngo.phone}
+                  </a>
+                )}
+                {ngo.websiteUrl && (
+                  <a href={ngo.websiteUrl} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 transition-colors hover:border-[#0197b2] hover:text-[#0197b2]">
+                    Website
+                  </a>
+                )}
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button onClick={() => openChat('mentor-contact', ngo.name)} className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#0197b2' }}>
+                  Message NGO
+                </button>
+                {user ? (
+                  <a href="/dashboard" className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#5bcb2b' }}>
+                    Support from Dashboard
+                  </a>
+                ) : (
+                  <a href="/register" className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#5bcb2b' }}>
+                    Join to Connect
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {services.filter(service => service.contactInfo || service.availability).map(service => (
+                <div key={service.id} className="rounded-xl border border-[#0197b2] bg-white p-5 shadow-sm">
+                  <h4 className="mb-2 text-base font-black text-slate-900">{service.title}</h4>
+                  <p className="mb-3 text-sm font-medium leading-relaxed text-slate-700">{service.description}</p>
+                  {service.availability && <p className="text-sm font-bold text-[#0197b2]">Availability: {service.availability}</p>}
+                  {service.contactInfo && <p className="text-sm font-bold text-[#5bcb2b]">Contact: {service.contactInfo}</p>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

@@ -39,6 +39,7 @@ export default function SchoolDetail() {
   const [school,       setSchool]       = useState(null)
   const [needs,        setNeeds]        = useState([])
   const [achievements, setAchievements] = useState([])
+  const [mentors,      setMentors]      = useState([])
   const [loading,      setLoading]      = useState(true)
   const [notFound,     setNotFound]     = useState(false)
   const [tab,          setTab]          = useState('overview')
@@ -48,11 +49,13 @@ export default function SchoolDetail() {
       fetchJSON(`${BASE}/schools/${id}`),
       fetchJSON(`${BASE}/schools/${id}/needs`),
       fetchJSON(`${BASE}/schools/${id}/achievements`),
-    ]).then(([schoolData, needsData, achData]) => {
+      fetchJSON(`${BASE}/schools/${id}/volunteers`),
+    ]).then(([schoolData, needsData, achData, mentorData]) => {
       if (!schoolData) { setNotFound(true); setLoading(false); return }
       setSchool(schoolData)
       setNeeds(Array.isArray(needsData) ? needsData : [])
       setAchievements(Array.isArray(achData) ? achData : [])
+      setMentors(Array.isArray(mentorData) ? mentorData : [])
       setLoading(false)
     })
   }, [id])
@@ -172,6 +175,8 @@ export default function SchoolDetail() {
             </div>
 
             <div className="flex-shrink-0 hidden md:block">
+              <button onClick={() => setTab('mentors')} className="mb-3 inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#1A8FD1' }}>Mentor Availability</button>
               {user ? (
                 <a href="/dashboard" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#5BBE00' }}>Support this School</a>
@@ -201,6 +206,7 @@ export default function SchoolDetail() {
               { key: 'overview',      label: 'Overview' },
               { key: 'achievements',  label: `Achievements (${achievements.length})` },
               { key: 'requirements',  label: `Requirements (${activeNeeds.length})` },
+              { key: 'mentors',       label: `Mentors (${mentors.length})` },
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className="px-5 py-4 text-sm font-semibold border-b-2 transition-colors"
@@ -409,6 +415,40 @@ export default function SchoolDetail() {
                 )}
               </div>
             )}
+
+            {tab === 'mentors' && (
+              <div className="space-y-4">
+                {mentors.length === 0 ? (
+                  <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
+                    <p className="text-3xl mb-3">👩‍🏫</p>
+                    <p className="text-gray-400 text-sm">No mentors or volunteer guides have been posted yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {mentors.map(mentor => (
+                      <div key={mentor.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <h3 className="font-black text-gray-900">{mentor.volunteerName}</h3>
+                            <p className="text-xs font-semibold text-gray-400 mt-1">{mentor.role || 'MENTOR'}</p>
+                          </div>
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: mentor.status === 'ACTIVE' ? '#EEF8E0' : '#F5F5F5', color: mentor.status === 'ACTIVE' ? '#5BBE00' : '#616161' }}>
+                            {mentor.status || 'ACTIVE'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed mb-4">{mentor.bio || 'Volunteer mentor available for guidance and support.'}</p>
+                        <div className="space-y-2 text-xs text-gray-600">
+                          {mentor.availability && <p><strong>Availability:</strong> {mentor.availability}</p>}
+                          {mentor.skills && <p><strong>Skills:</strong> {mentor.skills}</p>}
+                          {mentor.volunteerEmail && <p><strong>Email:</strong> <a href={`mailto:${mentor.volunteerEmail}`} className="font-semibold" style={{ color: '#1A8FD1' }}>{mentor.volunteerEmail}</a></p>}
+                          {mentor.volunteerPhone && <p><strong>Phone:</strong> <a href={`tel:${mentor.volunteerPhone}`} className="font-semibold" style={{ color: '#1A8FD1' }}>{mentor.volunteerPhone}</a></p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -470,6 +510,10 @@ export default function SchoolDetail() {
                   <span className="text-sm font-bold" style={{ color: school.specialSchool ? '#5BBE00' : '#9ca3af' }}>
                     {school.specialSchool ? 'Yes' : 'No'}
                   </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Mentors</span>
+                  <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>{mentors.length}</span>
                 </div>
               </div>
             </div>

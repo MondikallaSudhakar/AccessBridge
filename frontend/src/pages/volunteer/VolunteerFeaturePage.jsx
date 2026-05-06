@@ -7,7 +7,7 @@ import api from '../../services/api'
 
 const TEAL = '#0d9488'
 
-function Card({ item, onApply, applied, config, primaryLabel }) {
+function Card({ item, onApply, applied, config, primaryLabel, onDetails, detailsLabel }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -26,7 +26,7 @@ function Card({ item, onApply, applied, config, primaryLabel }) {
           {new Date(item.date).toLocaleDateString()}
         </p>
       )}
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onApply}
@@ -36,6 +36,15 @@ function Card({ item, onApply, applied, config, primaryLabel }) {
         >
           {applied ? 'Already Interested' : primaryLabel || 'Show Interest'}
         </button>
+        {onDetails && (
+          <button
+            type="button"
+            onClick={onDetails}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-teal-300 hover:text-teal-700"
+          >
+            {detailsLabel || 'View Profile'}
+          </button>
+        )}
       </div>
     </article>
   )
@@ -55,6 +64,8 @@ export default function VolunteerFeaturePage({ type }) {
   const [events, setEvents] = useState([])
   const [schoolNeeds, setSchoolNeeds] = useState([])
   const [stories, setStories] = useState([])
+  const [verifiedNgos, setVerifiedNgos] = useState([])
+  const [verifiedSchools, setVerifiedSchools] = useState([])
   const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -71,11 +82,13 @@ export default function VolunteerFeaturePage({ type }) {
       setLoading(true)
       setError('')
       try {
-        const [needsRes, evtRes, schRes, storRes] = await Promise.allSettled([
+        const [needsRes, evtRes, schRes, storRes, ngoListRes, schoolListRes] = await Promise.allSettled([
           api.get('/ngos/volunteer-needs'),
           api.get('/events/public'),
           api.get('/schools/needs'),
           api.get('/achievements'),
+          api.get('/ngos/verified'),
+          api.get('/schools/verified'),
         ])
 
         const needs = needsRes.status === 'fulfilled' ? Array.isArray(needsRes.value) ? needsRes.value.map((n, i) => ({
@@ -132,6 +145,8 @@ export default function VolunteerFeaturePage({ type }) {
         setEvents(evt)
         setSchoolNeeds(schools)
         setStories(stor)
+        setVerifiedNgos(ngoListRes.status === 'fulfilled' && Array.isArray(ngoListRes.value) ? ngoListRes.value : [])
+        setVerifiedSchools(schoolListRes.status === 'fulfilled' && Array.isArray(schoolListRes.value) ? schoolListRes.value : [])
 
         if (user?.email) {
           const appsRes = await api.get(`/volunteer-applications/email/${encodeURIComponent(user.email)}`)
@@ -220,6 +235,19 @@ export default function VolunteerFeaturePage({ type }) {
   }
 
   const isAlreadyApplied = (item) => appliedSet.has(`${item.type}-${item.sourceId}`)
+  const getProfilePath = (item) => {
+    if (item.ngoId) return `/ngos/${item.ngoId}`
+    if (item.schoolId) return `/schools/${item.schoolId}`
+    if (item.org && (type === 'schools' || item.type === 'SCHOOL_MENTOR')) {
+      const matchedSchool = verifiedSchools.find((school) => school.name === item.org || school.name === item.schoolName)
+      if (matchedSchool?.id) return `/schools/${matchedSchool.id}`
+    }
+    if (item.org && (type === 'ngo-needs' || type === 'opportunities')) {
+      const matchedNgo = verifiedNgos.find((ngo) => ngo.name === item.org || ngo.name === item.ngoName)
+      if (matchedNgo?.id) return `/ngos/${matchedNgo.id}`
+    }
+    return null
+  }
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -234,12 +262,15 @@ export default function VolunteerFeaturePage({ type }) {
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {currentItems.map((item) => {
           const applied = isAlreadyApplied(item)
+          const profilePath = getProfilePath(item)
           return (
             <Card
               key={item.id}
               item={item}
               applied={applied}
               primaryLabel={type === 'stories' ? 'Read Story' : 'Interest'}
+              detailsLabel={profilePath ? (profilePath.startsWith('/schools/') ? 'View School Profile' : 'View NGO Profile') : undefined}
+              onDetails={profilePath ? () => navigate(profilePath) : undefined}
               onApply={() => {
                 if (type === 'stories') {
                   window.open(`/achievements/${item.sourceId}`, '_blank')
