@@ -87,7 +87,7 @@ export default function VolunteerFeaturePage({ type }) {
           api.get('/events/public'),
           api.get('/schools/verified'),
           api.get('/achievements'),
-          api.get('/ngos/verified'),
+          api.get('/ngos'),
           api.get('/schools/verified'),
         ])
 
@@ -131,8 +131,8 @@ export default function VolunteerFeaturePage({ type }) {
             })).catch(() => ({ school, volunteers: [] }))
           )
           const results = await Promise.all(mentorPromises)
-          schools = results.flatMap(({ school, volunteers }) =>
-            volunteers.map((v, i) => ({
+          schools = results.flatMap(({ school, volunteers }) => {
+            const mentorCards = volunteers.map((v, i) => ({
               id: `sch-mentor-${school.id}-${i}`,
               sourceId: school.id,
               schoolId: school.id,
@@ -143,7 +143,19 @@ export default function VolunteerFeaturePage({ type }) {
               availability: v.availability || 'Flexible',
               type: 'SCHOOL_MENTOR',
             }))
-          )
+            if (mentorCards.length > 0) return mentorCards
+            return [{
+              id: `sch-mentor-org-${school.id}`,
+              sourceId: school.id,
+              schoolId: school.id,
+              title: `${school.name || 'School'} - Mentorship Available`,
+              org: school.name || 'School',
+              place: [school.city, school.state].filter(Boolean).join(', ') || 'School Campus',
+              summary: school.description || 'This school has enabled mentorship support for volunteers.',
+              availability: 'Mentorship enabled',
+              type: 'SCHOOL_MENTOR',
+            }]
+          })
         }
 
         // Fetch NGOs with mentorship enabled and their volunteer profiles
@@ -157,8 +169,8 @@ export default function VolunteerFeaturePage({ type }) {
             })).catch(() => ({ ngo, volunteers: [] }))
           )
           const ngoResults = await Promise.all(ngoPromises)
-          ngoMentors = ngoResults.flatMap(({ ngo, volunteers }) =>
-            volunteers.map((v, i) => ({
+          ngoMentors = ngoResults.flatMap(({ ngo, volunteers }) => {
+            const mentorCards = volunteers.map((v, i) => ({
               id: `ngo-mentor-${ngo.id}-${i}`,
               sourceId: ngo.id,
               ngoId: ngo.id,
@@ -169,7 +181,19 @@ export default function VolunteerFeaturePage({ type }) {
               availability: v.availability || 'Flexible',
               type: 'NGO_MENTOR',
             }))
-          )
+            if (mentorCards.length > 0) return mentorCards
+            return [{
+              id: `ngo-mentor-org-${ngo.id}`,
+              sourceId: ngo.id,
+              ngoId: ngo.id,
+              title: `${ngo.name || 'NGO'} - Mentorship Available`,
+              org: ngo.name || 'NGO',
+              place: [ngo.city, ngo.state].filter(Boolean).join(', ') || 'NGO Office',
+              summary: ngo.description || 'This NGO has enabled mentorship support for volunteers.',
+              availability: 'Mentorship enabled',
+              type: 'NGO_MENTOR',
+            }]
+          })
         }
 
         // Combine school and NGO mentors

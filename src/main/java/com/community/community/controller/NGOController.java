@@ -188,12 +188,10 @@ public class NGOController {
     // ── Volunteer Profiles Endpoints ───────────────────────────────────────
 
     @GetMapping("/{id}/volunteers")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NGOVolunteerProfile>> getVolunteerProfiles(@PathVariable Long id) {
-        if (!canAccessNgo(id)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return ResponseEntity.ok(ngoVolunteerProfileRepository.findByNgoIdOrderByCreatedAtDesc(id));
+        // Public endpoint: return only volunteer profiles that have been accepted/published
+        List<NGOVolunteerProfile> accepted = ngoVolunteerProfileRepository.findByNgoIdAndStatusOrderByCreatedAtDesc(id, "ACCEPTED");
+        return ResponseEntity.ok(accepted);
     }
 
     @PostMapping("/{id}/volunteers")
