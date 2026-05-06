@@ -36,6 +36,7 @@ public class NGOService {
         ngo.setCampaignHistory(ngoDetails.getCampaignHistory());
         ngo.setSupportProvidedSummary(ngoDetails.getSupportProvidedSummary());
         ngo.setTotalSpend(ngoDetails.getTotalSpend());
+            ngo.setMentorshipEnabled(ngoDetails.getMentorshipEnabled());
         return ngoRepository.save(ngo);
     }
 

@@ -33,6 +33,7 @@ public class SchoolService {
         school.setLogoUrl(schoolDetails.getLogoUrl());
         school.setSpecialSchool(schoolDetails.getSpecialSchool() != null && schoolDetails.getSpecialSchool());
         school.setDisabilityTypes(schoolDetails.getDisabilityTypes());
+        school.setMentorshipEnabled(schoolDetails.getMentorshipEnabled());
         return schoolRepository.save(school);
     }
 

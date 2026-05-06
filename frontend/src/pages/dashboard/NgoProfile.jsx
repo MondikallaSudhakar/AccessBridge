@@ -743,11 +743,12 @@ export default function NgoProfile() {
     setLoading(true); setError('')
     try {
       const d = await api.get(`/ngos/email/${encodeURIComponent(user.email)}`)
-      // Get mentorshipEnabled from backend, or from localStorage, or default to false
-      const storedMentorship = localStorage.getItem(`ngo-mentorship-${d.id}`)
-      const mentorshipEnabled = d.mentorshipEnabled !== undefined ? d.mentorshipEnabled : (storedMentorship ? JSON.parse(storedMentorship) : false)
+      // Get mentorshipEnabled from backend response
+      const mentorshipEnabled = d.mentorshipEnabled === true ? true : false
       const withDefaults = { ...d, mentorshipEnabled }
-      setNgo(withDefaults); setForm(withDefaults); await loadData(d.id)
+      setNgo(withDefaults); 
+      setForm(withDefaults); 
+      await loadData(d.id)
     } catch {
       setNgo(null); setForm({ email:user.email, verified:false, country:'India', mentorshipEnabled: false })
     } finally { setLoading(false) }
@@ -831,9 +832,6 @@ export default function NgoProfile() {
   const handleLogout = () => { logout(); navigate('/') }
   const pi = e => { 
     const v=e.target.type==='checkbox'?e.target.checked:e.target.value
-    if (e.target.name === 'mentorshipEnabled' && ngo?.id) {
-      localStorage.setItem(`ngo-mentorship-${ngo.id}`, JSON.stringify(v))
-    }
     setForm(p=>({...p,[e.target.name]:v})) 
   }
 
@@ -844,24 +842,35 @@ export default function NgoProfile() {
       if (ngo?.id) { 
         const payload = {...form, verified:ngo.verified, mentorshipEnabled: mentorshipValue}
         const u=await api.put(`/ngos/${ngo.id}`, payload)
-        const updated = {...u, mentorshipEnabled: mentorshipValue}
-        // Backup to localStorage
-        localStorage.setItem(`ngo-mentorship-${ngo.id}`, JSON.stringify(mentorshipValue))
+        // Update state only after successful save
+        const updated = {
+          ...u, 
+          mentorshipEnabled: mentorshipValue,
+          verified: ngo.verified
+        }
         setNgo(updated); 
-        setForm(updated) 
+        setForm(updated)
+        flash('Profile saved successfully!')
       }
       else { 
         const payload = {...form, email:user.email, verified:false, mentorshipEnabled: mentorshipValue}
         const c=await api.post('/ngos', payload)
-        const updated = {...c, mentorshipEnabled: mentorshipValue}
-        // Backup to localStorage
-        if (c.id) localStorage.setItem(`ngo-mentorship-${c.id}`, JSON.stringify(mentorshipValue))
+        const updated = {
+          ...c,
+          mentorshipEnabled: mentorshipValue,
+          verified: false,
+          email: user.email
+        }
         setNgo(updated); 
         setForm(updated); 
+        flash('Profile created successfully!')
         await loadData(c.id) 
       }
-      flash('Profile saved successfully!')
-    } catch(err) { setError(err.message||'Failed to save profile') }
+    } catch(err) { 
+      // On error, revert the form to the last saved state
+      setForm(ngo || { email:user.email, verified:false, country:'India', mentorshipEnabled: false })
+      setError(err.message||'Failed to save profile. Mentorship setting not updated.')
+    }
     finally { setSaving(false) }
   }
 
