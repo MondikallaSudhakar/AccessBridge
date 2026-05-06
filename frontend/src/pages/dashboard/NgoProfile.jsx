@@ -743,9 +743,13 @@ export default function NgoProfile() {
     setLoading(true); setError('')
     try {
       const d = await api.get(`/ngos/email/${encodeURIComponent(user.email)}`)
-      setNgo(d); setForm(d); await loadData(d.id)
+      // Get mentorshipEnabled from backend, or from localStorage, or default to false
+      const storedMentorship = localStorage.getItem(`ngo-mentorship-${d.id}`)
+      const mentorshipEnabled = d.mentorshipEnabled !== undefined ? d.mentorshipEnabled : (storedMentorship ? JSON.parse(storedMentorship) : false)
+      const withDefaults = { ...d, mentorshipEnabled }
+      setNgo(withDefaults); setForm(withDefaults); await loadData(d.id)
     } catch {
-      setNgo(null); setForm({ email:user.email, verified:false, country:'India' })
+      setNgo(null); setForm({ email:user.email, verified:false, country:'India', mentorshipEnabled: false })
     } finally { setLoading(false) }
   }
 
@@ -825,13 +829,37 @@ export default function NgoProfile() {
   const flash = (msg) => { setSuccess(msg); setTimeout(()=>setSuccess(''), 3000) }
 
   const handleLogout = () => { logout(); navigate('/') }
-  const pi = e => { const v=e.target.type==='checkbox'?e.target.checked:e.target.value; setForm(p=>({...p,[e.target.name]:v})) }
+  const pi = e => { 
+    const v=e.target.type==='checkbox'?e.target.checked:e.target.value
+    if (e.target.name === 'mentorshipEnabled' && ngo?.id) {
+      localStorage.setItem(`ngo-mentorship-${ngo.id}`, JSON.stringify(v))
+    }
+    setForm(p=>({...p,[e.target.name]:v})) 
+  }
 
   const saveProfile = async e => {
     e.preventDefault(); setSaving(true); setError('')
+    const mentorshipValue = form.mentorshipEnabled
     try {
-      if (ngo?.id) { const u=await api.put(`/ngos/${ngo.id}`,{...form,verified:ngo.verified}); setNgo(u); setForm(u) }
-      else { const c=await api.post('/ngos',{...form,email:user.email,verified:false}); setNgo(c); setForm(c); await loadData(c.id) }
+      if (ngo?.id) { 
+        const payload = {...form, verified:ngo.verified, mentorshipEnabled: mentorshipValue}
+        const u=await api.put(`/ngos/${ngo.id}`, payload)
+        const updated = {...u, mentorshipEnabled: mentorshipValue}
+        // Backup to localStorage
+        localStorage.setItem(`ngo-mentorship-${ngo.id}`, JSON.stringify(mentorshipValue))
+        setNgo(updated); 
+        setForm(updated) 
+      }
+      else { 
+        const payload = {...form, email:user.email, verified:false, mentorshipEnabled: mentorshipValue}
+        const c=await api.post('/ngos', payload)
+        const updated = {...c, mentorshipEnabled: mentorshipValue}
+        // Backup to localStorage
+        if (c.id) localStorage.setItem(`ngo-mentorship-${c.id}`, JSON.stringify(mentorshipValue))
+        setNgo(updated); 
+        setForm(updated); 
+        await loadData(c.id) 
+      }
       flash('Profile saved successfully!')
     } catch(err) { setError(err.message||'Failed to save profile') }
     finally { setSaving(false) }

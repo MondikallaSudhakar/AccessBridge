@@ -82,10 +82,10 @@ export default function VolunteerFeaturePage({ type }) {
       setLoading(true)
       setError('')
       try {
-        const [needsRes, evtRes, schRes, storRes, ngoListRes, schoolListRes] = await Promise.allSettled([
+        const [needsRes, evtRes, schoolsListRes, storRes, ngoListRes, schoolListRes] = await Promise.allSettled([
           api.get('/ngos/volunteer-needs'),
           api.get('/events/public'),
-          api.get('/schools/needs'),
+          api.get('/schools/verified'),
           api.get('/achievements'),
           api.get('/ngos/verified'),
           api.get('/schools/verified'),
@@ -120,15 +120,60 @@ export default function VolunteerFeaturePage({ type }) {
           type: 'EVENT',
         })) : [] : []
 
-        const schools = schRes.status === 'fulfilled' ? Array.isArray(schRes.value) ? schRes.value.map((s, i) => ({
-          id: `sch-${i}`,
-          sourceId: s.id,
-          title: s.title || 'Mentor Needed',
-          org: s.organizationName || s.schoolName || 'School',
-          place: s.location || 'School Campus',
-          summary: s.description,
-          type: 'SCHOOL_MENTOR',
-        })) : [] : []
+        // Fetch schools with mentorship enabled and their volunteers
+        let schools = []
+        if (schoolsListRes.status === 'fulfilled' && Array.isArray(schoolsListRes.value)) {
+          const mentorSchools = schoolsListRes.value.filter(s => s.mentorshipEnabled)
+          const mentorPromises = mentorSchools.map(school =>
+            api.get(`/schools/${school.id}/volunteers`).then(volunteers => ({
+              school,
+              volunteers: Array.isArray(volunteers) ? volunteers : []
+            })).catch(() => ({ school, volunteers: [] }))
+          )
+          const results = await Promise.all(mentorPromises)
+          schools = results.flatMap(({ school, volunteers }) =>
+            volunteers.map((v, i) => ({
+              id: `sch-mentor-${school.id}-${i}`,
+              sourceId: school.id,
+              schoolId: school.id,
+              title: `${v.volunteerName || 'Mentor'} - ${v.role || 'Guide'}`,
+              org: school.name || 'School',
+              place: [school.city, school.state].filter(Boolean).join(', ') || 'School Campus',
+              summary: v.skills ? `Skills: ${v.skills}` : (v.bio || 'Mentor available for guidance'),
+              availability: v.availability || 'Flexible',
+              type: 'SCHOOL_MENTOR',
+            }))
+          )
+        }
+
+        // Fetch NGOs with mentorship enabled and their volunteer profiles
+        let ngoMentors = []
+        if (ngoListRes.status === 'fulfilled' && Array.isArray(ngoListRes.value)) {
+          const mentorNgos = ngoListRes.value.filter(n => n.mentorshipEnabled)
+          const ngoPromises = mentorNgos.map(ngo =>
+            api.get(`/ngos/${ngo.id}/volunteers`).then(volunteers => ({
+              ngo,
+              volunteers: Array.isArray(volunteers) ? volunteers : []
+            })).catch(() => ({ ngo, volunteers: [] }))
+          )
+          const ngoResults = await Promise.all(ngoPromises)
+          ngoMentors = ngoResults.flatMap(({ ngo, volunteers }) =>
+            volunteers.map((v, i) => ({
+              id: `ngo-mentor-${ngo.id}-${i}`,
+              sourceId: ngo.id,
+              ngoId: ngo.id,
+              title: `${v.fullName || 'Mentor'} - Mentor`,
+              org: ngo.name || 'NGO',
+              place: [ngo.city, ngo.state].filter(Boolean).join(', ') || 'NGO Office',
+              summary: v.skills ? `Skills: ${v.skills}` : (v.note || 'Mentor available for guidance'),
+              availability: v.availability || 'Flexible',
+              type: 'NGO_MENTOR',
+            }))
+          )
+        }
+
+        // Combine school and NGO mentors
+        const allMentors = [...schools, ...ngoMentors]
 
         const stor = storRes.status === 'fulfilled' ? Array.isArray(storRes.value) ? storRes.value.map((st, i) => ({
           id: `story-${i}`,
@@ -143,7 +188,7 @@ export default function VolunteerFeaturePage({ type }) {
         setOpportunities(opps)
         setNgoNeeds(needs)
         setEvents(evt)
-        setSchoolNeeds(schools)
+        setSchoolNeeds(allMentors)
         setStories(stor)
         setVerifiedNgos(ngoListRes.status === 'fulfilled' && Array.isArray(ngoListRes.value) ? ngoListRes.value : [])
         setVerifiedSchools(schoolListRes.status === 'fulfilled' && Array.isArray(schoolListRes.value) ? schoolListRes.value : [])
@@ -246,9 +291,11 @@ export default function VolunteerFeaturePage({ type }) {
       if (org?.mentorshipEnabled) return `/schools/${item.schoolId}`
       return null
     }
-    if (item.org && (type === 'schools' || item.type === 'SCHOOL_MENTOR')) {
+    if (item.org && (type === 'schools' || item.type === 'SCHOOL_MENTOR' || item.type === 'NGO_MENTOR')) {
       const matchedSchool = verifiedSchools.find((school) => school.name === item.org || school.name === item.schoolName)
       if (matchedSchool?.id && matchedSchool?.mentorshipEnabled) return `/schools/${matchedSchool.id}`
+      const matchedNgo = verifiedNgos.find((ngo) => ngo.name === item.org || ngo.name === item.ngoName)
+      if (matchedNgo?.id && matchedNgo?.mentorshipEnabled) return `/ngos/${matchedNgo.id}`
       return null
     }
     if (item.org && (type === 'ngo-needs' || type === 'opportunities')) {

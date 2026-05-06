@@ -90,13 +90,17 @@ export default function SchoolProfile() {
     try {
       const encoded = encodeURIComponent(user.email)
       const data = await api.get(`/schools/email/${encoded}`)
-      setSchool(data)
-      setForm(data)
+      // Get mentorshipEnabled from backend, or from localStorage, or default to false
+      const storedMentorship = localStorage.getItem(`school-mentorship-${data.id}`)
+      const mentorshipEnabled = data.mentorshipEnabled !== undefined ? data.mentorshipEnabled : (storedMentorship ? JSON.parse(storedMentorship) : false)
+      const withDefaults = { ...data, mentorshipEnabled }
+      setSchool(withDefaults)
+      setForm(withDefaults)
       fetchNeeds(data.id)
       fetchAchievements(data.id)
     } catch {
       setSchool(null)
-      setForm({ email: user.email, specialSchool: false })
+      setForm({ email: user.email, specialSchool: false, mentorshipEnabled: false })
     } finally {
       setProfileLoading(false)
     }
@@ -130,6 +134,9 @@ export default function SchoolProfile() {
 
   const handleChange = (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value
+    if (e.target.name === 'mentorshipEnabled' && school?.id) {
+      localStorage.setItem(`school-mentorship-${school.id}`, JSON.stringify(val))
+    }
     setForm({ ...form, [e.target.name]: val })
   }
 
@@ -144,16 +151,23 @@ export default function SchoolProfile() {
     setProfileError('')
     setProfileSuccess('')
     setSaving(true)
+    const mentorshipValue = form.mentorshipEnabled
     try {
       if (school) {
-        const updated = await api.put(`/schools/${school.id}`, { ...form, verified: school.verified })
-        setSchool(updated)
-        setForm(updated)
+        const updated = await api.put(`/schools/${school.id}`, { ...form, verified: school.verified, mentorshipEnabled: mentorshipValue })
+        const withMentorship = {...updated, mentorshipEnabled: mentorshipValue}
+        // Backup to localStorage
+        localStorage.setItem(`school-mentorship-${school.id}`, JSON.stringify(mentorshipValue))
+        setSchool(withMentorship)
+        setForm(withMentorship)
         setProfileSuccess('Profile saved successfully!')
       } else {
-        const created = await api.post(`/schools`, { ...form, email: user.email, verified: false })
-        setSchool(created)
-        setForm(created)
+        const created = await api.post(`/schools`, { ...form, email: user.email, verified: false, mentorshipEnabled: mentorshipValue })
+        const withMentorship = {...created, mentorshipEnabled: mentorshipValue}
+        // Backup to localStorage
+        if (created.id) localStorage.setItem(`school-mentorship-${created.id}`, JSON.stringify(mentorshipValue))
+        setSchool(withMentorship)
+        setForm(withMentorship)
         setProfileSuccess('School profile created!')
         fetchNeeds(created.id)
         fetchAchievements(created.id)
