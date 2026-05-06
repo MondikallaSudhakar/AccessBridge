@@ -175,8 +175,10 @@ export default function SchoolDetail() {
             </div>
 
             <div className="flex-shrink-0 hidden md:block">
-              <button onClick={() => setTab('mentors')} className="mb-3 inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: '#1A8FD1' }}>Mentor Availability</button>
+              {school?.mentorshipEnabled && (
+                <button onClick={() => setTab('mentors')} className="mb-3 inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#1A8FD1' }}>Mentor Availability</button>
+              )}
               {user ? (
                 <a href="/dashboard" className="inline-block text-sm font-semibold text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: '#5BBE00' }}>Support this School</a>
@@ -206,7 +208,7 @@ export default function SchoolDetail() {
               { key: 'overview',      label: 'Overview' },
               { key: 'achievements',  label: `Achievements (${achievements.length})` },
               { key: 'requirements',  label: `Requirements (${activeNeeds.length})` },
-              { key: 'mentors',       label: `Mentors (${mentors.length})` },
+              ...(school?.mentorshipEnabled ? [{ key: 'mentors',       label: `Mentors (${mentors.length})` }] : []),
             ].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className="px-5 py-4 text-sm font-semibold border-b-2 transition-colors"
@@ -511,10 +513,12 @@ export default function SchoolDetail() {
                     {school.specialSchool ? 'Yes' : 'No'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Mentors</span>
-                  <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>{mentors.length}</span>
-                </div>
+                {school?.mentorshipEnabled && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">Mentors</span>
+                    <span className="text-sm font-black" style={{ color: '#1A8FD1' }}>{mentors.length}</span>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -236,15 +236,25 @@ export default function VolunteerFeaturePage({ type }) {
 
   const isAlreadyApplied = (item) => appliedSet.has(`${item.type}-${item.sourceId}`)
   const getProfilePath = (item) => {
-    if (item.ngoId) return `/ngos/${item.ngoId}`
-    if (item.schoolId) return `/schools/${item.schoolId}`
+    if (item.ngoId) {
+      const org = verifiedNgos.find(n => n.id === item.ngoId)
+      if (org?.mentorshipEnabled) return `/ngos/${item.ngoId}`
+      return null
+    }
+    if (item.schoolId) {
+      const org = verifiedSchools.find(s => s.id === item.schoolId)
+      if (org?.mentorshipEnabled) return `/schools/${item.schoolId}`
+      return null
+    }
     if (item.org && (type === 'schools' || item.type === 'SCHOOL_MENTOR')) {
       const matchedSchool = verifiedSchools.find((school) => school.name === item.org || school.name === item.schoolName)
-      if (matchedSchool?.id) return `/schools/${matchedSchool.id}`
+      if (matchedSchool?.id && matchedSchool?.mentorshipEnabled) return `/schools/${matchedSchool.id}`
+      return null
     }
     if (item.org && (type === 'ngo-needs' || type === 'opportunities')) {
       const matchedNgo = verifiedNgos.find((ngo) => ngo.name === item.org || ngo.name === item.ngoName)
-      if (matchedNgo?.id) return `/ngos/${matchedNgo.id}`
+      if (matchedNgo?.id && matchedNgo?.mentorshipEnabled) return `/ngos/${matchedNgo.id}`
+      return null
     }
     return null
   }

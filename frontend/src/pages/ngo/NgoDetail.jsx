@@ -167,7 +167,7 @@ export default function NgoDetail() {
     { key:'requirements', label:'Requirements',  count: activeNeeds.length },
     { key:'products',     label:'Products',      count: products.length },
     { key:'services',     label:'Services',      count: services.length },
-    { key:'contact',      label:'Mentor Contact', count: 0 },
+    ...(ngo?.mentorshipEnabled ? [{ key:'contact',      label:'Mentor Contact', count: 0 }] : []),
     { key:'achievements', label:'Achievements',  count: achievements.length },
   ]
 
@@ -230,9 +230,11 @@ export default function NgoDetail() {
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={() => setTab('contact')} className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#0197b2' }}>
-              Mentor Contact
-            </button>
+            {ngo?.mentorshipEnabled && (
+              <button onClick={() => setTab('contact')} className="rounded-xl px-5 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#0197b2' }}>
+                Mentor Contact
+              </button>
+            )}
             <button onClick={() => setTab('services')} className="rounded-xl border border-[#0197b2] bg-white px-5 py-3 text-sm font-bold text-[#0197b2] transition-colors hover:bg-[#f0fbfd]">
               View Support Services
             </button>

@@ -66,6 +66,9 @@ public class NGO {
     @Column(nullable = false)
     private Boolean verified = false;
 
+    @Column(nullable = false)
+    private Boolean mentorshipEnabled = false;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

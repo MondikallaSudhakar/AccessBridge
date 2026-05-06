@@ -539,6 +539,21 @@ export default function SchoolProfile() {
                         )}
                       </div>
 
+                      {/* Mentorship Availability Toggle */}
+                      <div className="border rounded-xl p-5" style={{ borderColor: form.mentorshipEnabled ? '#1A8FD1' : '#e5e7eb', backgroundColor: form.mentorshipEnabled ? '#E8F4FC' : '#fafafa' }}>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <input type="checkbox" name="mentorshipEnabled"
+                            checked={!!form.mentorshipEnabled}
+                            onChange={handleChange}
+                            className="mt-0.5 w-4 h-4 rounded"
+                          />
+                          <div>
+                            <div className="text-sm font-bold text-gray-900">Enable Mentorship Support</div>
+                            <div className="text-xs text-gray-400 mt-0.5">Check this if your school offers mentorship opportunities for volunteers. When enabled, mentors will be visible to volunteers and donors on your public profile.</div>
+                          </div>
+                        </label>
+                      </div>
+
                       {/* Basic fields */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[

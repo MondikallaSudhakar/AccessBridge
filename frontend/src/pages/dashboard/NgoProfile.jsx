@@ -1211,6 +1211,24 @@ export default function NgoProfile() {
 
               <Panel>
                 <PanelHeader title="NGO Profile" subtitle="This information appears on your public profile and the community directory." />
+                
+                {/* Mentorship Availability Toggle */}
+                <div style={{padding:'16px',borderRadius:10,border:`1.5px solid ${form.mentorshipEnabled?'#1A8FD1':'#e5e7eb'}`,backgroundColor:form.mentorshipEnabled?'#E8F4FC':'#fafafa',marginBottom:22}}>
+                  <label style={{display:'flex',alignItems:'flex-start',gap:12,cursor:'pointer'}}>
+                    <input 
+                      type="checkbox" 
+                      name="mentorshipEnabled"
+                      checked={!!form.mentorshipEnabled}
+                      onChange={pi}
+                      style={{marginTop:3,width:16,height:16,borderRadius:3,cursor:'pointer'}}
+                    />
+                    <div>
+                      <div style={{fontSize:14,fontWeight:600,color:NAVY,marginBottom:3}}>Enable Mentorship Support</div>
+                      <div style={{fontSize:12,color:'#64748b',lineHeight:1.5}}>Check this if your NGO offers mentorship opportunities for volunteers. When enabled, mentors will be visible to volunteers and donors on your public profile.</div>
+                    </div>
+                  </label>
+                </div>
+
                 <form onSubmit={saveProfile}>
                   <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
                     {[
