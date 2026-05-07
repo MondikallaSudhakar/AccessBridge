@@ -5,15 +5,15 @@ import { useAuth } from '../context/AuthContext'
 const API = 'http://localhost:8081/api'
 
 const COLORS = {
-  primary: '#2563eb',
-  primaryLight: '#eff6ff',
-  border: '#e5e7eb',
+  primary: '#0197B2',
+  primaryLight: '#f0f8fc',
+  border: '#e0f2fe',
   text: '#1f2937',
   textLight: '#6b7280',
   textLighter: '#9ca3af',
   bg: '#ffffff',
   bgLight: '#f9fafb',
-  success: '#10b981',
+  success: '#5BCB2B',
   warning: '#f59e0b',
   danger: '#ef4444',
 }
@@ -237,11 +237,11 @@ function isDeadlinePassed(dateStr) {
 
 /* ── Timeline dot colours by type ── */
 const TYPE_DOT = {
-  jobs: { dot: '#2563eb', bg: '#eff6ff', label: 'Job' },
-  requirements: { dot: '#2563eb', bg: '#eff6ff', label: 'Requirement' },
-  events: { dot: '#2563eb', bg: '#eff6ff', label: 'Event' },
-  stories: { dot: '#2563eb', bg: '#eff6ff', label: 'Story' },
-  products: { dot: '#2563eb', bg: '#eff6ff', label: 'Product' },
+  jobs: { dot: '#0197B2', bg: '#f0f8fc', label: 'Job' },
+  requirements: { dot: '#0197B2', bg: '#f0f8fc', label: 'Requirement' },
+  events: { dot: '#0197B2', bg: '#f0f8fc', label: 'Event' },
+  stories: { dot: '#0197B2', bg: '#f0f8fc', label: 'Story' },
+  products: { dot: '#0197B2', bg: '#f0f8fc', label: 'Product' },
 }
 
 function TimelineItem({ item, index, isLast }) {
