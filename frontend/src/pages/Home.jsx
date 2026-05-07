@@ -150,7 +150,7 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
           {user ? (
             navItems.map((item) => (
               <Link key={item.label} to={item.href} className="hidden items-center gap-1.5 rounded px-3 py-2 text-sm transition-colors md:flex" style={{ color: COLORS.textLight }}>
-                <item.Icon />
+                <span>{item.label}</span>
               </Link>
             ))
           ) : (
@@ -420,13 +420,12 @@ export default function Home() {
         {/* Search Section */}
         <section className="mb-8">
           <label className="relative block">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" style={{ color: COLORS.textLighter }}><Icons.Search /></span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               type="text"
               placeholder="Search opportunities, stories, and products"
-              className="h-11 w-full rounded-lg border pl-10 pr-4 text-sm outline-none transition-colors focus:ring-1"
+              className="h-11 w-full rounded-lg border px-4 text-sm outline-none transition-colors focus:ring-1"
               style={{ borderColor: COLORS.border, color: COLORS.text }}
             />
           </label>

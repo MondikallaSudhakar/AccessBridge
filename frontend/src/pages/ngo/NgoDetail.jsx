@@ -216,12 +216,11 @@ export default function NgoDetail() {
             {/* Stat cards */}
             <div className="flex flex-wrap gap-3 mt-6 md:mt-0 justify-start md:justify-end">
               {[
-                { label:'Jobs', Icon: Icons.Briefcase, count: openJobs.length },
-                { label:'Needs', Icon: Icons.Heart, count: activeNeeds.length },
-                { label:'Products', Icon: Icons.Package, count: products.length },
+                { label:'Jobs', count: openJobs.length },
+                { label:'Needs', count: activeNeeds.length },
+                { label:'Products', count: products.length },
               ].map(s => (
                 <div key={s.label} className="flex min-w-[90px] flex-col items-center justify-center rounded-lg border bg-white p-3" style={{ borderColor:'#e5e7eb' }}>
-                  <div className="mb-2" style={{ color:B }}><s.Icon /></div>
                   <span className="text-lg font-bold" style={{ color:B }}>{s.count}</span>
                   <span className="text-xs" style={{ color:'#6b7280' }}>{s.label}</span>
                 </div>
