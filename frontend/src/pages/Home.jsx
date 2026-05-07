@@ -5,21 +5,17 @@ import { useAuth } from '../context/AuthContext'
 const API = 'http://localhost:8081/api'
 
 const COLORS = {
-  green: '#5bcb2b',
-  greenSoft: '#f0fdf4',
-  greenBorder: '#bbf7d0',
-  blue: '#0197b2',
-  blueSoft: '#f0f8fc',
-  blueBorder: '#c8e6f0',
-  blueDark: '#0a4b5a',
-  orange: '#f97316',
-  heroGradient: '#0197b2',
-  white: '#ffffff',
-  slate50: '#f9fafb',
-  slate100: '#f3f4f6',
-  slate200: '#e5e7eb',
-  slate700: '#374151',
-  slate900: '#111827',
+  primary: '#2563eb',
+  primaryLight: '#eff6ff',
+  border: '#e5e7eb',
+  text: '#1f2937',
+  textLight: '#6b7280',
+  textLighter: '#9ca3af',
+  bg: '#ffffff',
+  bgLight: '#f9fafb',
+  success: '#10b981',
+  warning: '#f59e0b',
+  danger: '#ef4444',
 }
 
 async function fetchPublic(path) {
@@ -119,17 +115,17 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
     ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:px-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center justify-between gap-3 lg:min-w-fit">
+    <header className="sticky top-0 z-50 border-b" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bg }}>
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 md:px-6">
+        <div className="flex items-center justify-between gap-3">
           <a href="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-8 w-8 rounded-lg border-2 border-black text-sm font-black text-black grid place-items-center bg-transparent">IC</div>
-            <span className="hidden text-sm font-extrabold tracking-tight md:inline" style={{ color: COLORS.blue }}>Inclusive Connect</span>
+            <div className="h-8 w-8 rounded-lg font-bold text-sm grid place-items-center" style={{ color: COLORS.primary, backgroundColor: COLORS.primaryLight }}>IC</div>
+            <span className="hidden text-lg font-bold tracking-tight md:inline" style={{ color: COLORS.text }}>Inclusive Connect</span>
           </a>
         </div>
 
         {!user && (
-          <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-1 lg:justify-center lg:pb-0">
+          <nav className="-mx-1 hidden flex-1 justify-center gap-4 px-1 lg:flex">
             {PUBLIC_TABS.map((tab) => {
               const selected = tab.id === activeTab
               return (
@@ -137,8 +133,11 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`shrink-0 rounded-full border-2 px-4 py-2 text-sm font-semibold transition-all ${selected ? 'border-[#0197b2] text-[#0197b2]' : 'border-transparent text-slate-600 hover:border-slate-200 hover:text-[#0197b2]'}`}
-                  style={selected ? { borderColor: COLORS.blue, color: COLORS.blue } : {}}
+                  className="px-3 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    color: selected ? COLORS.primary : COLORS.textLight,
+                    borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
+                  }}
                 >
                   {tab.label}
                 </button>
@@ -147,21 +146,19 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
           </nav>
         )}
 
-        <nav className="flex items-center justify-end gap-2">
+        <nav className="flex items-center justify-end gap-4">
           {user ? (
             navItems.map((item) => (
-              <Link key={item.label} to={item.href} className="group hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-slate-600 transition-colors hover:text-slate-900 md:flex">
+              <Link key={item.label} to={item.href} className="hidden items-center gap-1.5 rounded px-3 py-2 text-sm transition-colors md:flex" style={{ color: COLORS.textLight }}>
                 <item.Icon />
-                <span className="text-xs font-medium">{item.label}</span>
               </Link>
             ))
           ) : (
             <>
-              <Link to="/login" className="hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 md:inline-flex" style={{ borderColor: COLORS.blueBorder }}>
-                <Icons.User />
-                <span>Sign In</span>
+              <Link to="/login" className="hidden items-center px-4 py-2 text-sm font-medium rounded transition-colors md:inline-flex" style={{ color: COLORS.text }}>
+                Sign In
               </Link>
-              <Link to="/register" className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+              <Link to="/register" className="inline-flex items-center rounded px-4 py-2 text-sm font-medium text-white" style={{ backgroundColor: COLORS.primary }}>
                 Join Now
               </Link>
             </>
@@ -183,8 +180,8 @@ function RoleTabs({ activeTab, setActiveTab, counts }) {
   ]
 
   return (
-    <div className="mb-4 rounded-2xl border bg-white p-2" style={{ borderColor: COLORS.greenBorder }}>
-      <div className="flex flex-wrap gap-2">
+    <div className="mb-6 border-b" style={{ borderColor: COLORS.border }}>
+      <div className="flex flex-wrap gap-6">
         {tabs.map((tab) => {
           const selected = tab.id === activeTab
           return (
@@ -192,13 +189,13 @@ function RoleTabs({ activeTab, setActiveTab, counts }) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className="rounded-xl px-4 py-2 text-sm font-semibold transition-all"
+              className="pb-3 text-sm font-medium transition-colors"
               style={{
-                backgroundColor: selected ? COLORS.blue : COLORS.blueSoft,
-                color: selected ? COLORS.white : COLORS.blue,
+                color: selected ? COLORS.primary : COLORS.textLight,
+                borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
               }}
             >
-              {tab.label} ({tab.count})
+              {tab.label} <span style={{ color: COLORS.textLighter }}>({tab.count})</span>
             </button>
           )
         })}
@@ -209,10 +206,10 @@ function RoleTabs({ activeTab, setActiveTab, counts }) {
 
 function EmptyFeed({ activeTab }) {
   return (
-    <div className="rounded-2xl border border-dashed p-8 text-center" style={{ borderColor: COLORS.greenBorder, backgroundColor: COLORS.white }}>
-      <h3 className="text-lg font-bold text-slate-800">No {activeTab === 'all' ? 'entries' : activeTab} found right now.</h3>
-      <p className="mt-2 text-sm text-slate-500">Try another tab or upgrade from viewer-only access to an active role.</p>
-      <Link to="/register" className="mt-4 inline-flex rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ backgroundColor: COLORS.green }}>
+    <div className="rounded-lg border py-12 text-center" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgLight }}>
+      <h3 className="text-lg font-semibold" style={{ color: COLORS.text }}>No {activeTab === 'all' ? 'entries' : activeTab} found</h3>
+      <p className="mt-2 text-sm" style={{ color: COLORS.textLight }}>Try another tab or upgrade from viewer-only access to an active role.</p>
+      <Link to="/register" className="mt-4 inline-flex rounded px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>
         Upgrade Now
       </Link>
     </div>
@@ -240,11 +237,11 @@ function isDeadlinePassed(dateStr) {
 
 /* ── Timeline dot colours by type ── */
 const TYPE_DOT = {
-  jobs: { dot: '#0197B2', bg: '#f0f8fc', label: 'Job' },
-  requirements: { dot: '#0197B2', bg: '#f0f8fc', label: 'Requirement' },
-  events: { dot: '#0197B2', bg: '#f0f8fc', label: 'Event' },
-  stories: { dot: '#0197B2', bg: '#f0f8fc', label: 'Story' },
-  products: { dot: '#0197B2', bg: '#f0f8fc', label: 'Product' },
+  jobs: { dot: '#2563eb', bg: '#eff6ff', label: 'Job' },
+  requirements: { dot: '#2563eb', bg: '#eff6ff', label: 'Requirement' },
+  events: { dot: '#2563eb', bg: '#eff6ff', label: 'Event' },
+  stories: { dot: '#2563eb', bg: '#eff6ff', label: 'Story' },
+  products: { dot: '#2563eb', bg: '#eff6ff', label: 'Product' },
 }
 
 function TimelineItem({ item, index, isLast }) {
@@ -252,52 +249,27 @@ function TimelineItem({ item, index, isLast }) {
   const openFmt = fmtDate(item.openDate)
   const closeFmt = fmtDate(item.closeDate)
   const expired = isDeadlinePassed(item.closeDate)
-  const hasDateMeta = openFmt || closeFmt || item.applied != null
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 mb-6">
       {/* Left: dot + line */}
       <div className="flex flex-col items-center">
-        <div
-          className="z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-white shadow"
-          style={{ backgroundColor: typeStyle.dot }}
-        />
-        {!isLast && <div className="mt-1 w-0.5 flex-1" style={{ backgroundColor: '#e2e8f0' }} />}
+        <div className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: typeStyle.dot }} />
+        {!isLast && <div className="mt-1 w-0.5 flex-1" style={{ backgroundColor: COLORS.border }} />}
       </div>
 
       {/* Right: card */}
-      <article
-        className="mb-4 min-w-0 flex-1 rounded-xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg overflow-hidden"
-        style={{ borderColor: COLORS.blueBorder }}
-      >
-        {/* Header with badges */}
-        <div className="border-b px-5 py-3" style={{ borderColor: COLORS.blueBorder, backgroundColor: typeStyle.bg }}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                style={{ backgroundColor: typeStyle.dot, color: 'white' }}
-              >
-                <span className="h-2 w-2 rounded-full bg-white"></span>
-                {typeStyle.label}
-              </span>
-              {item.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: 'rgba(1, 151, 178, 0.15)', color: COLORS.blue }}>
-                  <Icons.Verified /> Verified
-                </span>
-              )}
-            </div>
-
-            {/* Open/Closed badge for jobs & requirements */}
+      <article className="min-w-0 flex-1 rounded-lg border overflow-hidden" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bg }}>
+        {/* Header */}
+        <div className="border-b px-5 py-3" style={{ borderColor: COLORS.border, backgroundColor: typeStyle.bg }}>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: typeStyle.dot }}>{typeStyle.label}</span>
             {(item.type === 'jobs' || item.type === 'requirements') && item.closeDate && (
-              <span
-                className="rounded-full px-3 py-1 text-xs font-bold"
-                style={{
-                  backgroundColor: expired ? '#fee2e2' : '#dcfce7',
-                  color: expired ? '#dc2626' : '#16a34a',
-                }}
-              >
-                {expired ? '🔒 Closed' : '✓ Open'}
+              <span className="text-xs font-medium px-2 py-1 rounded" style={{
+                backgroundColor: expired ? '#fee2e2' : '#dcfce7',
+                color: expired ? '#dc2626' : '#16a34a',
+              }}>
+                {expired ? 'Closed' : 'Open'}
               </span>
             )}
           </div>
@@ -305,61 +277,39 @@ function TimelineItem({ item, index, isLast }) {
 
         {/* Content */}
         <div className="p-5">
-          {/* Top section: Title/Meta on left, Buttons on right */}
-          <div className="flex gap-4 justify-between items-start mb-3">
+          <div className="flex justify-between gap-4 items-start mb-3">
             <div className="flex-1">
-              <h3 className="text-lg font-black text-slate-900 leading-tight">{item.title}</h3>
-              <p className="mt-2 text-sm font-semibold text-slate-600 flex items-center gap-2">
-                {item.logo ? <img src={item.logo} alt="logo" className="h-5 w-5 rounded object-cover" /> : null} <span>{item.meta}</span>
-              </p>
+              <h3 className="text-base font-semibold" style={{ color: COLORS.text }}>{item.title}</h3>
+              <p className="mt-1 text-sm" style={{ color: COLORS.textLight }}>{item.meta}</p>
             </div>
-
-            {/* Right side buttons */}
-            <div className="flex flex-col gap-2 shrink-0 ml-4">
-              <Link to={item.href} className="rounded-lg px-4 py-2.5 text-sm font-bold text-white text-center transition-all hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap" style={{ backgroundColor: COLORS.blue }}>
-                {item.cta}
-              </Link>
-              <Link to="/search" className="rounded-lg border-2 px-4 py-2.5 text-sm font-bold text-center transition-all hover:bg-green-50 hover:-translate-y-0.5 whitespace-nowrap" style={{ borderColor: COLORS.green, color: COLORS.green }}>
-                Similar
-              </Link>
-            </div>
+            <Link to={item.href} className="shrink-0 px-3 py-2 rounded text-sm font-medium text-white transition-opacity hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: COLORS.primary }}>
+              {item.cta}
+            </Link>
           </div>
 
-          {/* Description */}
-          <p className="text-base leading-relaxed text-slate-700">{item.subtitle}</p>
+          <p className="text-sm leading-relaxed" style={{ color: COLORS.text }}>{item.subtitle}</p>
 
-          {/* Date + applied strip for jobs & requirements */}
-          {hasDateMeta && (item.type === 'jobs' || item.type === 'requirements') && (
-            <div className="mt-4 rounded-lg border px-4 py-3" style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.slate50 }}>
-              <div className="flex flex-wrap items-center gap-5">
-                {openFmt && (
-                  <div className="flex items-center gap-2">
-                    <Icons.Calendar />
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Open Date</span>
-                      <span className="text-sm font-bold text-slate-800">{openFmt}</span>
-                    </div>
-                  </div>
-                )}
-                {closeFmt && (
-                  <div className="flex items-center gap-2">
-                    <Icons.Calendar />
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Last Date</span>
-                      <span className={`text-sm font-bold ${expired ? 'text-rose-600' : 'text-slate-800'}`}>{closeFmt}</span>
-                    </div>
-                  </div>
-                )}
-                {item.applied != null && (
-                  <div className="flex items-center gap-2">
-                    <Icons.Users />
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Applied</span>
-                      <span className="text-sm font-bold text-slate-800">{item.applied} people</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* Meta info */}
+          {(openFmt || closeFmt) && (
+            <div className="mt-4 pt-4 border-t flex flex-wrap gap-4" style={{ borderColor: COLORS.border }}>
+              {openFmt && (
+                <div className="text-xs">
+                  <span style={{ color: COLORS.textLighter }}>Open Date</span>
+                  <div className="font-medium" style={{ color: COLORS.text }}>{openFmt}</div>
+                </div>
+              )}
+              {closeFmt && (
+                <div className="text-xs">
+                  <span style={{ color: COLORS.textLighter }}>Closes</span>
+                  <div className="font-medium" style={{ color: expired ? '#dc2626' : COLORS.text }}>{closeFmt}</div>
+                </div>
+              )}
+              {item.applied != null && (
+                <div className="text-xs">
+                  <span style={{ color: COLORS.textLighter }}>Applied</span>
+                  <div className="font-medium" style={{ color: COLORS.text }}>{item.applied} people</div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -449,54 +399,52 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#ffffff' }}>
+    <div style={{ backgroundColor: COLORS.bgLight }}>
       <TopNav user={user} activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
 
-      <main className="mx-auto max-w-5xl px-4 pb-12 pt-8 md:px-6">
-        <section className="rounded-2xl border-0 p-8 shadow-lg md:p-12" style={{ backgroundColor: COLORS.blue }}>
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/80" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.green }}></span>
-              Welcome to Inclusive Connect
-            </div>
-            <h1 className="mt-5 text-4xl font-black tracking-tight text-white md:text-5xl lg:text-6xl">Explore & Connect with Purpose</h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-white/90 md:text-lg">
-              Discover opportunities, success stories, innovative products, and meaningful events in our inclusive community. Browse freely or join as an active member to make a real impact.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/register" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style={{ backgroundColor: COLORS.green }}>
-                Join the Community
-              </Link>
-              <Link to="/marketplace" className="inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
-                Browse Marketplace
-              </Link>
-              <Link to="/login" className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10">
-                Sign In
-              </Link>
-            </div>
+      <main className="mx-auto max-w-4xl px-4 py-8 md:px-6">
+        {/* Hero Section */}
+        <section className="mb-8 rounded-lg p-8 md:p-12" style={{ backgroundColor: COLORS.primary }}>
+          <h1 className="text-3xl font-bold text-white md:text-4xl">Explore & Connect</h1>
+          <p className="mt-3 text-base text-white/90 max-w-2xl">Discover opportunities, stories, products, and events in our inclusive community. Join to make a real impact.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link to="/register" className="inline-flex rounded px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>
+              Join the Community
+            </Link>
+            <Link to="/marketplace" className="inline-flex rounded px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+              Browse Marketplace
+            </Link>
           </div>
         </section>
 
-        <section className="mt-8 rounded-xl border shadow-sm p-4" style={{ borderColor: COLORS.blueBorder, backgroundColor: COLORS.white }}>
+        {/* Search Section */}
+        <section className="mb-8">
           <label className="relative block">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Icons.Search /></span>
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" style={{ color: COLORS.textLighter }}><Icons.Search /></span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               type="text"
               placeholder="Search opportunities, stories, and products"
-              className="h-12 w-full rounded-lg border bg-white pl-11 pr-4 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              style={{ borderColor: COLORS.blueBorder }}
+              className="h-11 w-full rounded-lg border pl-10 pr-4 text-sm outline-none transition-colors focus:ring-1"
+              style={{ borderColor: COLORS.border, color: COLORS.text }}
             />
           </label>
         </section>
 
+        {/* Filter tabs */}
+        {!user && (
+          <section className="mb-6">
+            <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
+          </section>
+        )}
+
         {/* ── Timeline feed ── */}
-        <section className="mt-4">
+        <section>
           {loading && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {[1, 2, 3].map((item) => (
-                <div key={item} className="h-28 animate-pulse rounded-2xl border bg-white" style={{ borderColor: COLORS.blueBorder }} />
+                <div key={item} className="h-24 animate-pulse rounded-lg border" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bg }} />
               ))}
             </div>
           )}
@@ -504,7 +452,7 @@ export default function Home() {
           {!loading && filteredFeedItems.length === 0 && <EmptyFeed activeTab={activeTab} />}
 
           {!loading && filteredFeedItems.length > 0 && (
-            <div className="pl-1">
+            <div>
               {filteredFeedItems.map((item, index) => (
                 <TimelineItem
                   key={item.id}
