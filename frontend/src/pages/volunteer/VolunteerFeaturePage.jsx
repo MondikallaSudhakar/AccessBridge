@@ -7,6 +7,26 @@ import api from '../../services/api'
 
 const TEAL = '#0d9488'
 
+function extractSourceId(id) {
+  if (id == null) return null
+  if (typeof id === 'number') return id
+  const raw = String(id)
+  const parts = raw.split('-')
+  const candidate = parts.length > 1 ? parts.slice(1).join('-') : raw
+  const numeric = Number(candidate)
+  return Number.isNaN(numeric) ? candidate : numeric
+}
+
+function uniqueItems(items) {
+  const seen = new Set()
+  return items.filter((item) => {
+    const key = `${item.type}-${item.sourceId ?? item.id}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function Card({ item, onApply, applied, config, primaryLabel, onDetails, detailsLabel }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -61,6 +81,7 @@ export default function VolunteerFeaturePage({ type }) {
 
   const [opportunities, setOpportunities] = useState([])
   const [ngoNeeds, setNgoNeeds] = useState([])
+  const [publicNeedItems, setPublicNeedItems] = useState([])
   const [events, setEvents] = useState([])
   const [schoolNeeds, setSchoolNeeds] = useState([])
   const [stories, setStories] = useState([])
@@ -82,13 +103,14 @@ export default function VolunteerFeaturePage({ type }) {
       setLoading(true)
       setError('')
       try {
-        const [needsRes, evtRes, schoolsListRes, storRes, ngoListRes, schoolListRes] = await Promise.allSettled([
+        const [needsRes, evtRes, schoolsListRes, storRes, ngoListRes, schoolListRes, recentRes] = await Promise.allSettled([
           api.get('/ngos/volunteer-needs'),
           api.get('/events/public'),
           api.get('/schools/verified'),
           api.get('/achievements'),
           api.get('/ngos'),
           api.get('/schools/verified'),
+          api.get('/public/recent'),
         ])
 
         const needs = needsRes.status === 'fulfilled' ? Array.isArray(needsRes.value) ? needsRes.value.map((n, i) => ({
@@ -100,8 +122,24 @@ export default function VolunteerFeaturePage({ type }) {
           place: n.ngoCity || 'On-site',
           summary: n.description,
           volunteersNeeded: n.volunteersNeeded,
-          type: 'NGO_NEED',
+          type: 'requirements',
+          href: n.ngoId ? `/ngos/${n.ngoId}` : null,
+          action: 'interest',
         })) : [] : []
+
+        const publicNeeds = recentRes.status === 'fulfilled' ? Array.isArray(recentRes.value) ? recentRes.value
+          .filter((item) => item.type === 'requirements' || item.type === 'products')
+          .map((item) => ({
+            id: item.id,
+            sourceId: extractSourceId(item.id),
+            title: item.title || 'Community Post',
+            org: item.meta || 'Organization',
+            place: item.meta || 'Community',
+            summary: item.subtitle || item.meta || 'Community post details available.',
+            type: item.type,
+            href: item.href || null,
+            action: item.type === 'products' ? 'link' : 'interest',
+          })) : [] : []
 
         const opps = needs.map((need) => ({
           ...need,
@@ -211,6 +249,7 @@ export default function VolunteerFeaturePage({ type }) {
 
         setOpportunities(opps)
         setNgoNeeds(needs)
+        setPublicNeedItems(publicNeeds)
         setEvents(evt)
         setSchoolNeeds(allMentors)
         setStories(stor)
@@ -233,7 +272,7 @@ export default function VolunteerFeaturePage({ type }) {
 
   const currentItems = {
     opportunities,
-    'ngo-needs': ngoNeeds,
+    'ngo-needs': uniqueItems([...ngoNeeds, ...publicNeedItems]),
     events,
     schools: schoolNeeds,
     stories,
@@ -344,17 +383,20 @@ export default function VolunteerFeaturePage({ type }) {
         {currentItems.map((item) => {
           const applied = isAlreadyApplied(item)
           const profilePath = getProfilePath(item)
+          const detailsPath = item.type === 'products' ? profilePath : (item.href || profilePath)
           return (
             <Card
               key={item.id}
               item={item}
               applied={applied}
-              primaryLabel={type === 'stories' ? 'Read Story' : 'Interest'}
-              detailsLabel={profilePath ? (profilePath.startsWith('/schools/') ? 'View School Profile' : 'View NGO Profile') : undefined}
-              onDetails={profilePath ? () => navigate(profilePath) : undefined}
+              primaryLabel={type === 'stories' ? 'Read Story' : (item.type === 'products' ? 'Open Product' : 'Interest')}
+              detailsLabel={detailsPath ? (item.type === 'products' ? 'View Details' : profilePath ? (profilePath.startsWith('/schools/') ? 'View School Profile' : 'View NGO Profile') : 'View Details') : undefined}
+              onDetails={detailsPath ? () => navigate(detailsPath) : undefined}
               onApply={() => {
                 if (type === 'stories') {
                   window.open(`/achievements/${item.sourceId}`, '_blank')
+                } else if (item.type === 'products' && item.href) {
+                  navigate(item.href)
                 } else {
                   handleApply(item)
                 }
