@@ -16,6 +16,12 @@ async function fetchJSON(url) {
   try { const r = await fetch(url); return r.ok ? r.json() : null } catch { return null }
 }
 
+function normalizeExternalUrl(url) {
+  if (!url) return ''
+  if (/^[a-z][a-z\d+.-]*:\/\//i.test(url)) return url
+  return `https://${url}`
+}
+
 /* ── SVG Icons ── */
 const Icons = {
   Briefcase: () => (
@@ -334,7 +340,7 @@ export default function NgoDetail() {
                   </a>
                 )}
                 {ngo.websiteUrl && (
-                  <a href={ngo.websiteUrl} target="_blank" rel="noopener noreferrer" className="rounded border px-4 py-3 text-sm font-medium transition-colors" style={{ borderColor:'#e5e7eb', color:B }}>
+                  <a href={normalizeExternalUrl(ngo.websiteUrl)} target="_blank" rel="noopener noreferrer" className="rounded border px-4 py-3 text-sm font-medium transition-colors" style={{ borderColor:'#e5e7eb', color:B }}>
                     Website
                   </a>
                 )}
