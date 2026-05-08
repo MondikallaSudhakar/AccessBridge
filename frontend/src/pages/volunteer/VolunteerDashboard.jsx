@@ -419,38 +419,6 @@ export default function VolunteerDashboard() {
                 </article>
               ))}
             </div>
-            {selectedEvent && (
-              <div className="event-application-panel" id="event-application-panel">
-                <div className="section-head">
-                  <div>
-                    <p className="eyebrow">Apply for Event</p>
-                    <h2>{selectedEvent.title}</h2>
-                    <p className="hero-copy">{selectedEvent.location || 'Community event'}{selectedEvent.date ? ` • ${selectedEvent.date}` : ''}</p>
-                  </div>
-                  <button type="button" className="ghost close-inline" onClick={closeEventApplication}>Close</button>
-                </div>
-                <form onSubmit={submitEventApplication} className="apply-form event-application-form">
-                  <label className="event-notes-field">
-                    <span>Additional Notes (optional)</span>
-                    <textarea
-                      rows={4}
-                      value={eventForm.notes}
-                      onChange={(e) => setEventForm((current) => ({ ...current, notes: e.target.value }))}
-                      placeholder="Tell us why you'd like to attend..."
-                    />
-                  </label>
-                  {!!eventMessage && (
-                    <div className={`alert ${eventMessage.toLowerCase().includes('failed') || eventMessage.toLowerCase().includes('please login') ? 'error' : 'success'}`}>
-                      {eventMessage}
-                    </div>
-                  )}
-                  <div className="volunteer-modal-actions">
-                    <button type="button" className="secondary-link" onClick={closeEventApplication}>Cancel</button>
-                    <button type="submit" className="primary-link" disabled={eventApplying}>{eventApplying ? 'Submitting...' : 'Submit Application'}</button>
-                  </div>
-                </form>
-              </div>
-            )}
           </section>
         )}
 
@@ -548,6 +516,37 @@ export default function VolunteerDashboard() {
               </div>
             )}
           </section>
+        )}
+
+        {selectedEvent && (
+          <div className="volunteer-modal-backdrop" onClick={closeEventApplication}>
+            <div className="volunteer-modal" onClick={(event) => event.stopPropagation()}>
+              <button type="button" className="volunteer-modal-close" onClick={closeEventApplication}>x</button>
+              <p className="eyebrow">Apply for Event</p>
+              <h2>{selectedEvent.title}</h2>
+              <p className="hero-copy">By: {selectedEvent.location || 'Community event'}{selectedEvent.date ? ` • ${selectedEvent.date}` : ''}</p>
+              <form onSubmit={submitEventApplication} className="volunteer-modal-form">
+                <label>
+                  <span>Additional Notes (optional)</span>
+                  <textarea
+                    rows={4}
+                    value={eventForm.notes}
+                    onChange={(e) => setEventForm((current) => ({ ...current, notes: e.target.value }))}
+                    placeholder="Tell us why you'd like to attend..."
+                  />
+                </label>
+                {!!eventMessage && (
+                  <div className={`alert ${eventMessage.toLowerCase().includes('failed') || eventMessage.toLowerCase().includes('please login') ? 'error' : 'success'}`}>
+                    {eventMessage}
+                  </div>
+                )}
+                <div className="volunteer-modal-actions">
+                  <button type="button" className="secondary-link" onClick={closeEventApplication}>Cancel</button>
+                  <button type="submit" className="primary-link" disabled={eventApplying}>{eventApplying ? 'Submitting...' : 'Submit Application'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
       </main>

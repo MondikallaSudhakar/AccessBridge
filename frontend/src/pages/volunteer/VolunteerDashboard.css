@@ -440,29 +440,6 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-.event-application-panel {
-  margin-top: 18px;
-  padding: 24px;
-  border-radius: 22px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(8, 21, 35, 0.92);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
-}
-
-.event-application-form {
-  margin-top: 0;
-}
-
-.event-notes-field span {
-  color: var(--volunteer-muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.close-inline {
-  align-self: flex-start;
-}
-
 .volunteer-modal-backdrop {
   position: fixed;
   inset: 0;
