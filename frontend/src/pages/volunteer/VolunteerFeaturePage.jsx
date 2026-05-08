@@ -128,7 +128,7 @@ export default function VolunteerFeaturePage({ type }) {
         })) : [] : []
 
         const publicNeeds = recentRes.status === 'fulfilled' ? Array.isArray(recentRes.value) ? recentRes.value
-          .filter((item) => item.type === 'requirements' || item.type === 'products')
+          .filter((item) => item.type === 'requirements')
           .map((item) => ({
             id: item.id,
             sourceId: extractSourceId(item.id),
@@ -138,7 +138,7 @@ export default function VolunteerFeaturePage({ type }) {
             summary: item.subtitle || item.meta || 'Community post details available.',
             type: item.type,
             href: item.href || null,
-            action: item.type === 'products' ? 'link' : 'interest',
+            action: 'interest',
           })) : [] : []
 
         const opps = needs.map((need) => ({
