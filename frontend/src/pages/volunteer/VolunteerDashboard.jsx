@@ -38,6 +38,10 @@ export default function VolunteerDashboard() {
   const [schoolNeeds, setSchoolNeeds] = useState([])
   const [schoolAchievements, setSchoolAchievements] = useState([])
   const [applying, setApplying] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [eventForm, setEventForm] = useState({ notes: '' })
+  const [eventApplying, setEventApplying] = useState(false)
+  const [eventMessage, setEventMessage] = useState('')
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -183,12 +187,59 @@ export default function VolunteerDashboard() {
     }))
   }, [events])
 
+  const campaignCards = useMemo(() => {
+    return ngoCampaigns.slice(0, 8).map((campaign) => ({
+      id: `campaign-${campaign.id}`,
+      title: campaign.campaignName,
+      subtitle: campaign.ngoName || 'NGO Campaign',
+      description: campaign.campaignDescription,
+      status: campaign.status || 'Campaign',
+      goal: campaign.volunteerTarget ? `${campaign.volunteerTarget} volunteers needed` : 'Community campaign',
+    }))
+  }, [ngoCampaigns])
+
   const openApplyForm = (interestType, targetOrganization = '') => {
     setActiveTab('apply')
     setFormData((current) => ({ ...current, interestType, targetOrganization }))
     setTimeout(() => {
       document.getElementById('volunteer-apply-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 0)
+  }
+
+  const openEventApplication = (event) => {
+    setSelectedEvent(event)
+    setEventMessage('')
+    setEventForm({ notes: '' })
+    setTimeout(() => {
+      document.getElementById('event-application-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 0)
+  }
+
+  const closeEventApplication = () => {
+    setSelectedEvent(null)
+    setEventApplying(false)
+    setEventMessage('')
+    setEventForm({ notes: '' })
+  }
+
+  const submitEventApplication = async (e) => {
+    e.preventDefault()
+    if (!selectedEvent) return
+
+    setEventApplying(true)
+    setEventMessage('')
+    try {
+      await api.post(`/events/${selectedEvent.id}/apply`, eventForm.notes ? { notes: eventForm.notes } : {})
+      setEventMessage('Event application submitted successfully.')
+      setTimeout(() => {
+        closeEventApplication()
+        setSuccess('Event application submitted successfully.')
+      }, 1400)
+    } catch (err) {
+      setEventMessage(err.message || 'Failed to submit event application')
+    } finally {
+      setEventApplying(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -255,6 +306,7 @@ export default function VolunteerDashboard() {
             ['overview', 'Overview'],
             ['opportunities', 'Opportunities'],
             ['events', 'Events'],
+            ['campaigns', 'Campaigns'],
             ['impact', 'Impact Stories'],
             ['apply', 'Apply'],
           ].map(([key, label]) => (
@@ -277,14 +329,14 @@ export default function VolunteerDashboard() {
             <p className="eyebrow">Community contribution workspace</p>
             <h1>Give time, skills, and mentoring where they are needed most.</h1>
             <p className="hero-copy">
-              Discover NGO needs, volunteer opportunities, events, schools needing mentors, and stories of impact.
+              Discover NGO needs, volunteer opportunities, events, campaigns, schools needing mentors, and stories of impact.
             </p>
           </div>
           <div className="hero-actions">
             <button onClick={() => openApplyForm('VOLUNTEER_ROLE')}>Apply for volunteering roles</button>
             <button onClick={() => openApplyForm('MENTORSHIP')}>Offer mentorship / training</button>
             <button onClick={() => setActiveTab('events')}>Join events</button>
-            <button className="ghost" onClick={() => navigate('/marketplace')}>Future donate / support campaigns</button>
+            <button className="ghost" onClick={() => setActiveTab('campaigns')}>Browse campaigns</button>
           </div>
         </section>
 
@@ -363,7 +415,66 @@ export default function VolunteerDashboard() {
                   <h3>{event.title}</h3>
                   <p>{event.description}</p>
                   <div className="meta-line">{event.location}</div>
-                  <button onClick={() => openApplyForm('EVENT_SUPPORT', event.title)}>Join event</button>
+                  <button onClick={() => openEventApplication(event)}>Apply for event</button>
+                </article>
+              ))}
+            </div>
+            {selectedEvent && (
+              <div className="event-application-panel" id="event-application-panel">
+                <div className="section-head">
+                  <div>
+                    <p className="eyebrow">Apply for Event</p>
+                    <h2>{selectedEvent.title}</h2>
+                    <p className="hero-copy">{selectedEvent.location || 'Community event'}{selectedEvent.date ? ` • ${selectedEvent.date}` : ''}</p>
+                  </div>
+                  <button type="button" className="ghost close-inline" onClick={closeEventApplication}>Close</button>
+                </div>
+                <form onSubmit={submitEventApplication} className="apply-form event-application-form">
+                  <label className="event-notes-field">
+                    <span>Additional Notes (optional)</span>
+                    <textarea
+                      rows={4}
+                      value={eventForm.notes}
+                      onChange={(e) => setEventForm((current) => ({ ...current, notes: e.target.value }))}
+                      placeholder="Tell us why you'd like to attend..."
+                    />
+                  </label>
+                  {!!eventMessage && (
+                    <div className={`alert ${eventMessage.toLowerCase().includes('failed') || eventMessage.toLowerCase().includes('please login') ? 'error' : 'success'}`}>
+                      {eventMessage}
+                    </div>
+                  )}
+                  <div className="volunteer-modal-actions">
+                    <button type="button" className="secondary-link" onClick={closeEventApplication}>Cancel</button>
+                    <button type="submit" className="primary-link" disabled={eventApplying}>{eventApplying ? 'Submitting...' : 'Submit Application'}</button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === 'campaigns' && (
+          <section className="cards-section">
+            <div className="section-head">
+              <div>
+                <p className="eyebrow">Campaigns</p>
+                <h2>Support NGO-led awareness and community campaigns</h2>
+              </div>
+            </div>
+            <div className="cards-grid two-up">
+              {campaignCards.length === 0 ? (
+                <div className="empty-state">No active campaigns right now.</div>
+              ) : campaignCards.map((campaign) => (
+                <article key={campaign.id} className="event-card">
+                  <div className="card-topline">
+                    <span>{campaign.subtitle}</span>
+                    <span className="pill dark">{campaign.status}</span>
+                  </div>
+                  <h3>{campaign.title}</h3>
+                  <p>{campaign.description}</p>
+                  <div className="meta-line">{campaign.goal}</div>
+                  <button onClick={() => openApplyForm('CAMPAIGN_SUPPORT', campaign.subtitle)}>Support campaign</button>
                 </article>
               ))}
             </div>
@@ -438,6 +549,7 @@ export default function VolunteerDashboard() {
             )}
           </section>
         )}
+
       </main>
     </div>
   )
