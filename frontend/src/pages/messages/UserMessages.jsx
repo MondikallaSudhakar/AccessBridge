@@ -160,6 +160,11 @@ export default function UserMessages() {
       }
     })
 
+    stream.onerror = () => {
+      if (!active) return
+      stream.close()
+    }
+
     return () => {
       active = false
       stream.close()

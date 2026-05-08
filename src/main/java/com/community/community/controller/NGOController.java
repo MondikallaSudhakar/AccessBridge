@@ -3,6 +3,7 @@ package com.community.community.controller;
 import com.community.community.model.NGO;
 import com.community.community.model.NGOAchievement;
 import com.community.community.model.NGOCampaign;
+import com.community.community.model.Course;
 import com.community.community.model.NGOJob;
 import com.community.community.model.NGOProduct;
 import com.community.community.model.NGOServiceItem;
@@ -14,6 +15,7 @@ import com.community.community.model.Event;
 import com.community.community.model.EventApplication;
 import com.community.community.repository.NGOAchievementRepository;
 import com.community.community.repository.NGOCampaignRepository;
+import com.community.community.repository.CourseRepository;
 import com.community.community.repository.NGOJobRepository;
 import com.community.community.repository.NGOProductRepository;
 import com.community.community.repository.NGOServiceItemRepository;
@@ -57,6 +59,7 @@ public class NGOController {
     private final NGOSupportRequestRepository ngoSupportRequestRepository;
     private final NGOVolunteerProfileRepository ngoVolunteerProfileRepository;
     private final NGOCampaignRepository ngoCampaignRepository;
+    private final CourseRepository courseRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
@@ -280,6 +283,48 @@ public class NGOController {
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteCampaign(@PathVariable Long campaignId) {
         ngoCampaignRepository.deleteById(campaignId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Courses Endpoints ──────────────────────────────────────────────────
+
+    @GetMapping("/{id}/courses")
+    public ResponseEntity<List<Course>> getNGOCourses(@PathVariable Long id) {
+        NGO ngo = ngoService.getNGOById(id);
+        return ResponseEntity.ok(courseRepository.findByNgo(ngo));
+    }
+
+    @PostMapping("/{id}/courses")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Course> createNGOCourse(@PathVariable Long id, @RequestBody Course req) {
+        NGO ngo = ngoService.getNGOById(id);
+        Course course = new Course();
+        course.setNgo(ngo);
+        course.setSchool(null);
+        course.setCourseTitle(req.getCourseTitle());
+        course.setDescription(req.getDescription());
+        course.setCategory(req.getCategory());
+        course.setStartDate(req.getStartDate());
+        course.setEndDate(req.getEndDate());
+        course.setCapacity(req.getCapacity() != null ? req.getCapacity() : 30);
+        course.setEnrolled(req.getEnrolled() != null ? req.getEnrolled() : 0);
+        course.setStatus(req.getStatus() == null || req.getStatus().isBlank() ? "ACTIVE" : req.getStatus());
+        course.setSyllabus(req.getSyllabus());
+        course.setInstructorName(req.getInstructorName());
+        course.setInstructorEmail(req.getInstructorEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(courseRepository.save(course));
+    }
+
+    @GetMapping("/courses/{courseId}")
+    public ResponseEntity<Course> getNGOCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found")));
+    }
+
+    @DeleteMapping("/courses/{courseId}")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteNGOCourse(@PathVariable Long courseId) {
+        courseRepository.deleteById(courseId);
         return ResponseEntity.noContent().build();
     }
 

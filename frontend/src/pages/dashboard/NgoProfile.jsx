@@ -23,6 +23,7 @@ const blankService     = { title:'', description:'', category:'', contactInfo:''
 const blankAchievement = { title:'', description:'', category:'', achievementDate:'', imageUrl:'' }
 const blankVolunteerNeed = { title:'', purpose:'', neededCount:'' }
 const blankCampaign    = { title:'', objective:'', startDate:'', endDate:'', targetBeneficiaries:'', volunteerTarget:'', spentAmount:'', status:'PLANNED', impactSummary:'' }
+const blankCourse      = { courseTitle:'', description:'', category:'', startDate:'', endDate:'', capacity:30, syllabus:'', instructorName:'', instructorEmail:'' }
 
 /* ─────────────────────────── helpers ────────────────────────────────── */
 const fmt = v => { if(!v) return ''; const d=new Date(v); return isNaN(d)?'':d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }
@@ -99,6 +100,7 @@ const TABS = [
   { id:'orders',        label:'Orders',       icon:'box'       },
   { id:'volunteers',    label:'Volunteers',   icon:'users'     },
   { id:'campaigns',     label:'Campaigns',    icon:'calendar'  },
+  { id:'courses',       label:'Courses',      icon:'clipboard' },
   { id:'events',        label:'Events',       icon:'calendar'  },
   { id:'jobs',          label:'Jobs',         icon:'briefcase' },
   { id:'products',      label:'Products',     icon:'box'       },
@@ -617,6 +619,7 @@ export default function NgoProfile() {
   const [events, setEvents]       = useState([])
   const [eventApps, setEventApps] = useState({ event:null, apps:[], loading:false })
   const [products, setProducts]   = useState([])
+  const [courses, setCourses]     = useState([])
   const [orders, setOrders]       = useState([])
   const [services, setServices]   = useState([])
   const [achievements, setAchievements] = useState([])
@@ -644,6 +647,8 @@ export default function NgoProfile() {
   const [volunteerStatusFilter, setVolunteerStatusFilter] = useState('ALL')
   const [campaignForm, setCampaignForm] = useState(blankCampaign)
   const [showCampaignForm, setShowCampaignForm] = useState(false)
+  const [courseForm, setCourseForm] = useState(blankCourse)
+  const [showCourseForm, setShowCourseForm] = useState(false)
   const [needForm, setNeedForm]               = useState(blankNeed)
   const [showNeedForm, setShowNeedForm]       = useState(false)
   const [supportRequestFilter, setSupportRequestFilter] = useState('PENDING')
@@ -660,7 +665,7 @@ export default function NgoProfile() {
   useEffect(() => setTab(searchParams.get('tab') || 'overview'), [searchParams])
 
   useEffect(() => {
-    if (!ngo?.id || !user) return
+    if (tab !== 'messages' || !ngo?.id || !user) return
     let alive = true
     const token = localStorage.getItem('token')
     if (!token) return
@@ -676,8 +681,12 @@ export default function NgoProfile() {
         setMessages(p => mergeMsg(p, inc))
       } catch {}
     })
+    sse.onerror = () => {
+      if (!alive) return
+      sse.close()
+    }
     return () => { alive=false; sse.close() }
-  }, [ngo?.id, user])
+  }, [ngo?.id, tab, user])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior:'smooth' })
@@ -755,7 +764,7 @@ export default function NgoProfile() {
   }
 
   const loadData = async id => {
-    const [n,j,p,s,a,sr,v,c,o,ev] = await Promise.all([
+    const [n,j,p,s,a,sr,v,c,crs,o,ev] = await Promise.all([
       api.get(`/ngos/${id}/needs`).catch(()=>[]),
       api.get(`/ngos/${id}/jobs`).catch(()=>[]),
       api.get(`/ngos/${id}/products`).catch(()=>[]),
@@ -764,6 +773,7 @@ export default function NgoProfile() {
       api.get(`/ngos/${id}/support-requests`).catch(()=>[]),
       api.get(`/volunteer-applications/ngo/${id}`).catch(()=>[]),
       api.get(`/ngos/${id}/campaigns`).catch(()=>[]),
+      api.get(`/ngos/${id}/courses`).catch(()=>[]),
       api.get(`/orders/ngo/${id}/orders`).catch(()=>[]),
       fetch(`${BASE}/events/ngo/${id}`,{headers:{Authorization:`Bearer ${localStorage.getItem('token')}`}}).then(r=>r.ok?r.json():[]).catch(()=>[]),
     ])
@@ -773,6 +783,7 @@ export default function NgoProfile() {
     setSupportRequests(Array.isArray(sr)?sr:[])
     setVolunteers(Array.isArray(v)?v:[])
     setCampaigns(Array.isArray(c)?c:[])
+    setCourses(Array.isArray(crs)?crs:[])
     setOrders(Array.isArray(o)?o:[])
     setEvents(Array.isArray(ev)?ev:[])
   }
@@ -961,6 +972,23 @@ export default function NgoProfile() {
     }
   }
   const createCampaign = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/campaigns`, {...campaignForm, targetBeneficiaries: campaignForm.targetBeneficiaries ? Number(campaignForm.targetBeneficiaries) : null, volunteerTarget: campaignForm.volunteerTarget ? Number(campaignForm.volunteerTarget) : null, spentAmount: campaignForm.spentAmount ? Number(campaignForm.spentAmount) : null}); setCampaignForm(blankCampaign); loadData(ngo.id); flash('Campaign added!')}catch(err){setError(err.message||'Error')} }
+  const createCourse = async e => {
+    e.preventDefault(); if(!ngo?.id) return
+    try {
+      await api.post(`/ngos/${ngo.id}/courses`, {
+        ...courseForm,
+        capacity: courseForm.capacity ? Number(courseForm.capacity) : 30,
+        enrolled: 0,
+      })
+      setCourseForm(blankCourse)
+      setShowCourseForm(false)
+      loadData(ngo.id)
+      flash('Course posted!')
+    } catch (err) {
+      setError(err.message || 'Error')
+    }
+  }
+  const deleteCourse = async courseId => { if(!ngo?.id)return; try{ await api.delete(`/ngos/courses/${courseId}`); loadData(ngo.id); flash('Course deleted.') } catch { setError('Failed to delete course') } }
   const updateSupportRequestStatus = async (requestId, status) => {
     if (!ngo?.id) return
     try {
@@ -1004,6 +1032,7 @@ export default function NgoProfile() {
     orders: orders?.length || 0,
     volunteers:volunteers.length,
     campaigns:campaigns.length,
+    courses:courses.length,
     events:events.length,
     jobs:jobs.length,
     products:products.length,
@@ -1172,6 +1201,7 @@ export default function NgoProfile() {
               tab==='orders'         ? 'Review product orders and customer details' :
               tab==='volunteers'     ? 'Post volunteer needs and review interested volunteers' :
               tab==='campaigns'      ? 'Plan and track campaign outcomes' :
+              tab==='courses'        ? 'Create and manage NGO courses' :
               tab==='events'         ? 'Create and manage community events' :
               tab==='jobs'           ? 'Manage job listings' :
               tab==='products'       ? 'List products for the community' :
@@ -1229,6 +1259,7 @@ export default function NgoProfile() {
                   {[
                     {label:'Requirements', value:needs.length,       icon:'clipboard', color:'#6366f1'},
                     {label:'Jobs',         value:jobs.length,        icon:'briefcase', color:B},
+                    {label:'Courses',      value:courses.length,     icon:'clipboard', color:'#8b5cf6'},
                     {label:'Products',     value:products.length,    icon:'box',       color:'#f59e0b'},
                     {label:'Services',     value:services.length,    icon:'users',     color:G},
                     {label:'Achievements', value:achievements.length,icon:'star',      color:'#ec4899'},
@@ -1514,6 +1545,75 @@ export default function NgoProfile() {
                             {campaign.objective && <p style={{margin:'8px 0 0',fontSize:13,color:'#64748b'}}>{campaign.objective}</p>}
                           </div>
                           <GhostBtn onClick={() => del(`/ngos/campaigns/${campaign.id}`)} color="#ef4444" iconName="trash">Delete</GhostBtn>
+                        </div>
+                      </ListItem>
+                    ))}
+                  </div>
+                )}
+              </Panel>
+            </div>
+          )}
+
+          {/* ── COURSES ────────────────────────────────────────────── */}
+          {tab === 'courses' && (
+            <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
+              <Panel>
+                <PanelHeader title="Post a Course" subtitle="List training and learning programs for the community." action={
+                  <PrimaryBtn iconName={showCourseForm?'x':'plus'} onClick={()=>setShowCourseForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    {showCourseForm?'Cancel':'+ Add Course'}
+                  </PrimaryBtn>
+                }/>
+                {showCourseForm && (
+                  <form onSubmit={e=>{createCourse(e);setShowCourseForm(false)}} style={{display:'flex',flexDirection:'column',gap:14,marginBottom:24,paddingBottom:24,borderBottom:'1px solid #f1f5f9'}}>
+                    <div><FieldLabel required>Course Title</FieldLabel><TextInput value={courseForm.courseTitle} onChange={e=>setCourseForm(p=>({...p,courseTitle:e.target.value}))} placeholder="e.g. Digital Skills Training" required/></div>
+                    <div><FieldLabel>Description</FieldLabel><TextArea value={courseForm.description} onChange={e=>setCourseForm(p=>({...p,description:e.target.value}))} placeholder="Describe the course…" rows={3}/></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Category</FieldLabel><TextInput value={courseForm.category} onChange={e=>setCourseForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Vocational"/></div>
+                      <div><FieldLabel>Capacity</FieldLabel><TextInput type="number" value={courseForm.capacity} onChange={e=>setCourseForm(p=>({...p,capacity:e.target.value}))} placeholder="30"/></div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel required>Start Date</FieldLabel><TextInput type="date" value={courseForm.startDate} onChange={e=>setCourseForm(p=>({...p,startDate:e.target.value}))} required/></div>
+                      <div><FieldLabel required>End Date</FieldLabel><TextInput type="date" value={courseForm.endDate} onChange={e=>setCourseForm(p=>({...p,endDate:e.target.value}))} required/></div>
+                    </div>
+                    <div><FieldLabel>Syllabus</FieldLabel><TextArea rows={3} value={courseForm.syllabus} onChange={e=>setCourseForm(p=>({...p,syllabus:e.target.value}))} placeholder="Outline modules, topics, and learning outcomes."/></div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                      <div><FieldLabel>Instructor Name</FieldLabel><TextInput value={courseForm.instructorName} onChange={e=>setCourseForm(p=>({...p,instructorName:e.target.value}))} placeholder="Instructor name"/></div>
+                      <div><FieldLabel>Instructor Email</FieldLabel><TextInput type="email" value={courseForm.instructorEmail} onChange={e=>setCourseForm(p=>({...p,instructorEmail:e.target.value}))} placeholder="instructor@example.com"/></div>
+                    </div>
+                    <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                      <PrimaryBtn type="submit" iconName="plus">Create Course</PrimaryBtn>
+                      <GhostBtn type="button" onClick={()=>setShowCourseForm(false)} color="#64748b">Cancel</GhostBtn>
+                    </div>
+                  </form>
+                )}
+              </Panel>
+
+              <Panel>
+                <PanelHeader title="Posted Courses" subtitle={`${courses.length} total`} />
+                {courses.length===0 ? <EmptyPane iconName="clipboard" title="No courses yet" body="Post your first course using the form."/> : (
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {courses.map((course) => (
+                      <ListItem key={course.id}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:6,marginBottom:5}}>
+                              <span style={{fontSize:14,fontWeight:700,color:NAVY}}>{course.courseTitle}</span>
+                              <Chip color={course.status==='ACTIVE'?G:'#94a3b8'}>{course.status}</Chip>
+                            </div>
+                            <p style={{margin:'0 0 8px',fontSize:13,color:'#64748b',lineHeight:1.5}}>{course.description}</p>
+                            <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
+                              {course.category && <MetaItem iconName="calendar">{course.category}</MetaItem>}
+                              {course.capacity != null && <MetaItem iconName="users">Capacity: {course.capacity}</MetaItem>}
+                              {course.enrolled != null && <MetaItem iconName="users">Enrolled: {course.enrolled}</MetaItem>}
+                              {course.startDate && <MetaItem iconName="calendar">{course.startDate} → {course.endDate}</MetaItem>}
+                            </div>
+                            {(course.instructorName || course.instructorEmail) && (
+                              <p style={{margin:'8px 0 0',fontSize:12,color:'#64748b'}}>
+                                Instructor: {course.instructorName || 'N/A'}{course.instructorEmail ? ` • ${course.instructorEmail}` : ''}
+                              </p>
+                            )}
+                          </div>
+                          <GhostBtn onClick={() => deleteCourse(course.id)} color="#ef4444" iconName="trash">Delete</GhostBtn>
                         </div>
                       </ListItem>
                     ))}

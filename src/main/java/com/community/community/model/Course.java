@@ -26,8 +26,13 @@ public class Course {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id", nullable = false)
+    @JoinColumn(name = "school_id")
     private School school;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ngo_id")
+    private NGO ngo;
 
     @Column(nullable = false)
     private String courseTitle;
