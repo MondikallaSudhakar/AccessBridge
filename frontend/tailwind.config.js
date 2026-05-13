@@ -9,6 +9,9 @@ export default {
       colors: {
         'theme-blue': '#0197b2',
         'theme-green': '#5bcb2b',
+        'yc-bg': '#fbfaf5',
+        'yc-orange': '#ff6600',
+        'yc-black': '#222222',
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -21,6 +24,10 @@ export default {
           800: '#075985',
           900: '#0c4a6e',
         },
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
       },
     },
   },

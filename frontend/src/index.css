@@ -8,6 +8,10 @@
   font-family: 'Inter', sans-serif;
 }
 
+body {
+  @apply bg-yc-bg text-yc-black;
+}
+
 /* Custom scrollbar */
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar {
