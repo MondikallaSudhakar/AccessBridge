@@ -404,14 +404,31 @@ export default function Home() {
 
       <main className="mx-auto max-w-4xl px-4 py-8 md:px-6">
         {/* Hero Section */}
-        <section className="mb-8 rounded-lg p-8 md:p-12" style={{ backgroundColor: COLORS.primary }}>
-          <h1 className="text-3xl font-bold text-white md:text-4xl">Explore & Connect</h1>
-          <p className="mt-3 text-base text-white/90 max-w-2xl">Discover opportunities, stories, products, and events in our inclusive community. Join to make a real impact.</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/register" className="inline-flex rounded px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>
+        <section className="mb-16 mt-12 flex flex-col items-center text-center">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-normal text-yc-black max-w-5xl leading-tight md:leading-tight">
+            Inclusive Connect turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
+          </h1>
+          
+          <div className="mt-12 max-w-2xl px-4">
+            <p className="text-lg md:text-xl font-serif text-yc-black italic leading-relaxed">
+              [1] "A formidable person is one who seems like they'll get what they want, regardless of whatever obstacles are in the way."
+            </p>
+            <p className="mt-4 text-sm font-serif text-yc-black text-right pr-8 md:pr-16">
+              — Paul Graham
+            </p>
+          </div>
+          
+          <div className="mt-16 mb-8 text-gray-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-4">
+            <Link to="/register" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 bg-yc-black">
               Join the Community
             </Link>
-            <Link to="/marketplace" className="inline-flex rounded px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+            <Link to="/marketplace" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-yc-black transition-opacity hover:bg-gray-100 border border-gray-300">
               Browse Marketplace
             </Link>
           </div>
