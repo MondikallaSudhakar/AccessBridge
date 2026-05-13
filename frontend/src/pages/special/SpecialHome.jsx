@@ -1,7 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 
-const TEAL = '#0d9488'
-
 const FEATURES = [
   { title: 'Profile', desc: 'Create profile with skills, support needs, and disability type.', to: '/special/profile' },
   {
@@ -30,8 +28,6 @@ const TIMELINE_POSTINGS = [
   {
     id: 'job-1',
     type: 'Job',
-    dot: '#4f46e5',
-    bg: '#eef2ff',
     title: 'Customer Support Associate',
     openDate: '2025-04-05',
     closeDate: '2025-05-30',
@@ -40,8 +36,6 @@ const TIMELINE_POSTINGS = [
   {
     id: 'train-1',
     type: 'Training',
-    dot: '#0d9488',
-    bg: '#f0fdfa',
     title: 'Special School & Training Program',
     openDate: '2025-04-10',
     closeDate: '2025-06-15',
@@ -50,8 +44,6 @@ const TIMELINE_POSTINGS = [
   {
     id: 'job-2',
     type: 'Job',
-    dot: '#4f46e5',
-    bg: '#eef2ff',
     title: 'Data Entry & Admin Assistant',
     openDate: '2025-04-15',
     closeDate: '2025-06-01',
@@ -72,8 +64,8 @@ function isExpired(closeDate) {
 function MetaBadge({ label, value, highlight }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</span>
-      <span className={`text-xs font-bold ${highlight ? 'text-rose-500' : 'text-slate-700'}`}>{value}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 font-sans">{label}</span>
+      <span className={`text-xs font-bold font-sans ${highlight ? 'text-yc-black italic' : 'text-yc-black'}`}>{value}</span>
     </div>
   )
 }
@@ -87,34 +79,30 @@ function FeatureCard({ feature }) {
     <button
       type="button"
       onClick={() => navigate(to)}
-      className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"
+      className="group flex flex-col rounded border border-gray-200 bg-white p-5 text-left transition-all hover:-translate-y-0.5 hover:border-yc-black hover:shadow-sm"
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-base font-extrabold text-slate-900 group-hover:text-teal-700">{title}</h3>
+      <div className="flex items-start justify-between gap-2 w-full">
+        <h3 className="text-base font-bold text-yc-black font-sans">{title}</h3>
         {meta && (
           <span
-            className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
-            style={{
-              backgroundColor: expired ? '#fee2e2' : '#dcfce7',
-              color: expired ? '#dc2626' : '#16a34a',
-            }}
+            className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider font-sans border ${expired ? 'border-gray-300 text-gray-500' : 'border-yc-black text-yc-black'}`}
           >
             {expired ? 'Closed' : 'Open'}
           </span>
         )}
       </div>
 
-      <p className="mt-1.5 text-sm text-slate-600">{desc}</p>
+      <p className="mt-2 text-sm text-gray-600 font-sans leading-relaxed">{desc}</p>
 
       {meta && (
-        <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded border border-gray-200 bg-white px-3 py-3 w-full">
           <MetaBadge label="Open Date" value={fmt(meta.openDate)} />
           <MetaBadge label="Last Date" value={fmt(meta.closeDate)} highlight={expired} />
           <MetaBadge label="Applied" value={`${meta.applied} nos`} />
         </div>
       )}
 
-      <p className="mt-3 text-xs font-bold text-emerald-600">Open page</p>
+      <p className="mt-4 text-xs font-bold text-yc-black underline font-sans">Open page</p>
     </button>
   )
 }
@@ -129,37 +117,33 @@ function PostingTimeline({ items }) {
         return (
           <div key={item.id} className="flex gap-4">
             <div className="flex flex-col items-center">
-              <div className="z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-white shadow" style={{ backgroundColor: item.dot }} />
-              {!isLast && <div className="mt-1 w-0.5 flex-1 bg-slate-200" />}
+              <div className="z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-yc-black bg-yc-black" />
+              {!isLast && <div className="mt-1 w-[1px] flex-1 bg-gray-200" />}
             </div>
-            <article className="mb-4 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <article className="mb-6 min-w-0 flex-1 rounded border border-gray-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-yc-black hover:shadow-sm">
               <div className="flex items-start justify-between gap-2">
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ backgroundColor: item.bg, color: item.dot }}>
+                <span className="rounded border border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-yc-black font-sans">
                   {item.type}
                 </span>
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-[10px] font-bold"
-                  style={{
-                    backgroundColor: expired ? '#fee2e2' : '#dcfce7',
-                    color: expired ? '#dc2626' : '#16a34a',
-                  }}
+                  className={`rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wide font-sans ${expired ? 'border-gray-300 text-gray-500' : 'border-yc-black text-yc-black'}`}
                 >
                   {expired ? 'Closed' : 'Open'}
                 </span>
               </div>
-              <h4 className="mt-2 text-sm font-extrabold text-slate-900">{item.title}</h4>
-              <div className="mt-2 flex flex-wrap gap-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+              <h4 className="mt-3 text-base font-bold text-yc-black font-sans">{item.title}</h4>
+              <div className="mt-3 flex flex-wrap gap-6 rounded border border-gray-200 bg-white px-4 py-3">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Open Date</span>
-                  <span className="text-xs font-bold text-slate-700">{fmt(item.openDate)}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 font-sans">Open Date</span>
+                  <span className="text-sm font-bold text-yc-black font-sans">{fmt(item.openDate)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Last Date</span>
-                  <span className={`text-xs font-bold ${expired ? 'text-rose-500' : 'text-slate-700'}`}>{fmt(item.closeDate)}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 font-sans">Last Date</span>
+                  <span className={`text-sm font-bold font-sans ${expired ? 'text-yc-black italic' : 'text-yc-black'}`}>{fmt(item.closeDate)}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Applied</span>
-                  <span className="text-xs font-bold text-slate-700">{item.applied} nos</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 font-sans">Applied</span>
+                  <span className="text-sm font-bold text-yc-black font-sans">{item.applied} nos</span>
                 </div>
               </div>
             </article>
@@ -179,15 +163,15 @@ export default function SpecialHome() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Stats */}
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-600">Welcome</p>
-        <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <section className="rounded border border-gray-200 bg-white p-6 md:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-yc-black font-sans">Welcome back</p>
+        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           {stats.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">{item.label}</p>
-              <p className="text-2xl font-black text-slate-900">{item.count}</p>
+            <div key={item.label} className="rounded border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300">
+              <p className="text-sm text-gray-500 font-sans">{item.label}</p>
+              <p className="text-3xl font-serif text-yc-black mt-1">{item.count}</p>
             </div>
           ))}
         </div>
@@ -201,8 +185,8 @@ export default function SpecialHome() {
       </section>
 
       {/* Active Postings Timeline */}
-      <section>
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Active Postings Timeline</p>
+      <section className="pt-4">
+        <p className="mb-6 text-xs font-bold uppercase tracking-[0.18em] text-gray-500 font-sans">Active Postings Timeline</p>
         <PostingTimeline items={TIMELINE_POSTINGS} />
       </section>
     </div>

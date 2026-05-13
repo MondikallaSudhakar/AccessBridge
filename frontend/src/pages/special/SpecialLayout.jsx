@@ -3,11 +3,6 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { SPECIAL_NAV } from './specialData'
 
-const G = '#5BCB2B'
-const B = '#1A8FD1'
-const TEAL = '#0d9488'
-const NAVY = '#0f172a'
-
 const ICONS = {
   home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6',
   user: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
@@ -19,7 +14,7 @@ const ICONS = {
   shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
   help: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
   star: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915',
-  logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
+  logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3-3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
 }
 
 const NAV_ICON = {
@@ -50,23 +45,15 @@ function Ic({ name, size = 16, color = 'currentColor' }) {
 }
 
 function SidebarLink({ item }) {
-  const [hover, setHover] = useState(false)
-
   return (
     <NavLink
       to={item.to}
       end={item.to === '/special'}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? 'text-white' : 'text-slate-700'}`}
-      style={({ isActive }) => ({
-        backgroundColor: isActive ? TEAL : hover ? '#f8fafc' : 'transparent',
-        fontWeight: isActive ? 700 : 500,
-      })}
+      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-sans transition-colors ${isActive ? 'bg-yc-black text-white font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
     >
       {({ isActive }) => (
         <>
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#ffffff' : '#64748b'} />
+          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#ffffff' : 'currentColor'} />
           <span>{item.label}</span>
         </>
       )}
@@ -84,49 +71,48 @@ export default function SpecialLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
-      <aside className="hidden border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
-        <div className="border-b border-slate-100 px-5 pb-4 pt-6">
+    <div className="min-h-screen bg-white lg:flex">
+      <aside className="hidden border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
+        <div className="border-b border-gray-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
-            <div className="flex items-center">
-              <div style={{ width: 14, height: 24, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-              <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: G, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
+            <div className="grid h-8 w-8 place-items-center rounded bg-yc-black text-xs font-bold text-white font-sans">
+              IC
             </div>
-            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>Inclusive Connect</span>
+            <span className="text-sm font-bold tracking-tight text-yc-black font-sans">Inclusive Connect</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${TEAL}50`, backgroundColor: `${TEAL}12` }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: TEAL }} />
-            <span className="text-xs font-bold" style={{ color: TEAL }}>Specially Abled</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 bg-white">
+            <span className="h-2 w-2 rounded-full bg-gray-400" />
+            <span className="text-xs font-semibold text-gray-700 font-sans">Specially Abled</span>
           </div>
 
-          <p className="mt-3 truncate text-xs text-slate-500">{user?.email || user?.name || 'User'}</p>
+          <p className="mt-3 truncate text-xs text-gray-500 font-sans">{user?.email || user?.name || 'User'}</p>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
+          <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 font-sans">Workspace</p>
           {SPECIAL_NAV.map((item) => (
             <SidebarLink key={item.to} item={item} />
           ))}
         </nav>
 
-        <div className="space-y-1.5 border-t border-slate-100 p-3">
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
-            <Ic name="home" size={16} color="#64748b" />
+        <div className="space-y-1.5 border-t border-gray-100 p-3">
+          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 font-sans">
+            <Ic name="home" size={16} color="currentColor" />
             Dashboard
           </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50">
-            <Ic name="logout" size={16} color="#e11d48" />
+          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 font-sans">
+            <Ic name="logout" size={16} color="currentColor" />
             Logout
           </button>
         </div>
       </aside>
 
       <section className="min-w-0 flex-1">
-        <header className="border-b border-slate-200 bg-white lg:hidden">
+        <header className="border-b border-gray-200 bg-white lg:hidden">
           <div className="px-4 py-4 sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">Specially Abled Workspace</p>
-            <h1 className="mt-2 text-lg font-black text-slate-900">Dedicated pages for each feature</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-gray-500 font-sans">Specially Abled Workspace</p>
+            <h1 className="mt-2 text-xl font-serif text-yc-black">Dedicated pages for each feature</h1>
           </div>
           <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
             {SPECIAL_NAV.map((item) => (
@@ -134,7 +120,7 @@ export default function SpecialLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/special'}
-                className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}
+                className={({ isActive }) => `whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans ${isActive ? 'border-yc-black bg-yc-black text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300'}`}
               >
                 {item.label}
               </NavLink>
@@ -142,7 +128,7 @@ export default function SpecialLayout() {
           </nav>
         </header>
 
-        <main className="w-full px-4 py-6 sm:px-6 lg:px-8">
+        <main className="w-full px-4 py-6 sm:px-6 lg:px-8 max-w-5xl mx-auto">
           <Outlet />
         </main>
       </section>
