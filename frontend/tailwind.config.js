@@ -9,7 +9,7 @@ export default {
       colors: {
         'theme-blue': '#0197b2',
         'theme-green': '#5bcb2b',
-        'yc-bg': '#fbfaf5',
+        'yc-bg': '#ffffff',
         'yc-orange': '#ff6600',
         'yc-black': '#222222',
         primary: {
