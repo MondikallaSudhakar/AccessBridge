@@ -49,11 +49,11 @@ function SidebarLink({ item }) {
     <NavLink
       to={item.to}
       end={item.to === '/special'}
-      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-sans transition-colors ${isActive ? 'bg-yc-black text-white font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-sans transition-all ${isActive ? 'border border-lime-300 bg-lime-200/80 text-lime-950 font-medium shadow-sm shadow-lime-200/60' : 'text-slate-600 hover:bg-lime-50 hover:text-slate-900'}`}
     >
       {({ isActive }) => (
         <>
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#ffffff' : 'currentColor'} />
+          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#365314' : 'currentColor'} />
           <span>{item.label}</span>
         </>
       )}
@@ -71,37 +71,37 @@ export default function SpecialLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-white lg:flex">
-      <aside className="hidden border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
-        <div className="border-b border-gray-100 px-5 pb-4 pt-6">
-          <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
-            <div className="grid h-8 w-8 place-items-center rounded bg-yc-black text-xs font-bold text-white font-sans">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f6fbe9_0%,#fbfcf6_35%,#f3f8ef_100%)] lg:flex">
+      <aside className="hidden border-r border-lime-100 bg-[linear-gradient(180deg,#fbfef2_0%,#f4fae8_100%)] lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
+        <div className="border-b border-lime-100 px-5 pb-4 pt-6">
+          <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/') }>
+            <div className="grid h-8 w-8 place-items-center rounded bg-lime-500 text-xs font-bold text-white font-sans shadow-sm shadow-lime-200">
               IC
             </div>
-            <span className="text-sm font-bold tracking-tight text-yc-black font-sans">Inclusive Connect</span>
+            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">Inclusive Connect</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 bg-white">
-            <span className="h-2 w-2 rounded-full bg-gray-400" />
-            <span className="text-xs font-semibold text-gray-700 font-sans">Specially Abled</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-white/80 px-3 py-1 shadow-sm shadow-lime-100/60 backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-lime-500" />
+            <span className="text-xs font-semibold text-slate-700 font-sans">Specially Abled</span>
           </div>
 
-          <p className="mt-3 truncate text-xs text-gray-500 font-sans">{user?.email || user?.name || 'User'}</p>
+          <p className="mt-3 truncate text-xs text-slate-500 font-sans">{user?.email || user?.name || 'User'}</p>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 font-sans">Workspace</p>
+          <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-lime-700 font-sans">Workspace</p>
           {SPECIAL_NAV.map((item) => (
             <SidebarLink key={item.to} item={item} />
           ))}
         </nav>
 
-        <div className="space-y-1.5 border-t border-gray-100 p-3">
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 font-sans">
+        <div className="space-y-1.5 border-t border-lime-100 p-3">
+          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-lime-50 hover:text-slate-900 font-sans">
             <Ic name="home" size={16} color="currentColor" />
             Dashboard
           </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 font-sans">
+          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-lime-50 hover:text-slate-900 font-sans">
             <Ic name="logout" size={16} color="currentColor" />
             Logout
           </button>
@@ -109,10 +109,10 @@ export default function SpecialLayout() {
       </aside>
 
       <section className="min-w-0 flex-1">
-        <header className="border-b border-gray-200 bg-white lg:hidden">
+        <header className="border-b border-lime-100 bg-[linear-gradient(180deg,#fbfff7_0%,#f2fae8_100%)] lg:hidden">
           <div className="px-4 py-4 sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-gray-500 font-sans">Specially Abled Workspace</p>
-            <h1 className="mt-2 text-xl font-serif text-yc-black">Dedicated pages for each feature</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime-700 font-sans">Specially Abled Workspace</p>
+            <h1 className="mt-2 text-xl font-serif text-lime-950">Dedicated pages for each feature</h1>
           </div>
           <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
             {SPECIAL_NAV.map((item) => (
@@ -120,7 +120,7 @@ export default function SpecialLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.to === '/special'}
-                className={({ isActive }) => `whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans ${isActive ? 'border-yc-black bg-yc-black text-white' : 'border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300'}`}
+                className={({ isActive }) => `whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans ${isActive ? 'border-lime-300 bg-lime-200 text-lime-950' : 'border-lime-100 bg-white/80 text-slate-600 hover:border-lime-200 hover:text-slate-900'}`}
               >
                 {item.label}
               </NavLink>
@@ -128,7 +128,7 @@ export default function SpecialLayout() {
           </nav>
         </header>
 
-        <main className="w-full px-4 py-6 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
           <Outlet />
         </main>
       </section>
