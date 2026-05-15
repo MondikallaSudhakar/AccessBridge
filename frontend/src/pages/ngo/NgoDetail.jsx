@@ -146,7 +146,7 @@ export default function NgoDetail() {
   }
 
   if (loading) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg, #f7fce8 0%, #fbfdf8 42%, #eef6df 100%)', fontFamily:"'Inter',sans-serif" }}>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', backgroundColor:'#ffffff', fontFamily:"'Inter',sans-serif" }}>
       <div style={{ textAlign:'center' }}>
         <div style={{ width:42, height:42, borderRadius:'50%', border:`4px solid ${G}30`, borderTopColor:G, animation:'spin .8s linear infinite', margin:'0 auto 12px', boxShadow:`0 0 0 6px ${G}10` }}/>
         <p style={{ color:'#64748b', fontSize:14 }}>Loading NGO profile...</p>
@@ -156,7 +156,7 @@ export default function NgoDetail() {
   )
 
   if (!ngo) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(180deg, #f7fce8 0%, #fbfdf8 42%, #eef6df 100%)' }}>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', backgroundColor:'#ffffff' }}>
       <div style={{ textAlign:'center', padding:40, background:'rgba(255,255,255,.9)', border:'1px solid #e7f2cf', borderRadius:24, boxShadow:'0 18px 50px rgba(132, 204, 22, 0.12)' }}>
         <p style={{ fontSize:18, fontWeight:700, color:NAVY }}>NGO not found</p>
         <button onClick={() => navigate('/')} style={{ marginTop:16, padding:'10px 24px', background:G, color:'#fff', border:'none', borderRadius:14, fontWeight:700, cursor:'pointer', boxShadow:'0 10px 24px rgba(132, 204, 22, 0.22)' }}>Go Home</button>
@@ -178,7 +178,7 @@ export default function NgoDetail() {
   ]
 
   return (
-    <div className="min-h-screen font-sans" style={{ background:'linear-gradient(180deg, #f7fce8 0%, #fbfdf8 42%, #eef6df 100%)' }}>
+    <div className="min-h-screen font-sans" style={{ backgroundColor:'#ffffff' }}>
       {/* ── Topbar ── */}
       <header className="sticky top-0 z-50 border-b backdrop-blur" style={{ borderColor:'#dcecc0', backgroundColor:'rgba(255,255,255,.9)' }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
