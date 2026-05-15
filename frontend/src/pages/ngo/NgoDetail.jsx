@@ -188,7 +188,7 @@ export default function NgoDetail() {
             </button>
             <a href="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg text-sm font-bold grid place-items-center" style={{ color:B, backgroundColor:'#eff7d4', border:'1px solid #d9ebaa' }}>IC</div>
-              <span className="hidden text-base font-bold md:inline" style={{ color:B }}>Inclusive Connect</span>
+              <span className="hidden text-base font-bold md:inline" style={{ color:B }}>NexInclusion</span>
             </a>
           </div>
           <span className="px-3 py-1 text-xs font-medium rounded-full" style={{ color:B, backgroundColor:'#eff7d4', border:'1px solid #d9ebaa' }}>

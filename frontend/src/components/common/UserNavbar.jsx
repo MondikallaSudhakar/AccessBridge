@@ -84,7 +84,7 @@ export default function UserNavbar({
             <div style={{ width: 16, height: 28, backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
             <div style={{ width: 16, height: 28, marginLeft: -6, backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
           </div>
-          <span style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>Inclusive Connect</span>
+          <span style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>NexInclusion</span>
         </div>
 
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, background: brandBadgeBackground || `${brandBadgeColor}12`, border: `1px solid ${brandBadgeBorder || `${brandBadgeColor}30`}` }}>

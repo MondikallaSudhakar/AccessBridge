@@ -83,7 +83,7 @@ export default function VolunteerLayout() {
               <div style={{ width: 14, height: 24, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
               <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: TEAL, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
             </div>
-            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>Inclusive Connect</span>
+            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>NexInclusion</span>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${TEAL}50`, backgroundColor: `${TEAL}12` }}>
