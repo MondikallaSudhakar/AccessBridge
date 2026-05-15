@@ -102,7 +102,7 @@ export default function SchoolDetail() {
                 <div className="w-3 h-5" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
                 <div className="w-3 h-5 -ml-0.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
               </div>
-              <span className="text-xs font-bold text-gray-900">Inclusive Connect</span>
+              <span className="text-xs font-bold text-gray-900">NexInclusion</span>
             </a>
           </div>
           <div className="flex items-center gap-3">

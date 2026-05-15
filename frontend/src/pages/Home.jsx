@@ -120,7 +120,7 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
         <div className="flex items-center justify-between gap-3">
           <a href="/" className="flex shrink-0 items-center gap-2">
             <div className="h-8 w-8 rounded-lg font-bold text-sm grid place-items-center" style={{ color: COLORS.primary, backgroundColor: COLORS.primaryLight }}>IC</div>
-            <span className="hidden text-lg font-bold tracking-tight md:inline" style={{ color: COLORS.text }}>Inclusive Connect</span>
+            <span className="hidden text-lg font-bold tracking-tight md:inline" style={{ color: COLORS.text }}>NexInclusion</span>
           </a>
         </div>
 
@@ -406,7 +406,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="mb-16 mt-12 flex flex-col items-center text-center">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-normal text-yc-black max-w-5xl leading-tight md:leading-tight">
-            Inclusive Connect turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
+            NexInclusion turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
           </h1>
           
           <div className="mt-12 max-w-2xl px-4">

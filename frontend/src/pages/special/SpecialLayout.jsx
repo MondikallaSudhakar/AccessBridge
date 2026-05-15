@@ -78,7 +78,7 @@ export default function SpecialLayout() {
             <div className="grid h-8 w-8 place-items-center rounded bg-lime-500 text-xs font-bold text-white font-sans shadow-sm shadow-lime-200">
               IC
             </div>
-            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">Inclusive Connect</span>
+            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">NexInclusion</span>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-white/80 px-3 py-1 shadow-sm shadow-lime-100/60 backdrop-blur">
