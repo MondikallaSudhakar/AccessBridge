@@ -71,8 +71,8 @@ export default function SpecialLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f6fbe9_0%,#fbfcf6_35%,#f3f8ef_100%)] lg:flex">
-      <aside className="hidden border-r border-lime-100 bg-[linear-gradient(180deg,#fbfef2_0%,#f4fae8_100%)] lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
+    <div className="min-h-screen bg-white lg:flex">
+      <aside className="hidden border-r border-lime-100 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
         <div className="border-b border-lime-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/') }>
             <div className="grid h-8 w-8 place-items-center rounded bg-lime-500 text-xs font-bold text-white font-sans shadow-sm shadow-lime-200">
@@ -109,7 +109,7 @@ export default function SpecialLayout() {
       </aside>
 
       <section className="min-w-0 flex-1">
-        <header className="border-b border-lime-100 bg-[linear-gradient(180deg,#fbfff7_0%,#f2fae8_100%)] lg:hidden">
+        <header className="border-b border-lime-100 bg-white lg:hidden">
           <div className="px-4 py-4 sm:px-6">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime-700 font-sans">Specially Abled Workspace</p>
             <h1 className="mt-2 text-xl font-serif text-lime-950">Dedicated pages for each feature</h1>
