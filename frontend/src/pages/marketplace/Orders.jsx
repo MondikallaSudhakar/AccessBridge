@@ -14,6 +14,11 @@ export default function Orders() {
   const isSpecialUser = user?.role === 'SPECIAL_ABLED_PERSON'
   const marketplacePath = isSpecialUser ? '/special/marketplace' : '/marketplace'
 
+  const HOME = {
+    primary: '#0197B2',
+    primaryLight: '#f0f8fc',
+  }
+
   useEffect(() => {
     if (!currentUserId) {
       navigate('/login')
@@ -98,115 +103,49 @@ export default function Orders() {
             </button>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {/* Orders List */}
-            <div className="lg:col-span-2">
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left font-bold text-slate-700">Order ID</th>
-                      <th className="px-6 py-4 text-left font-bold text-slate-700">Date</th>
-                      <th className="px-6 py-4 text-left font-bold text-slate-700">Status</th>
-                      <th className="px-6 py-4 text-right font-bold text-slate-700">Total</th>
-                      <th className="px-6 py-4 text-center font-bold text-slate-700">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {orders.map((order) => (
-                      <tr 
-                        key={order.id}
-                        onClick={() => handleViewOrder(order)}
-                        className="cursor-pointer transition-colors hover:bg-slate-50"
-                      >
-                        <td className="px-6 py-4 font-mono text-xs font-semibold text-slate-900">#{order.id}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(order.status)}`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right font-bold text-slate-900">₹{parseFloat(order.totalPrice).toLocaleString()}</td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={(e) => {e.stopPropagation(); handleViewOrder(order)}}
-                            className="text-teal-600 hover:text-teal-700 font-bold text-xs transition-colors"
-                          >
-                            {selectedOrder?.id === order.id ? 'Hide' : 'View'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Order Details */}
-            <div className="lg:col-span-1">
-              {selectedOrder ? (
-                <div className="sticky top-24 rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
-                  <h2 className="mb-6 text-lg font-bold text-slate-900">Order Details</h2>
-
-                  <div className="mb-6 border-b border-slate-200 pb-6">
-                    <p className="mb-1 text-xs font-semibold text-slate-400">Order ID</p>
-                    <p className="font-mono text-sm font-bold text-slate-900">{selectedOrder.id}</p>
+          // Simplified layout for special users: stacked cards with inline details
+          <div className="mt-8 space-y-4">
+            {orders.map((order) => (
+              <div key={order.id} className="rounded-2xl border bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">Order #{order.id}</div>
+                    <div className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</div>
                   </div>
-
-                  <div className="mb-6 border-b border-slate-200 pb-6">
-                    <p className="mb-1 text-xs font-semibold text-slate-400">Status</p>
-                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(selectedOrder.status)}`}>
-                      {selectedOrder.status}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(order.status)}`}>{order.status}</span>
+                    <div className="text-sm font-bold text-slate-900">₹{parseFloat(order.totalPrice).toLocaleString()}</div>
+                    <button
+                      onClick={() => { handleViewOrder(order); }}
+                      className="rounded-full px-3 py-1 text-sm font-medium text-white"
+                      style={{ backgroundColor: HOME.primary }}
+                    >
+                      {selectedOrder?.id === order.id ? 'Hide' : 'Details'}
+                    </button>
                   </div>
+                </div>
 
-                  <div className="mb-6 border-b border-slate-200 pb-6">
-                    <p className="mb-2 text-xs font-semibold text-slate-400">Items</p>
-                    <div className="space-y-3">
+                {selectedOrder?.id === order.id && (
+                  <div className="mt-4 border-t pt-3">
+                    <div className="space-y-2">
                       {orderItems.map((item) => (
-                        <div key={item.id} className="flex justify-between items-start text-sm">
-                          <div className="flex-grow">
-                            <p className="font-bold text-slate-900">{item.productName}</p>
-                            <p className="text-xs text-slate-500">{item.source}</p>
-                            <p className="text-xs text-slate-500">Qty: {item.quantity}</p>
+                        <div key={item.id} className="flex justify-between text-sm">
+                          <div>
+                            <div className="font-semibold text-slate-900">{item.productName}</div>
+                            <div className="text-xs text-slate-500">Qty: {item.quantity}</div>
                           </div>
-                          <p className="font-bold text-slate-900">₹{parseFloat(item.totalPrice).toLocaleString()}</p>
+                          <div className="font-semibold">₹{parseFloat(item.totalPrice).toLocaleString()}</div>
                         </div>
                       ))}
                     </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="text-sm text-slate-600">Subtotal</p>
-                      <p className="text-sm font-semibold text-slate-900">₹{parseFloat(selectedOrder.totalPrice).toLocaleString()}</p>
-                    </div>
-                    <div className="flex justify-between items-center mb-4">
-                      <p className="text-sm text-slate-600">Shipping</p>
-                      <p className="text-sm font-semibold text-emerald-600">Free</p>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-slate-200 pt-4">
-                      <p className="font-bold text-slate-900">Total</p>
-                      <p className="text-xl font-black text-slate-900">₹{parseFloat(selectedOrder.totalPrice).toLocaleString()}</p>
+                    <div className="mt-3 flex justify-between items-center text-sm">
+                      <div className="text-slate-600">Placed on {new Date(order.createdAt).toLocaleDateString()}</div>
+                      <div className="font-bold text-slate-900">Total: ₹{parseFloat(order.totalPrice).toLocaleString()}</div>
                     </div>
                   </div>
-
-                  <p className="text-center text-xs text-slate-500">
-                    Order placed on {new Date(selectedOrder.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ) : (
-                <div className="sticky top-24 rounded-2xl bg-white p-6 text-center border border-slate-200 shadow-sm">
-                  <p className="text-sm font-semibold text-slate-600">Select an order to view details</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
