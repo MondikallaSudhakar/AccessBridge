@@ -17,6 +17,12 @@ const ICONS = {
   logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3-3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
 }
 
+const HOME = {
+  primary: '#0197B2',
+  primaryLight: '#f0f8fc',
+  text: '#1f2937',
+}
+
 const NAV_ICON = {
   Home: 'home',
   Profile: 'user',
@@ -46,16 +52,15 @@ function Ic({ name, size = 16, color = 'currentColor' }) {
 
 function SidebarLink({ item }) {
   return (
-    <NavLink
-      to={item.to}
-      end={item.to === '/special'}
-      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-sans transition-all ${isActive ? 'border border-lime-300 bg-lime-200/80 text-lime-950 font-medium shadow-sm shadow-lime-200/60' : 'text-slate-600 hover:bg-lime-50 hover:text-slate-900'}`}
-    >
+    <NavLink to={item.to} end={item.to === '/special'} className="mb-1 block">
       {({ isActive }) => (
-        <>
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#365314' : 'currentColor'} />
+        <div
+          className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-sans transition-all ${isActive ? 'font-medium shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+          style={isActive ? { border: `1px solid ${HOME.primary}`, backgroundColor: HOME.primaryLight, color: HOME.primary } : undefined}
+        >
+          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? HOME.primary : 'currentColor'} />
           <span>{item.label}</span>
-        </>
+        </div>
       )}
     </NavLink>
   )
@@ -72,7 +77,7 @@ export default function SpecialLayout() {
 
   return (
     <div className="min-h-screen bg-white lg:flex">
-      <aside className="hidden border-r border-lime-100 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
+      <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col" style={{ borderColor: '#e6f6fb' }}>
         <div className="border-b border-lime-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/') }>
             <div className="grid h-8 w-8 place-items-center rounded bg-lime-500 text-xs font-bold text-white font-sans shadow-sm shadow-lime-200">
@@ -81,8 +86,8 @@ export default function SpecialLayout() {
             <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">NexInclusion</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-white/80 px-3 py-1 shadow-sm shadow-lime-100/60 backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-lime-500" />
+          <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1 shadow-sm backdrop-blur" style={{ borderColor: HOME.primaryLight }}>
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: HOME.primary }} />
             <span className="text-xs font-semibold text-slate-700 font-sans">Specially Abled</span>
           </div>
 
@@ -96,12 +101,12 @@ export default function SpecialLayout() {
           ))}
         </nav>
 
-        <div className="space-y-1.5 border-t border-lime-100 p-3">
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-lime-50 hover:text-slate-900 font-sans">
+        <div className="space-y-1.5 border-t p-3" style={{ borderColor: HOME.primaryLight }}>
+          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 font-sans" style={{ backgroundColor: 'transparent' }}>
             <Ic name="home" size={16} color="currentColor" />
             Dashboard
           </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-lime-50 hover:text-slate-900 font-sans">
+          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 font-sans">
             <Ic name="logout" size={16} color="currentColor" />
             Logout
           </button>
@@ -109,18 +114,15 @@ export default function SpecialLayout() {
       </aside>
 
       <section className="min-w-0 flex-1">
-        <header className="border-b border-lime-100 bg-white lg:hidden">
+        <header className="border-b bg-white lg:hidden" style={{ borderColor: HOME.primaryLight }}>
           <div className="px-4 py-4 sm:px-6">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime-700 font-sans">Specially Abled Workspace</p>
             <h1 className="mt-2 text-xl font-serif text-lime-950">Dedicated pages for each feature</h1>
           </div>
           <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
             {SPECIAL_NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/special'}
-                className={({ isActive }) => `whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans ${isActive ? 'border-lime-300 bg-lime-200 text-lime-950' : 'border-lime-100 bg-white/80 text-slate-600 hover:border-lime-200 hover:text-slate-900'}`}
+              <NavLink key={item.to} to={item.to} end={item.to === '/special'} className="whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans"
+                style={({ isActive }) => isActive ? { borderColor: HOME.primary, backgroundColor: HOME.primaryLight, color: HOME.primary } : { borderColor: HOME.primaryLight, backgroundColor: 'rgba(255,255,255,0.8)' }}
               >
                 {item.label}
               </NavLink>
