@@ -211,7 +211,7 @@ function EmptyFeed({ activeTab }) {
     <div className="rounded-lg border py-12 text-center" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bgLight }}>
       <h3 className="text-lg font-semibold" style={{ color: COLORS.text }}>No {activeTab === 'all' ? 'entries' : activeTab} found</h3>
       <p className="mt-2 text-sm" style={{ color: COLORS.textLight }}>Try another tab or upgrade from viewer-only access to an active role.</p>
-      <Link to="/register" className="mt-4 inline-flex rounded px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>
+      <Link to="/register" className="mt-4 inline-flex rounded px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>
         Upgrade Now
       </Link>
     </div>
@@ -284,7 +284,7 @@ function TimelineItem({ item, index, isLast }) {
               <h3 className="text-base font-semibold" style={{ color: COLORS.text }}>{item.title}</h3>
               <p className="mt-1 text-sm" style={{ color: COLORS.textLight }}>{item.meta}</p>
             </div>
-            <Link to={item.href} className="shrink-0 px-3 py-2 rounded text-sm font-medium text-white transition-opacity hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: COLORS.primary }}>
+            <Link to={item.href} className="shrink-0 px-3 py-2 rounded text-sm font-medium text-white transition-opacity hover:opacity-90 whitespace-nowrap" style={{ backgroundColor: COLORS.success }}>
               {item.cta}
             </Link>
           </div>
@@ -432,10 +432,10 @@ export default function Home() {
               </div>
 
               <div className="mt-4 flex flex-wrap justify-center gap-4">
-                <Link to="/register" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 bg-yc-black">
+                <Link to="/register" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>
                   Join the Community
                 </Link>
-                <Link to="/marketplace" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-yc-black transition-opacity hover:bg-gray-100 border border-gray-300">
+                <Link to="/marketplace" className="inline-flex rounded-full px-8 py-3 text-sm font-medium transition-opacity hover:bg-gray-100" style={{ color: COLORS.success, borderColor: COLORS.success, borderWidth: 1, borderStyle: 'solid' }}>
                   Browse Marketplace
                 </Link>
               </div>
