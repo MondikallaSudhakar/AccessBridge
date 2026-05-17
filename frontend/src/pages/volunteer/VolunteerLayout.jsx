@@ -18,16 +18,6 @@ const ICONS = {
   logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
 }
 
-const NAV_ICON = {
-  Home: 'home',
-  Opportunities: 'briefcase',
-  'NGO Needs': 'users',
-  'Events & Campaigns': 'calendar',
-  'Schools & Mentors': 'school',
-  'Impact Stories': 'heart',
-  'My Applications': 'star',
-}
-
 function Ic({ name, size = 16, color = 'currentColor' }) {
   const d = ICONS[name]
   if (!d) return null
@@ -49,74 +39,60 @@ function SidebarLink({ item }) {
       onMouseLeave={() => setHover(false)}
       className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-all ${isActive ? 'text-white shadow-sm' : 'text-slate-700'}`}
       style={({ isActive }) => ({
-        backgroundColor: isActive ? TEAL : hover ? '#f0fdf4' : 'transparent',
+        backgroundColor: isActive ? TEAL : hover ? `${TEAL}08` : 'transparent',
         fontWeight: isActive ? 700 : 500,
       })}
     >
-      {({ isActive }) => (
-        <>
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#ffffff' : '#64748b'} />
-          <span>{item.label}</span>
-        </>
-      )}
+      <Ic name={item.icon} color="currentcolor" />
+      <span>{item.label}</span>
     </NavLink>
   )
 }
 
 export default function VolunteerLayout() {
-  const { user, logout } = useAuth()
+  const { logout, user } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.error('Failed to logout:', error)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
-      {/* ── Sidebar ── */}
-      <aside className="hidden border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
-        {/* Brand */}
-        <div className="border-b border-slate-100 px-5 pb-4 pt-6">
-          <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
-            <div className="flex items-center">
-              <div style={{ width: 14, height: 24, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-              <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: TEAL, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
-            </div>
-            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>NexInclusion</span>
+    <div className="flex min-h-screen w-full bg-white">
+      {/* Sidebar */}
+      <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-white p-6 shadow-sm sm:block hidden">
+        <div className="mb-10 flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white">
+            <span className="text-xl font-black">C</span>
           </div>
-
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${TEAL}50`, backgroundColor: `${TEAL}12` }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: TEAL }} />
-            <span className="text-xs font-bold" style={{ color: TEAL }}>Volunteer / Supporter</span>
-          </div>
-
-          <p className="mt-3 truncate text-xs text-slate-500">{user?.email || user?.name || 'Volunteer'}</p>
+          <span className="text-xl font-bold tracking-tight text-slate-900">Community</span>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
+        <nav className="space-y-1">
           {VOLUNTEER_WORKSPACE_NAV.map((item) => (
             <SidebarLink key={item.to} item={item} />
           ))}
         </nav>
 
-        <div className="space-y-1.5 border-t border-slate-100 p-3">
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
-            <Ic name="home" size={16} color="#64748b" />
-            Dashboard
-          </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50">
-            <Ic name="logout" size={16} color="#e11d48" />
-            Logout
+        <div className="mt-10 border-t border-slate-100 pt-6">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-700"
+          >
+            <Ic name="logout" color="currentcolor" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* ── Main content ── */}
-      <section className="min-w-0 flex-1">
-        {/* Mobile top-bar */}
-        <header className="border-b border-slate-200 bg-white lg:hidden">
+      {/* Main Content */}
+      <section className="flex flex-1 flex-col">
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
           <div className="px-4 py-4 sm:px-6">
             <div className="flex items-center gap-2">
               <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${TEAL}12` }}>
