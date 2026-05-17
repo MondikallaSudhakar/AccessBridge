@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
@@ -99,7 +99,9 @@ const PUBLIC_TABS = [
   { id: 'products', label: 'Products' },
 ]
 
-function TopNav({ user, activeTab, setActiveTab, counts }) {
+const PUBLIC_TAB_IDS = new Set(PUBLIC_TABS.map((tab) => tab.id))
+
+function TopNav({ user, activeTab }) {
   const navItems = user
     ? [
       { label: 'Home', href: '/', Icon: Icons.Home },
@@ -128,19 +130,19 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
           <nav className="-mx-1 hidden flex-1 justify-center gap-4 px-1 lg:flex">
             {PUBLIC_TABS.map((tab) => {
               const selected = tab.id === activeTab
+              const tabHref = tab.id === 'all' ? '/' : `/?tab=${tab.id}`
               return (
-                <button
+                <Link
                   key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
                   className="px-3 py-2 text-sm font-medium transition-colors"
+                  to={tabHref}
                   style={{
                     color: selected ? COLORS.primary : COLORS.textLight,
                     borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
                   }}
                 >
                   {tab.label}
-                </button>
+                </Link>
               )
             })}
           </nav>
@@ -169,7 +171,7 @@ function TopNav({ user, activeTab, setActiveTab, counts }) {
   )
 }
 
-function RoleTabs({ activeTab, setActiveTab, counts }) {
+function RoleTabs({ activeTab, counts }) {
   const tabs = [
     { id: 'all', label: 'All', count: counts.total },
     { id: 'events', label: 'Events', count: counts.events },
@@ -184,19 +186,19 @@ function RoleTabs({ activeTab, setActiveTab, counts }) {
       <div className="flex flex-wrap gap-6">
         {tabs.map((tab) => {
           const selected = tab.id === activeTab
+          const tabHref = tab.id === 'all' ? '/' : `/?tab=${tab.id}`
           return (
-            <button
+            <Link
               key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
               className="pb-3 text-sm font-medium transition-colors"
+              to={tabHref}
               style={{
                 color: selected ? COLORS.primary : COLORS.textLight,
                 borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
               }}
             >
               {tab.label} <span style={{ color: COLORS.textLighter }}>({tab.count})</span>
-            </button>
+            </Link>
           )
         })}
       </div>
@@ -320,10 +322,13 @@ function TimelineItem({ item, index, isLast }) {
 
 export default function Home() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('all')
   const [loading, setLoading] = useState(true)
   const [directory, setDirectory] = useState({ products: [], schools: [], ngos: [], jobs: [], requirements: [], events: [], stories: [] })
+
+  const requestedTab = searchParams.get('tab') || 'all'
+  const activeTab = PUBLIC_TAB_IDS.has(requestedTab) ? requestedTab : 'all'
 
   useEffect(() => {
     const load = async () => {
@@ -400,58 +405,62 @@ export default function Home() {
 
   return (
     <div style={{ backgroundColor: COLORS.bgLight }}>
-      <TopNav user={user} activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
+      <TopNav user={user} activeTab={activeTab} />
 
       <main className="mx-auto max-w-4xl px-4 py-8 md:px-6">
-        {/* Hero Section */}
-        <section className="mb-16 mt-12 flex flex-col items-center text-center">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-normal text-yc-black max-w-5xl leading-tight md:leading-tight">
-            NexInclusion turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
-          </h1>
-          
-          <div className="mt-12 max-w-2xl px-4">
-            <p className="text-lg md:text-xl font-serif text-yc-black italic leading-relaxed">
-              [1] "A formidable person is one who seems like they'll get what they want, regardless of whatever obstacles are in the way."
-            </p>
-            <p className="mt-4 text-sm font-serif text-yc-black text-right pr-8 md:pr-16">
-              — Paul Graham
-            </p>
-          </div>
-          
-          <div className="mt-16 mb-8 text-gray-400">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
+        {activeTab === 'all' && (
+          <>
+            {/* Hero Section */}
+            <section className="mb-16 mt-12 flex flex-col items-center text-center">
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-normal text-yc-black max-w-5xl leading-tight md:leading-tight">
+                NexInclusion turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
+              </h1>
+              
+              <div className="mt-12 max-w-2xl px-4">
+                <p className="text-lg md:text-xl font-serif text-yc-black italic leading-relaxed">
+                  [1] "A formidable person is one who seems like they'll get what they want, regardless of whatever obstacles are in the way."
+                </p>
+                <p className="mt-4 text-sm font-serif text-yc-black text-right pr-8 md:pr-16">
+                  — Paul Graham
+                </p>
+              </div>
+              
+              <div className="mt-16 mb-8 text-gray-400">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
 
-          <div className="mt-4 flex flex-wrap justify-center gap-4">
-            <Link to="/register" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 bg-yc-black">
-              Join the Community
-            </Link>
-            <Link to="/marketplace" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-yc-black transition-opacity hover:bg-gray-100 border border-gray-300">
-              Browse Marketplace
-            </Link>
-          </div>
-        </section>
+              <div className="mt-4 flex flex-wrap justify-center gap-4">
+                <Link to="/register" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 bg-yc-black">
+                  Join the Community
+                </Link>
+                <Link to="/marketplace" className="inline-flex rounded-full px-8 py-3 text-sm font-medium text-yc-black transition-opacity hover:bg-gray-100 border border-gray-300">
+                  Browse Marketplace
+                </Link>
+              </div>
+            </section>
 
-        {/* Search Section */}
-        <section className="mb-8">
-          <label className="relative block">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              type="text"
-              placeholder="Search opportunities, stories, and products"
-              className="h-11 w-full rounded-lg border px-4 text-sm outline-none transition-colors focus:ring-1"
-              style={{ borderColor: COLORS.border, color: COLORS.text }}
-            />
-          </label>
-        </section>
+            {/* Search Section */}
+            <section className="mb-8">
+              <label className="relative block">
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  type="text"
+                  placeholder="Search opportunities, stories, and products"
+                  className="h-11 w-full rounded-lg border px-4 text-sm outline-none transition-colors focus:ring-1"
+                  style={{ borderColor: COLORS.border, color: COLORS.text }}
+                />
+              </label>
+            </section>
+          </>
+        )}
 
         {/* Filter tabs */}
-        {!user && (
+        {!user && activeTab === 'all' && (
           <section className="mb-6">
-            <RoleTabs activeTab={activeTab} setActiveTab={setActiveTab} counts={counts} />
+            <RoleTabs activeTab={activeTab} counts={counts} />
           </section>
         )}
 
