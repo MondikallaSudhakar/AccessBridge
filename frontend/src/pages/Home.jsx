@@ -137,8 +137,8 @@ function TopNav({ user, activeTab }) {
                   className="px-3 py-2 text-sm font-medium transition-colors"
                   to={tabHref}
                   style={{
-                    color: selected ? COLORS.primary : COLORS.textLight,
-                    borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
+                    color: selected ? COLORS.success : COLORS.textLight,
+                    borderBottom: selected ? `2px solid ${COLORS.success}` : 'none',
                   }}
                 >
                   {tab.label}
@@ -160,7 +160,7 @@ function TopNav({ user, activeTab }) {
               <Link to="/login" className="hidden items-center px-4 py-2 text-sm font-medium rounded transition-colors md:inline-flex" style={{ color: COLORS.text }}>
                 Sign In
               </Link>
-              <Link to="/register" className="inline-flex items-center rounded px-4 py-2 text-sm font-medium text-white" style={{ backgroundColor: COLORS.primary }}>
+              <Link to="/register" className="inline-flex items-center rounded px-4 py-2 text-sm font-medium text-white" style={{ backgroundColor: COLORS.success }}>
                 Join Now
               </Link>
             </>
@@ -193,8 +193,8 @@ function RoleTabs({ activeTab, counts }) {
               className="pb-3 text-sm font-medium transition-colors"
               to={tabHref}
               style={{
-                color: selected ? COLORS.primary : COLORS.textLight,
-                borderBottom: selected ? `2px solid ${COLORS.primary}` : 'none',
+                color: selected ? COLORS.success : COLORS.textLight,
+                borderBottom: selected ? `2px solid ${COLORS.success}` : 'none',
               }}
             >
               {tab.label} <span style={{ color: COLORS.textLighter }}>({tab.count})</span>
