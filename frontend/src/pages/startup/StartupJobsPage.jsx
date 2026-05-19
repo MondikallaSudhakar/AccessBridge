@@ -145,13 +145,13 @@ export default function StartupJobsPage() {
               <p className="mt-1 text-xs text-amber-700">Post jobs here only for persons with disabilities or specifically-abled persons. Ensure the listing includes accessibility information and reasonable accommodations.</p>
               <div className="mt-3 flex gap-2">
                 <button type="button" onClick={() => setShowWarning(false)} className="rounded-xl px-4 py-2 text-xs font-bold bg-white border">Cancel</button>
-                <button type="button" onClick={post} disabled={!subscription?.active} className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60" style={{ backgroundColor: GREEN }}>{saving ? 'Posting…' : 'I confirm — Post job'}</button>
+                <button type="button" onClick={post} disabled={!subscription?.active} className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60" style={{ backgroundColor: COLORS.success }}>{saving ? 'Posting…' : 'I confirm — Post job'}</button>
               </div>
             </div>
           )}
 
           {!showWarning && (
-            <button type="button" onClick={post} disabled={saving || !form.title || !form.description || !subscription?.active} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            <button type="button" onClick={post} disabled={saving || !form.title || !form.description || !subscription?.active} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: COLORS.success }}>
               {saving ? 'Posting…' : 'Post Job'}
             </button>
           )}

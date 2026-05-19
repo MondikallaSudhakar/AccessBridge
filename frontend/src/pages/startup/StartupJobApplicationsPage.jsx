@@ -174,7 +174,7 @@ export default function StartupJobApplicationsPage({ jobId, jobTitle, startupId 
               onClick={() => setFilter(f)}
               className="rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
               style={{
-                backgroundColor: active ? (f === 'all' ? GREEN : st.bg) : '#f1f5f9',
+                backgroundColor: active ? (f === 'all' ? COLORS.success : st.bg) : '#f1f5f9',
                 color: active ? (f === 'all' ? '#fff' : st.color) : '#64748b',
               }}
             >
