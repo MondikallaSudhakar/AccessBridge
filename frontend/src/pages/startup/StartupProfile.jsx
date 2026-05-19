@@ -28,7 +28,7 @@ function DataPanel({ title, subtitle, items, emptyText, actionLabel, actionHref,
             type="button"
             onClick={() => navigate(actionHref)}
             className="rounded-lg px-4 py-2 text-xs font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-            style={{ backgroundColor: GREEN }}
+            style={{ backgroundColor: COLORS.success }}
           >
             {actionLabel}
           </button>
@@ -131,7 +131,7 @@ export default function StartupProfile() {
                   onClick={handleStartSubscription}
                   disabled={subscriptionLoading || subscription?.active}
                   className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity disabled:opacity-60 hover:opacity-90"
-                  style={{ backgroundColor: subscription?.active ? '#94a3b8' : GREEN }}
+                  style={{ backgroundColor: subscription?.active ? '#94a3b8' : COLORS.success }}
                 >
                   {subscription?.active ? 'Subscribed' : 'Pay with Razorpay'}
                 </button>
