@@ -127,9 +127,9 @@ export function useNgoSubscription(ngoId) {
       },
       handler: async (response) => {
         await api.post(`/ngos/${ngoId}/subscription/verify`, {
-          orderId: response.order_id,
-          paymentId: response.payment_id,
-          signature: response.signature,
+          orderId: response.razorpay_order_id || response.order_id,
+          paymentId: response.razorpay_payment_id || response.payment_id,
+          signature: response.razorpay_signature || response.signature,
         })
         await refreshSubscription()
         if (typeof onActivated === 'function') {

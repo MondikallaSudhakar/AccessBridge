@@ -816,9 +816,9 @@ public class NGOController {
     public ResponseEntity<Map<String, Object>> verifySubscriptionPayment(
             @PathVariable Long id,
             @RequestBody Map<String, Object> payload) {
-        String orderId = payload == null ? null : (String) payload.get("orderId");
-        String paymentId = payload == null ? null : (String) payload.get("paymentId");
-        String signature = payload == null ? null : (String) payload.get("signature");
+        String orderId = extractString(payload, "orderId", "razorpay_order_id");
+        String paymentId = extractString(payload, "paymentId", "razorpay_payment_id");
+        String signature = extractString(payload, "signature", "razorpay_signature");
         return ResponseEntity.ok(razorpaySubscriptionService.verifyAndActivate(id, orderId, paymentId, signature));
     }
 
@@ -917,5 +917,17 @@ public class NGOController {
         data.put("paymentId", ngo.getSubscriptionPaymentId());
         data.put("expired", ngo.getSubscriptionExpiresAt() != null && ngo.getSubscriptionExpiresAt().isBefore(LocalDateTime.now()));
         return data;
+    }
+
+    private String extractString(Map<String, Object> payload, String primaryKey, String fallbackKey) {
+        if (payload == null) {
+            return null;
+        }
+
+        Object value = payload.get(primaryKey);
+        if (value == null) {
+            value = payload.get(fallbackKey);
+        }
+        return value == null ? null : String.valueOf(value);
     }
 }
