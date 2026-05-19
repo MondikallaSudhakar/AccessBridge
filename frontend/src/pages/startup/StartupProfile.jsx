@@ -36,7 +36,7 @@ function DataPanel({ title, subtitle, items, emptyText, actionLabel, actionHref,
       </div>
       <div className="p-5">
         {items.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
             {emptyText}
           </div>
         ) : (
@@ -163,7 +163,7 @@ export default function StartupProfile() {
             navigate={navigate}
             renderItem={(product) => (
               <div key={product.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="h-28 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                <div className="h-28 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center">
                   {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <span className="text-4xl text-slate-300">📦</span>}
                 </div>
                 <div className="mt-3 flex items-start justify-between gap-3">

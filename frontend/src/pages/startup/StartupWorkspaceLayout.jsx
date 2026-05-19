@@ -53,7 +53,7 @@ export default function StartupWorkspaceLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen bg-white lg:flex">
       <aside className="hidden border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
         <div className="border-b border-slate-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>

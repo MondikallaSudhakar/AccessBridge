@@ -75,13 +75,13 @@ function ApplicationCard({ app, onStatusChange }) {
       {open && (
         <div className="mt-3 space-y-3">
           {app.coverLetter && (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-xl border border-slate-100 bg-white p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cover Letter</p>
               <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{app.coverLetter}</p>
             </div>
           )}
           {app.resumeText && (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-xl border border-slate-100 bg-white p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Resume / Skills</p>
               <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{app.resumeText}</p>
             </div>

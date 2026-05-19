@@ -220,14 +220,14 @@ export default function StartupProductsPage() {
           {productsLoading ? (
             <div className="animate-pulse"><div className="h-5 w-40 rounded bg-slate-200" /></div>
           ) : products.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-10 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
               No products added yet.
             </div>
           ) : (
             <div className="flex flex-col gap-4">
               {products.map((product) => (
                 <div key={product.id} className="flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                  <div className="flex h-40 w-full sm:h-auto sm:w-48 shrink-0 items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50">
+                    <div className="flex h-40 w-full sm:h-auto sm:w-48 shrink-0 items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-white">
                     {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <span className="text-4xl text-slate-300">📦</span>}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
