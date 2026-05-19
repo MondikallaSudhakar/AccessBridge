@@ -144,12 +144,12 @@ const TextArea = ({ style={}, ...p }) => (
   />
 )
 
-const PrimaryBtn = ({ iconName, loading, children, style={}, ...p }) => (
+const PrimaryBtn = ({ iconName, loading, disabled, children, style={}, ...p }) => (
   <button
-    style={{display:'inline-flex',alignItems:'center',gap:7,padding:'9px 20px',borderRadius:radius.md,border:'none',background:loading?'#94a3b8':G,color:'#fff',fontWeight:700,fontSize:13,cursor:loading?'not-allowed':'pointer',fontFamily:"'Inter',sans-serif",boxShadow:`0 2px 8px ${G}50`,transition:'transform .15s,box-shadow .15s,background .15s',...style}}
-    onMouseEnter={e=>{if(!loading){e.currentTarget.style.transform='translateY(-1px)';e.currentTarget.style.boxShadow=`0 4px 14px ${G}60`}}}
+    style={{display:'inline-flex',alignItems:'center',gap:7,padding:'9px 20px',borderRadius:radius.md,border:'none',background:loading||disabled?'#94a3b8':G,color:'#fff',fontWeight:700,fontSize:13,cursor:loading||disabled?'not-allowed':'pointer',fontFamily:"'Inter',sans-serif",boxShadow:`0 2px 8px ${G}50`,opacity:loading||disabled?0.72:1,transition:'transform .15s,box-shadow .15s,background .15s',...style}}
+    onMouseEnter={e=>{if(!loading && !disabled){e.currentTarget.style.transform='translateY(-1px)';e.currentTarget.style.boxShadow=`0 4px 14px ${G}60`}}}
     onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0)';e.currentTarget.style.boxShadow=`0 2px 8px ${G}50`}}
-    disabled={loading}
+    disabled={loading || disabled}
     {...p}
   >
     {loading
@@ -461,7 +461,7 @@ function AppsSection({ jobs, selectedJobApps, loadingApps, viewJobApplications, 
 }
 
 /* ─────────────────────────── JOBS TAB PANEL ─────────────────────────── */
-function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobApplications, del, selectedJobApps, setSelectedJobApps, loadingApps, updateAppStatus }) {
+function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobApplications, del, selectedJobApps, setSelectedJobApps, loadingApps, updateAppStatus, canPost }) {
   const [sec, setSec] = useState('list') // 'post' | 'list' | 'apps'
   const SECS = [
     { id:'list', label:'Job Listings', icon:'briefcase' },
@@ -479,7 +479,7 @@ function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobA
         {SECS.map(s => {
           const active = sec === s.id
           return (
-            <button key={s.id} onClick={()=>setSec(s.id)}
+              <button key={s.id} onClick={()=>setSec(s.id)}
               style={{display:'flex',alignItems:'center',gap:7,padding:'8px 18px',borderRadius:radius.lg,border:'none',cursor:'pointer',fontFamily:"'Inter',sans-serif",fontWeight:active?700:500,fontSize:13,transition:'all .15s',
                 background: active ? '#fff' : 'transparent',
                 color: active ? NAVY : '#64748b',
@@ -508,6 +508,9 @@ function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobA
             title="Post a New Job"
             subtitle="Applications are received directly on the platform — no external redirect needed."
           />
+          {!canPost && (
+            <p style={{margin:'0 0 14px',fontSize:13,color:'#92400e',fontWeight:600}}>A paid NGO subscription is required before posting jobs.</p>
+          )}
           <form onSubmit={e=>{createJob(e);setSec('list')}} style={{display:'flex',flexDirection:'column',gap:16}}>
             <div>
               <FieldLabel required>Job Title</FieldLabel>
@@ -530,7 +533,7 @@ function JobsTabPanel({ jobs, jobForm, setJobForm, createJob, closeJob, viewJobA
               <TextArea value={jobForm.description} onChange={e=>setJobForm(p=>({...p,description:e.target.value}))} placeholder="Describe responsibilities, requirements, and any accessibility support offered…" rows={5} required/>
             </div>
             <div style={{display:'flex',gap:10,alignItems:'center'}}>
-              <PrimaryBtn type="submit" iconName="plus">Post Job</PrimaryBtn>
+              <PrimaryBtn type="submit" iconName="plus" disabled={!canPost}>Post Job</PrimaryBtn>
               <GhostBtn type="button" onClick={()=>setSec('list')} color="#64748b">Cancel</GhostBtn>
             </div>
           </form>
@@ -658,6 +661,12 @@ export default function NgoProfile() {
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   const { loading: subscriptionLoading, subscription, startSubscription } = useNgoSubscription(ngo?.id)
+  const canPostContent = Boolean(subscription?.active)
+  const blockPosting = () => {
+    if (canPostContent) return false
+    setError('A paid NGO subscription is required to post content.')
+    return true
+  }
 
   /* effects */
   useEffect(() => {
@@ -801,6 +810,7 @@ export default function NgoProfile() {
 
   const createEvent = async e => {
     e.preventDefault(); if(!ngo?.id)return
+    if (blockPosting()) return
     try {
       const payload = {
         ...eventForm,
@@ -898,12 +908,13 @@ export default function NgoProfile() {
 
   const createNeed = async e => {
     e.preventDefault(); if(!ngo?.id) return
+    if (blockPosting()) return
     try {
       await fetch(`${BASE}/ngos/${ngo.id}/needs`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({...needForm,targetAmount:needForm.targetAmount?parseFloat(needForm.targetAmount):0})})
       setNeedForm(blankNeed); loadData(ngo.id); flash('Requirement posted!')
     } catch { setError('Failed to post requirement') }
   }
-  const createJob = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/jobs`,jobForm);setJobForm(blankJob);loadData(ngo.id);flash('Job posted!')}catch(err){setError(err.message||'Error')} }
+  const createJob = async e => { e.preventDefault(); if(!ngo?.id)return; if (blockPosting()) return; try{await api.post(`/ngos/${ngo.id}/jobs`,jobForm);setJobForm(blankJob);loadData(ngo.id);flash('Job posted!')}catch(err){setError(err.message||'Error')} }
   const closeJob = async id => { if(!ngo?.id)return; try{ await fetch(`${BASE}/ngos/jobs/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${localStorage.getItem('token')}`},body:JSON.stringify({status:'CLOSED'})}); loadData(ngo.id); flash('Job closed.') }catch{} }
   const viewJobApplications = async job => {
     setSelectedJobApps({job,apps:[],fetchError:null})
@@ -941,12 +952,13 @@ export default function NgoProfile() {
       setError('Failed to update order status: ' + (error.message || 'Unknown error'))
     }
   }
-  const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
-  const createService = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
-  const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
+  const createProduct = async e => { e.preventDefault(); if(!ngo?.id)return; if (blockPosting()) return; try{await api.post(`/ngos/${ngo.id}/products`,{...productForm,price:productForm.price?parseFloat(productForm.price):0,stockQuantity:productForm.stockQuantity?parseInt(productForm.stockQuantity,10):0});setProductForm(blankProduct);loadData(ngo.id);flash('Product posted!')}catch(err){setError(err.message||'Error')} }
+  const createService = async e => { e.preventDefault(); if(!ngo?.id)return; if (blockPosting()) return; try{await api.post(`/ngos/${ngo.id}/services`,serviceForm);setServiceForm(blankService);loadData(ngo.id);flash('Service posted!')}catch(err){setError(err.message||'Error')} }
+  const createAchievement = async e => { e.preventDefault(); if(!ngo?.id)return; if (blockPosting()) return; try{await api.post(`/ngos/${ngo.id}/achievements`,achievementForm);setAchievementForm(blankAchievement);loadData(ngo.id);flash('Achievement posted!')}catch(err){setError(err.message||'Error')} }
   const createVolunteerNeed = async e => {
     e.preventDefault()
     if(!ngo?.id) return
+    if (blockPosting()) return
     if(!volunteerNeedForm.title.trim() || !volunteerNeedForm.purpose.trim()) return
     try {
       await fetch(`${BASE}/ngos/${ngo.id}/needs`, {
@@ -982,9 +994,10 @@ export default function NgoProfile() {
       setVolunteerUpdatingId(null)
     }
   }
-  const createCampaign = async e => { e.preventDefault(); if(!ngo?.id)return; try{await api.post(`/ngos/${ngo.id}/campaigns`, {...campaignForm, targetBeneficiaries: campaignForm.targetBeneficiaries ? Number(campaignForm.targetBeneficiaries) : null, volunteerTarget: campaignForm.volunteerTarget ? Number(campaignForm.volunteerTarget) : null, spentAmount: campaignForm.spentAmount ? Number(campaignForm.spentAmount) : null}); setCampaignForm(blankCampaign); loadData(ngo.id); flash('Campaign added!')}catch(err){setError(err.message||'Error')} }
+  const createCampaign = async e => { e.preventDefault(); if(!ngo?.id)return; if (blockPosting()) return; try{await api.post(`/ngos/${ngo.id}/campaigns`, {...campaignForm, targetBeneficiaries: campaignForm.targetBeneficiaries ? Number(campaignForm.targetBeneficiaries) : null, volunteerTarget: campaignForm.volunteerTarget ? Number(campaignForm.volunteerTarget) : null, spentAmount: campaignForm.spentAmount ? Number(campaignForm.spentAmount) : null}); setCampaignForm(blankCampaign); loadData(ngo.id); flash('Campaign added!')}catch(err){setError(err.message||'Error')} }
   const createCourse = async e => {
     e.preventDefault(); if(!ngo?.id) return
+    if (blockPosting()) return
     try {
       await api.post(`/ngos/${ngo.id}/courses`, {
         ...courseForm,
@@ -1308,7 +1321,7 @@ export default function NgoProfile() {
                       </p>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:10}}>
-                      <PrimaryBtn
+                        <PrimaryBtn
                         type="button"
                         iconName={subscription?.active ? 'check' : 'currency'}
                         onClick={handleStartSubscription}
@@ -1446,7 +1459,7 @@ export default function NgoProfile() {
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post Volunteer Need" subtitle="Set role purpose and how many volunteers are needed." action={
-                  <PrimaryBtn iconName={showVolunteerNeedForm?'x':'plus'} onClick={()=>setShowVolunteerNeedForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                  <PrimaryBtn iconName={showVolunteerNeedForm?'x':'plus'} onClick={()=>setShowVolunteerNeedForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showVolunteerNeedForm?'Cancel':'+ Add Volunteer Need'}
                   </PrimaryBtn>
                 }/>
@@ -1456,7 +1469,7 @@ export default function NgoProfile() {
                   <div><FieldLabel required>Purpose</FieldLabel><TextArea rows={3} required value={volunteerNeedForm.purpose} onChange={e=>setVolunteerNeedForm(p=>({...p,purpose:e.target.value}))} placeholder="Describe why volunteers are needed and what they will do." /></div>
                   <div><FieldLabel>How Many Volunteers Needed</FieldLabel><TextInput type="number" min="1" value={volunteerNeedForm.neededCount} onChange={e=>setVolunteerNeedForm(p=>({...p,neededCount:e.target.value}))} placeholder="e.g. 10" /></div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Post Need</PrimaryBtn>
+                      <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Post Need</PrimaryBtn>
                       <GhostBtn type="button" onClick={()=>setShowVolunteerNeedForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
@@ -1548,7 +1561,7 @@ export default function NgoProfile() {
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Add Campaign" subtitle="Track campaign outcomes separate from needs and achievements." action={
-                  <PrimaryBtn iconName={showCampaignForm?'x':'plus'} onClick={()=>setShowCampaignForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                  <PrimaryBtn iconName={showCampaignForm?'x':'plus'} onClick={()=>setShowCampaignForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showCampaignForm?'Cancel':'+ Add Campaign'}
                   </PrimaryBtn>
                 }/>
@@ -1567,7 +1580,7 @@ export default function NgoProfile() {
                     <div><FieldLabel>Objective</FieldLabel><TextArea rows={3} value={campaignForm.objective} onChange={e=>setCampaignForm(p=>({...p,objective:e.target.value}))} /></div>
                     <div><FieldLabel>Impact Summary</FieldLabel><TextArea rows={3} value={campaignForm.impactSummary} onChange={e=>setCampaignForm(p=>({...p,impactSummary:e.target.value}))} /></div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Add Campaign</PrimaryBtn>
+                      <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Add Campaign</PrimaryBtn>
                       <GhostBtn type="button" onClick={()=>setShowCampaignForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
@@ -1607,7 +1620,7 @@ export default function NgoProfile() {
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Course" subtitle="List training and learning programs for the community." action={
-                  <PrimaryBtn iconName={showCourseForm?'x':'plus'} onClick={()=>setShowCourseForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                  <PrimaryBtn iconName={showCourseForm?'x':'plus'} onClick={()=>setShowCourseForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showCourseForm?'Cancel':'+ Add Course'}
                   </PrimaryBtn>
                 }/>
@@ -1629,7 +1642,7 @@ export default function NgoProfile() {
                       <div><FieldLabel>Instructor Email</FieldLabel><TextInput type="email" value={courseForm.instructorEmail} onChange={e=>setCourseForm(p=>({...p,instructorEmail:e.target.value}))} placeholder="instructor@example.com"/></div>
                     </div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Create Course</PrimaryBtn>
+                      <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Create Course</PrimaryBtn>
                       <GhostBtn type="button" onClick={()=>setShowCourseForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
@@ -1676,7 +1689,7 @@ export default function NgoProfile() {
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Requirement" subtitle="Describe what your NGO needs from the community." action={
-                  <PrimaryBtn iconName={showNeedForm?'x':'plus'} onClick={()=>setShowNeedForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                  <PrimaryBtn iconName={showNeedForm?'x':'plus'} onClick={()=>setShowNeedForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showNeedForm?'Cancel':'+ Add Requirement'}
                   </PrimaryBtn>
                 }/>
@@ -1693,7 +1706,7 @@ export default function NgoProfile() {
                     </label>
                     <div><FieldLabel required>Description</FieldLabel><TextArea value={needForm.description} onChange={e=>setNeedForm(p=>({...p,description:e.target.value}))} placeholder="Provide details…" rows={4} required/></div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Post Requirement</PrimaryBtn>
+                      <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Post Requirement</PrimaryBtn>
                       <GhostBtn type="button" onClick={()=>setShowNeedForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
@@ -1738,6 +1751,7 @@ export default function NgoProfile() {
               del={del}
               selectedJobApps={selectedJobApps} setSelectedJobApps={setSelectedJobApps}
               loadingApps={loadingApps} updateAppStatus={updateAppStatus}
+              canPost={canPostContent}
             />
           )}
 
@@ -1746,7 +1760,7 @@ export default function NgoProfile() {
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
               <Panel>
                 <PanelHeader title="Post a Product" subtitle="List assistive products for the community marketplace." action={
-                  <PrimaryBtn iconName={showProductForm?'x':'plus'} onClick={()=>setShowProductForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    <PrimaryBtn iconName={showProductForm?'x':'plus'} onClick={()=>setShowProductForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showProductForm?'Cancel':'+ Add Product'}
                   </PrimaryBtn>
                 }/>
@@ -1762,7 +1776,7 @@ export default function NgoProfile() {
                       <span style={{fontSize:13,fontWeight:600,color:'#475569'}}>Currently Available</span>
                     </label>
                     <div style={{gridColumn:'1/-1',display:'flex',gap:10,alignItems:'center',marginTop:8}}>
-                      <PrimaryBtn onClick={e=>{createProduct(e);setShowProductForm(false)}} iconName="plus">Post Product</PrimaryBtn>
+                      <PrimaryBtn onClick={e=>{createProduct(e);setShowProductForm(false)}} iconName="plus" disabled={!canPostContent}>Post Product</PrimaryBtn>
                       <GhostBtn onClick={()=>setShowProductForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </div>
@@ -1798,7 +1812,7 @@ export default function NgoProfile() {
             <div className="fade-in ngo-two-col" style={{display:'grid',gap:24,alignItems:'start'}}>
               <Panel>
                 <PanelHeader title="Post a Service" subtitle="Services appear on your public NGO profile." action={
-                  <PrimaryBtn iconName={showServiceForm?'x':'plus'} onClick={()=>setShowServiceForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                    <PrimaryBtn iconName={showServiceForm?'x':'plus'} onClick={()=>setShowServiceForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showServiceForm?'Cancel':'+ Add Service'}
                   </PrimaryBtn>
                 }/>
@@ -1812,7 +1826,7 @@ export default function NgoProfile() {
                     <div><FieldLabel>Contact Info</FieldLabel><TextInput value={serviceForm.contactInfo} onChange={e=>setServiceForm(p=>({...p,contactInfo:e.target.value}))} placeholder="Phone or email"/></div>
                     <div><FieldLabel required>Description</FieldLabel><TextArea value={serviceForm.description} onChange={e=>setServiceForm(p=>({...p,description:e.target.value}))} placeholder="Describe the service…" rows={4} required/></div>
                     <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                      <PrimaryBtn type="submit" iconName="plus">Post Service</PrimaryBtn>
+                      <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Post Service</PrimaryBtn>
                       <GhostBtn type="button" onClick={()=>setShowServiceForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </form>
@@ -1850,7 +1864,7 @@ export default function NgoProfile() {
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
               <Panel>
                 <PanelHeader title="Post an Achievement" subtitle="Achievements are shown prominently on your public profile." action={
-                  <PrimaryBtn iconName={showAchievementForm?'x':'plus'} onClick={()=>setShowAchievementForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                  <PrimaryBtn iconName={showAchievementForm?'x':'plus'} onClick={()=>setShowAchievementForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                     {showAchievementForm?'Cancel':'+ Add Achievement'}
                   </PrimaryBtn>
                 }/>
@@ -1862,7 +1876,7 @@ export default function NgoProfile() {
                     <div><FieldLabel>Image URL</FieldLabel><TextInput value={achievementForm.imageUrl} onChange={e=>setAchievementForm(p=>({...p,imageUrl:e.target.value}))} placeholder="https://…"/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel required>Description</FieldLabel><TextArea value={achievementForm.description} onChange={e=>setAchievementForm(p=>({...p,description:e.target.value}))} placeholder="Tell the story of this achievement…" rows={3} required/></div>
                     <div style={{gridColumn:'1/-1',display:'flex',gap:10,alignItems:'center',marginTop:8}}>
-                      <PrimaryBtn onClick={e=>{createAchievement(e);setShowAchievementForm(false)}} iconName="plus">Post Achievement</PrimaryBtn>
+                      <PrimaryBtn onClick={e=>{createAchievement(e);setShowAchievementForm(false)}} iconName="plus" disabled={!canPostContent}>Post Achievement</PrimaryBtn>
                       <GhostBtn onClick={()=>setShowAchievementForm(false)} color="#64748b">Cancel</GhostBtn>
                     </div>
                   </div>
@@ -2235,7 +2249,7 @@ export default function NgoProfile() {
                     title="My Events"
                     subtitle={events.length===0?'No events created yet':`${events.filter(e=>e.status==='UPCOMING').length} upcoming · ${events.length} total`}
                     action={
-                      <PrimaryBtn iconName={showEventForm?'x':'plus'} onClick={()=>setShowEventForm(v=>!v)} style={{fontSize:12,padding:'7px 14px'}}>
+                      <PrimaryBtn iconName={showEventForm?'x':'plus'} onClick={()=>setShowEventForm(v=>!v)} disabled={!canPostContent} style={{fontSize:12,padding:'7px 14px'}}>
                         {showEventForm?'Cancel':'New Event'}
                       </PrimaryBtn>
                     }
@@ -2281,7 +2295,7 @@ export default function NgoProfile() {
                         <TextArea required rows={4} value={eventForm.description} onChange={e=>setEventForm(p=>({...p,description:e.target.value}))} placeholder="Describe the event, agenda, and who should attend…"/>
                       </div>
                       <div style={{display:'flex',gap:10,alignItems:'center'}}>
-                        <PrimaryBtn type="submit" iconName="plus">Create Event</PrimaryBtn>
+                        <PrimaryBtn type="submit" iconName="plus" disabled={!canPostContent}>Create Event</PrimaryBtn>
                         <GhostBtn type="button" onClick={()=>setShowEventForm(false)} color="#64748b">Cancel</GhostBtn>
                       </div>
                     </form>
