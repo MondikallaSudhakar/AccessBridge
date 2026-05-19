@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 
 const GREEN = '#5BCB2B'
 const TEAL = '#0d9488'
@@ -58,6 +59,7 @@ export default function StartupProfile() {
   const [profileLoading, setProfileLoading] = useState(true)
   const [products, setProducts] = useState([])
   const [events, setEvents] = useState([])
+  const { loading: subscriptionLoading, subscription, startSubscription } = useStartupSubscription(startup?.id)
 
   useEffect(() => {
     if (user && user.role !== 'STARTUP_ADMIN') navigate('/dashboard')
@@ -97,6 +99,14 @@ export default function StartupProfile() {
   const recentProducts = products.slice(0, 3)
   const recentEvents = events.slice(0, 3)
 
+  const handleStartSubscription = async () => {
+    try {
+      await startSubscription({ onActivated: fetchStartup })
+    } catch (error) {
+      alert(error.message || 'Unable to start subscription')
+    }
+  }
+
   return (
     <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
       {profileLoading ? (
@@ -112,10 +122,28 @@ export default function StartupProfile() {
                 <h1 className="text-3xl font-black text-slate-900">{startup?.name || 'My Startup'}</h1>
                 {startup?.city && <p className="text-sm text-slate-500 mt-1">{[startup.city, startup.state].filter(Boolean).join(', ')}</p>}
               </div>
-              <div className="flex flex-wrap gap-3">
-                <button onClick={() => navigate('/startup/products')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>View Products</button>
-                <button onClick={() => navigate('/startup/events')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: TEAL }}>View Events</button>
-                <button onClick={() => navigate('/startup/orders')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#5BCB2B' }}>View Orders</button>
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex flex-wrap gap-3">
+                  <button onClick={() => navigate('/startup/products')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>View Products</button>
+                  <button onClick={() => navigate('/startup/events')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: TEAL }}>View Events</button>
+                  <button onClick={() => navigate('/startup/orders')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#5BCB2B' }}>View Orders</button>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleStartSubscription}
+                  disabled={subscriptionLoading || subscription?.active}
+                  className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity disabled:opacity-60 hover:opacity-90"
+                  style={{ backgroundColor: subscription?.active ? '#94a3b8' : GREEN }}
+                >
+                  {subscription?.active ? 'Subscribed' : 'Pay with Razorpay'}
+                </button>
+                <p className="text-xs text-slate-500">
+                  {subscriptionLoading
+                    ? 'Checking subscription status...'
+                    : subscription?.active
+                      ? `Active${subscription.expiresAt ? ` until ${new Date(subscription.expiresAt).toLocaleDateString('en-IN')}` : ''}`
+                      : 'Required to post startup content'}
+                </p>
               </div>
             </div>
 

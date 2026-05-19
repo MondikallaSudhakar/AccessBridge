@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import StartupJobApplicationsPage from './StartupJobApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
+import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 
 const API = 'http://localhost:8081/api'
 const GREEN = '#5BCB2B'
@@ -15,6 +16,7 @@ export default function StartupJobsPage() {
   const [form, setForm] = useState({ title: '', description: '', employmentType: 'FULL_TIME', location: '', salaryRange: '', lastDateToApply: '' })
   const [saving, setSaving] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
+  const { loading: subscriptionLoading, subscription, startSubscription } = useStartupSubscription(startupId)
 
   useEffect(() => {
     if (!user?.email) return
@@ -41,6 +43,7 @@ export default function StartupJobsPage() {
 
   const post = async () => {
     if (!form.title.trim() || !form.description.trim()) return
+    if (!subscription?.active) return
     // show explicit warning before posting
     if (!showWarning) { setShowWarning(true); return }
 
@@ -81,15 +84,26 @@ export default function StartupJobsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-extrabold text-slate-900">Posted Jobs</h3>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
-          style={{ backgroundColor: GREEN }}
-        >
-          {showForm ? '✕ Cancel' : '+ Post New Job'}
-        </button>
+        <div>
+          <h3 className="text-base font-extrabold text-slate-900">Posted Jobs</h3>
+          <p className="text-xs text-slate-500">{subscriptionLoading ? 'Checking subscription status...' : subscription?.active ? 'Subscription active' : 'Subscription required to post jobs'}</p>
+        </div>
+        <div className="flex gap-2">
+          {!subscription?.active && (
+            <button type="button" onClick={() => startSubscription({ onActivated: load })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: GREEN }}>
+              Pay with Razorpay
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            disabled={!subscription?.active}
+            className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
+            style={{ backgroundColor: GREEN }}
+          >
+            {showForm ? '✕ Cancel' : '+ Post New Job'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -131,13 +145,13 @@ export default function StartupJobsPage() {
               <p className="mt-1 text-xs text-amber-700">Post jobs here only for persons with disabilities or specifically-abled persons. Ensure the listing includes accessibility information and reasonable accommodations.</p>
               <div className="mt-3 flex gap-2">
                 <button type="button" onClick={() => setShowWarning(false)} className="rounded-xl px-4 py-2 text-xs font-bold bg-white border">Cancel</button>
-                <button type="button" onClick={post} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: GREEN }}>{saving ? 'Posting…' : 'I confirm — Post job'}</button>
+                <button type="button" onClick={post} disabled={!subscription?.active} className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60" style={{ backgroundColor: GREEN }}>{saving ? 'Posting…' : 'I confirm — Post job'}</button>
               </div>
             </div>
           )}
 
           {!showWarning && (
-            <button type="button" onClick={post} disabled={saving || !form.title || !form.description} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
+            <button type="button" onClick={post} disabled={saving || !form.title || !form.description || !subscription?.active} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40" style={{ backgroundColor: GREEN }}>
               {saving ? 'Posting…' : 'Post Job'}
             </button>
           )}

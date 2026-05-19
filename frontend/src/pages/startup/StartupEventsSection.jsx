@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../../services/api'
+import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 
 const EVENT_TYPES = ['WORKSHOP', 'SEMINAR', 'FUNDRAISER', 'AWARENESS', 'COMMUNITY']
 
@@ -25,6 +26,7 @@ export default function StartupEventsSection({ startupId }) {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const { loading: subscriptionLoading, subscription, startSubscription } = useStartupSubscription(startupId)
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -87,6 +89,11 @@ export default function StartupEventsSection({ startupId }) {
 
   const handleSaveEvent = async () => {
     if (!startupId || !form.title.trim() || !form.description.trim() || !form.eventDate || !form.location.trim()) {
+      return
+    }
+
+    if (!subscription?.active) {
+      setError('A paid Startup subscription is required to create events.')
       return
     }
 
@@ -243,18 +250,27 @@ export default function StartupEventsSection({ startupId }) {
         <div>
           <h3 className="text-base font-extrabold text-gray-900">Posted Events</h3>
           <p className="text-xs text-gray-500">Create events for your startup and manage registrations.</p>
+          <p className="text-xs text-gray-500">{subscriptionLoading ? 'Checking subscription status...' : subscription?.active ? 'Subscription active' : 'Subscription required to create events'}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setShowForm((value) => !value)
-            setError('')
-          }}
-          className="rounded-xl px-4 py-2 text-xs font-bold text-white"
-          style={{ backgroundColor: '#e65100' }}
-        >
-          {showForm ? '✕ Cancel' : '+ Create Event'}
-        </button>
+        <div className="flex gap-2">
+          {!subscription?.active && (
+            <button type="button" onClick={() => startSubscription({ onActivated: loadEvents })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: '#e65100' }}>
+              Pay with Razorpay
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setShowForm((value) => !value)
+              setError('')
+            }}
+            disabled={!subscription?.active}
+            className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
+            style={{ backgroundColor: '#e65100' }}
+          >
+            {showForm ? '✕ Cancel' : '+ Create Event'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -345,7 +361,7 @@ export default function StartupEventsSection({ startupId }) {
           <button
             type="button"
             onClick={handleSaveEvent}
-            disabled={saving || !form.title || !form.description || !form.eventDate || !form.location}
+            disabled={saving || !form.title || !form.description || !form.eventDate || !form.location || !subscription?.active}
             className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
             style={{ backgroundColor: '#e65100' }}
           >

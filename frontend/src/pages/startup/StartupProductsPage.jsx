@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 
 const GREEN = '#5BCB2B'
 
@@ -18,6 +19,7 @@ export default function StartupProductsPage() {
   const [submittingProduct, setSubmittingProduct] = useState(false)
   const [productError, setProductError] = useState('')
   const [editingProductId, setEditingProductId] = useState(null)
+  const { loading: subscriptionLoading, subscription, startSubscription } = useStartupSubscription(startup?.id)
 
   const PRODUCT_CATEGORIES = ['Hardware', 'Software', 'Educational Tool', 'Therapy Equipment', 'Mobility Aid', 'Other']
 
@@ -66,6 +68,10 @@ export default function StartupProductsPage() {
   const handleSaveProduct = async (e) => {
     e.preventDefault()
     if (!startup) return
+    if (!subscription?.active) {
+      setProductError('A paid Startup subscription is required to post products.')
+      return
+    }
     setProductError('')
     setSubmittingProduct(true)
 
@@ -98,6 +104,10 @@ export default function StartupProductsPage() {
   }
 
   const openNewProductForm = () => {
+    if (!subscription?.active) {
+      setProductError('A paid Startup subscription is required to post products.')
+      return
+    }
     setProductForm({ name: '', description: '', price: '', category: 'Hardware', stockQuantity: '', imageUrl: '', available: true })
     setEditingProductId(null)
     setProductError('')
@@ -137,10 +147,18 @@ export default function StartupProductsPage() {
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0d9488' }}>Startup Admin</p>
             <h1 className="text-3xl font-black text-slate-900">Posted Products</h1>
             <p className="text-sm text-slate-500 mt-1">Create, update, and manage the products published by your startup.</p>
+            <p className="text-xs text-slate-500 mt-1">{subscriptionLoading ? 'Checking subscription status...' : subscription?.active ? 'Subscription active' : 'Subscription required to post products'}</p>
           </div>
-          <button onClick={() => navigate('/startup/profile')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>
-            Back to Profile
-          </button>
+          <div className="flex gap-2">
+            {!subscription?.active && (
+              <button onClick={() => startSubscription({ onActivated: () => fetchStartup() })} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>
+                Pay with Razorpay
+              </button>
+            )}
+            <button onClick={() => navigate('/startup/profile')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>
+              Back to Profile
+            </button>
+          </div>
         </div>
       </section>
 
@@ -151,7 +169,7 @@ export default function StartupProductsPage() {
             <p className="text-xs text-slate-500">Add and edit products to display them on the community marketplace.</p>
           </div>
           {!showProductForm && (
-            <button onClick={openNewProductForm} className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>
+            <button onClick={openNewProductForm} disabled={!subscription?.active} className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-60 hover:opacity-90" style={{ backgroundColor: GREEN }}>
               + Add Product
             </button>
           )}
@@ -189,7 +207,7 @@ export default function StartupProductsPage() {
               </label>
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={submittingProduct} className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60 hover:opacity-90" style={{ backgroundColor: GREEN }}>
+              <button type="submit" disabled={submittingProduct || !subscription?.active} className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60 hover:opacity-90" style={{ backgroundColor: GREEN }}>
                 {submittingProduct ? 'Saving...' : (editingProductId ? 'Update Product' : 'Add Product')}
               </button>
               <button type="button" onClick={() => { setShowProductForm(false); setEditingProductId(null) }} className="rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">

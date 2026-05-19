@@ -237,6 +237,10 @@ public class EventController {
                     .body("Startup not found");
         }
 
+        if (!isStartupSubscriptionActive(startup.get())) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "Active Startup subscription required to create events");
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> organizer = userRepository.findByEmail(auth.getName());
         if (organizer.isEmpty()) {
@@ -252,6 +256,16 @@ public class EventController {
 
         Event savedEvent = eventRepository.save(event);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedEvent);
+    }
+
+    private boolean isStartupSubscriptionActive(Startup startup) {
+        if (startup == null) {
+            return false;
+        }
+
+        LocalDateTime expiresAt = startup.getSubscriptionExpiresAt();
+        boolean expired = expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+        return Boolean.TRUE.equals(startup.getSubscriptionActive()) && !expired;
     }
 
     @PutMapping("/ngo/{ngoId}/events/{eventId}")

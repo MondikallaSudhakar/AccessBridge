@@ -1,13 +1,16 @@
 package com.community.community.controller;
 
 import com.community.community.model.Product;
+import com.community.community.model.Startup;
 import com.community.community.service.ProductService;
+import com.community.community.repository.StartupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -17,10 +20,16 @@ import java.util.Map;
 public class ProductController {
 
     private final ProductService productService;
+    private final StartupRepository startupRepository;
 
     @PostMapping("/startup/{startupId}")
     @PreAuthorize("hasAnyRole('STARTUP_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> createProductWithStartup(@PathVariable Long startupId, @RequestBody Product product) {
+        Startup startup = startupRepository.findById(startupId)
+                .orElseThrow(() -> new RuntimeException("Startup not found with id: " + startupId));
+        if (!isStartupSubscriptionActive(startup)) {
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "Active Startup subscription required to post this content");
+        }
         Product createdProduct = productService.createProductForStartup(startupId, product);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
@@ -92,5 +101,15 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isStartupSubscriptionActive(Startup startup) {
+        if (startup == null) {
+            return false;
+        }
+
+        LocalDateTime expiresAt = startup.getSubscriptionExpiresAt();
+        boolean expired = expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+        return Boolean.TRUE.equals(startup.getSubscriptionActive()) && !expired;
     }
 }

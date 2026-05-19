@@ -80,4 +80,31 @@ public class StartupService {
         startup.setVerified(true);
         return startupRepository.save(startup);
     }
+
+    public Startup saveStartup(Startup startup) {
+        return startupRepository.save(startup);
+    }
+
+    public Startup activateSubscription(Long id, String plan, String orderId, String paymentId, Integer durationDays) {
+        Startup startup = getStartupById(id);
+        int days = durationDays == null || durationDays <= 0 ? 30 : durationDays;
+        startup.setSubscriptionActive(true);
+        startup.setSubscriptionActivatedAt(java.time.LocalDateTime.now());
+        startup.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusDays(days));
+        startup.setSubscriptionPlan(plan == null || plan.isBlank() ? "MONTHLY" : plan.trim().toUpperCase());
+        startup.setSubscriptionOrderId(orderId);
+        startup.setSubscriptionPaymentId(paymentId);
+        return startupRepository.save(startup);
+    }
+
+    public Startup deactivateSubscription(Long id) {
+        Startup startup = getStartupById(id);
+        startup.setSubscriptionActive(false);
+        startup.setSubscriptionPlan("FREE");
+        startup.setSubscriptionExpiresAt(null);
+        startup.setSubscriptionActivatedAt(null);
+        startup.setSubscriptionOrderId(null);
+        startup.setSubscriptionPaymentId(null);
+        return startupRepository.save(startup);
+    }
 }

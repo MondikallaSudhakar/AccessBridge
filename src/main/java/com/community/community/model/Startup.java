@@ -55,6 +55,20 @@ public class Startup {
     @Column(nullable = false)
     private Boolean verified = false;
 
+    @Column(nullable = false)
+    private Boolean subscriptionActive = false;
+
+    private LocalDateTime subscriptionActivatedAt;
+
+    private LocalDateTime subscriptionExpiresAt;
+
+    @Column(length = 50)
+    private String subscriptionPlan = "FREE";
+
+    private String subscriptionOrderId;
+
+    private String subscriptionPaymentId;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
