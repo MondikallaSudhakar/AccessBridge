@@ -29,15 +29,18 @@ import com.community.community.repository.UserRepository;
 import com.community.community.model.Role;
 import com.community.community.model.User;
 import com.community.community.service.NGOService;
+import com.community.community.service.RazorpaySubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +67,7 @@ public class NGOController {
     private final EventRepository eventRepository;
     private final EventApplicationRepository eventApplicationRepository;
     private final UserRepository userRepository;
+    private final RazorpaySubscriptionService razorpaySubscriptionService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
@@ -200,6 +204,7 @@ public class NGOController {
     @PostMapping("/{id}/volunteers")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOVolunteerProfile> createVolunteerProfile(@PathVariable Long id, @RequestBody NGOVolunteerProfile req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOVolunteerProfile profile = new NGOVolunteerProfile();
         profile.setNgo(ngo);
@@ -247,6 +252,7 @@ public class NGOController {
     @PostMapping("/{id}/campaigns")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOCampaign> createCampaign(@PathVariable Long id, @RequestBody NGOCampaign req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOCampaign campaign = new NGOCampaign();
         campaign.setNgo(ngo);
@@ -297,6 +303,7 @@ public class NGOController {
     @PostMapping("/{id}/courses")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Course> createNGOCourse(@PathVariable Long id, @RequestBody Course req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         Course course = new Course();
         course.setNgo(ngo);
@@ -366,6 +373,7 @@ public class NGOController {
     @PostMapping("/{id}/needs")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Need> postNGONeed(@PathVariable Long id, @RequestBody Need req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         Need need = new Need();
         need.setTitle(req.getTitle());
@@ -410,6 +418,7 @@ public class NGOController {
     @PostMapping("/{id}/jobs")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOJob> postNGOJob(@PathVariable Long id, @RequestBody NGOJob req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOJob job = new NGOJob();
         job.setTitle(req.getTitle());
@@ -457,6 +466,7 @@ public class NGOController {
     @PostMapping("/{id}/products")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOProduct> postNGOProduct(@PathVariable Long id, @RequestBody NGOProduct req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOProduct product = new NGOProduct();
         product.setName(req.getName());
@@ -507,6 +517,7 @@ public class NGOController {
     @PostMapping("/{id}/services")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOServiceItem> postNGOService(@PathVariable Long id, @RequestBody NGOServiceItem req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOServiceItem item = new NGOServiceItem();
         item.setTitle(req.getTitle());
@@ -550,6 +561,7 @@ public class NGOController {
     @PostMapping("/{id}/achievements")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<NGOAchievement> postNGOAchievement(@PathVariable Long id, @RequestBody NGOAchievement req) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         NGOAchievement item = new NGOAchievement();
         item.setTitle(req.getTitle());
@@ -655,6 +667,7 @@ public class NGOController {
     @PostMapping("/{id}/events")
     @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Event> createNGOEvent(@PathVariable Long id, @RequestBody Event event) {
+        requireActiveSubscription(id);
         NGO ngo = ngoService.getNGOById(id);
         if (ngo == null) {
             return ResponseEntity.notFound().build();
@@ -785,6 +798,53 @@ public class NGOController {
         return ResponseEntity.ok(saved);
     }
 
+    @GetMapping("/{id}/subscription")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getSubscriptionStatus(@PathVariable Long id) {
+        NGO ngo = ngoService.getNGOById(id);
+        return ResponseEntity.ok(buildSubscriptionStatus(ngo));
+    }
+
+    @PostMapping("/{id}/subscription/order")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> createSubscriptionOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(razorpaySubscriptionService.createOrder(id));
+    }
+
+    @PostMapping("/{id}/subscription/verify")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> verifySubscriptionPayment(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        String orderId = payload == null ? null : (String) payload.get("orderId");
+        String paymentId = payload == null ? null : (String) payload.get("paymentId");
+        String signature = payload == null ? null : (String) payload.get("signature");
+        return ResponseEntity.ok(razorpaySubscriptionService.verifyAndActivate(id, orderId, paymentId, signature));
+    }
+
+    @PostMapping("/{id}/subscription/activate")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> activateSubscription(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> payload) {
+        String orderId = payload == null ? null : (String) payload.get("orderId");
+        String paymentId = payload == null ? null : (String) payload.get("paymentId");
+        String signature = payload == null ? null : (String) payload.get("signature");
+
+        if (orderId == null || paymentId == null || signature == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderId, paymentId, and signature are required");
+        }
+
+        return ResponseEntity.ok(razorpaySubscriptionService.verifyAndActivate(id, orderId, paymentId, signature));
+    }
+
+    @PostMapping("/{id}/subscription/deactivate")
+    @PreAuthorize("hasAnyRole('NGO_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> deactivateSubscription(@PathVariable Long id) {
+        NGO ngo = ngoService.deactivateSubscription(id);
+        return ResponseEntity.ok(buildSubscriptionStatus(ngo));
+    }
+
     private boolean canAccessNgo(Long ngoId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -806,5 +866,56 @@ public class NGOController {
 
         NGO ngo = ngoService.getNGOById(ngoId);
         return ngo.getEmail() != null && ngo.getEmail().equalsIgnoreCase(currentUser.getEmail());
+    }
+
+    private void requireActiveSubscription(Long ngoId) {
+        if (isSuperAdmin()) {
+            return;
+        }
+
+        NGO ngo = ngoService.getNGOById(ngoId);
+        if (!isSubscriptionActive(ngo)) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "Active NGO subscription required to post this content");
+        }
+    }
+
+    private boolean isSuperAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        return userRepository.findByEmail(authentication.getName())
+                .map(user -> user.getRole() == Role.SUPER_ADMIN)
+                .orElse(false);
+    }
+
+    private boolean isSubscriptionActive(NGO ngo) {
+        if (ngo == null) {
+            return false;
+        }
+
+        LocalDateTime expiresAt = ngo.getSubscriptionExpiresAt();
+        boolean expired = expiresAt != null && expiresAt.isBefore(LocalDateTime.now());
+        boolean active = Boolean.TRUE.equals(ngo.getSubscriptionActive()) && !expired;
+
+        if (!active && Boolean.TRUE.equals(ngo.getSubscriptionActive()) && expired) {
+            ngo.setSubscriptionActive(false);
+            ngoService.saveNGO(ngo);
+        }
+
+        return active;
+    }
+
+    private Map<String, Object> buildSubscriptionStatus(NGO ngo) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("active", isSubscriptionActive(ngo));
+        data.put("plan", ngo.getSubscriptionPlan());
+        data.put("activatedAt", ngo.getSubscriptionActivatedAt());
+        data.put("expiresAt", ngo.getSubscriptionExpiresAt());
+        data.put("orderId", ngo.getSubscriptionOrderId());
+        data.put("paymentId", ngo.getSubscriptionPaymentId());
+        data.put("expired", ngo.getSubscriptionExpiresAt() != null && ngo.getSubscriptionExpiresAt().isBefore(LocalDateTime.now()));
+        return data;
     }
 }

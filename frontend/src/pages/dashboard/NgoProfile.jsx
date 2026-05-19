@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../../services/api'
+import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
 /* ─────────────────────────── constants ──────────────────────────────── */
 const BASE  = 'http://localhost:8081/api'
@@ -656,6 +657,8 @@ export default function NgoProfile() {
   const [loadingApps, setLoadingApps] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
 
+  const { loading: subscriptionLoading, subscription, startSubscription } = useNgoSubscription(ngo?.id)
+
   /* effects */
   useEffect(() => {
     if (user && user.role !== 'NGO_ADMIN') { navigate('/dashboard'); return }
@@ -761,6 +764,14 @@ export default function NgoProfile() {
     } catch {
       setNgo(null); setForm({ email:user.email, verified:false, country:'India', mentorshipEnabled: false })
     } finally { setLoading(false) }
+  }
+
+  const handleStartSubscription = async () => {
+    try {
+      await startSubscription({ onActivated: loadNgo })
+    } catch (err) {
+      setError(err.message || 'Unable to start Razorpay checkout.')
+    }
   }
 
   const loadData = async id => {
@@ -1275,6 +1286,43 @@ export default function NgoProfile() {
                     </div>
                   ))}
                 </div>
+              )}
+
+              {ngo && (
+                <Panel style={{border:`1.5px solid ${subscription?.active ? '#bbf7d0' : '#fcd34d'}`, background: subscription?.active ? '#f0fdf4' : '#fffbeb'}}>
+                  <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:16}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:8}}>
+                        <Chip color={subscription?.active ? G : '#d97706'} iconName={subscription?.active ? 'check' : 'warning'}>
+                          {subscription?.active ? 'Subscription active' : 'Subscription inactive'}
+                        </Chip>
+                        {subscription?.plan && <Chip color={B}>Plan {subscription.plan}</Chip>}
+                      </div>
+                      <h3 style={{margin:'0 0 6px',fontSize:18,fontWeight:800,color:NAVY}}>Posting access for jobs, events, campaigns, and more</h3>
+                      <p style={{margin:0,fontSize:13,color:'#475569',lineHeight:1.6}}>
+                        {subscriptionLoading
+                          ? 'Checking subscription status…'
+                          : subscription?.active
+                            ? `Your subscription is active${subscription.expiresAt ? ` until ${new Date(subscription.expiresAt).toLocaleDateString('en-IN')}` : ''}.`
+                            : 'Pay with Razorpay from the backend-backed checkout to unlock NGO posting features.'}
+                      </p>
+                    </div>
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:10}}>
+                      <PrimaryBtn
+                        type="button"
+                        iconName={subscription?.active ? 'check' : 'currency'}
+                        onClick={handleStartSubscription}
+                        loading={subscriptionLoading}
+                        disabled={subscription?.active}
+                      >
+                        {subscription?.active ? 'Subscribed' : 'Pay with Razorpay'}
+                      </PrimaryBtn>
+                      {!subscription?.active && (
+                        <span style={{fontSize:11.5,color:'#92400e',fontWeight:600}}>Monthly subscription managed by backend</span>
+                      )}
+                    </div>
+                  </div>
+                </Panel>
               )}
 
               <Panel>

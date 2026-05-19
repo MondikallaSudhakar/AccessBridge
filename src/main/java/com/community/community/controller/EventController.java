@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -188,6 +189,10 @@ public class EventController {
                     .body("NGO not found");
         }
 
+        if (!isSubscriptionActive(ngo.get())) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "Active NGO subscription required to create events");
+        }
+
         // Get current user as organizer
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> organizer = userRepository.findByEmail(auth.getName());
@@ -203,6 +208,22 @@ public class EventController {
 
         Event savedEvent = eventRepository.save(event);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedEvent);
+    }
+
+    private boolean isSubscriptionActive(NGO ngo) {
+        if (ngo == null) {
+            return false;
+        }
+
+        if (!Boolean.TRUE.equals(ngo.getSubscriptionActive())) {
+            return false;
+        }
+
+        if (ngo.getSubscriptionExpiresAt() == null) {
+            return true;
+        }
+
+        return ngo.getSubscriptionExpiresAt().isAfter(LocalDateTime.now());
     }
 
     @PostMapping("/startup/{startupId}/create")

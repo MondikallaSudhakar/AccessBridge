@@ -19,6 +19,10 @@ public class NGOService {
         return ngoRepository.save(ngo);
     }
 
+    public NGO saveNGO(NGO ngo) {
+        return ngoRepository.save(ngo);
+    }
+
     public NGO updateNGO(Long id, NGO ngoDetails) {
         NGO ngo = getNGOById(id);
         ngo.setName(ngoDetails.getName());
@@ -36,7 +40,13 @@ public class NGOService {
         ngo.setCampaignHistory(ngoDetails.getCampaignHistory());
         ngo.setSupportProvidedSummary(ngoDetails.getSupportProvidedSummary());
         ngo.setTotalSpend(ngoDetails.getTotalSpend());
-            ngo.setMentorshipEnabled(ngoDetails.getMentorshipEnabled());
+        ngo.setMentorshipEnabled(ngoDetails.getMentorshipEnabled());
+        ngo.setSubscriptionActive(ngoDetails.getSubscriptionActive());
+        ngo.setSubscriptionActivatedAt(ngoDetails.getSubscriptionActivatedAt());
+        ngo.setSubscriptionExpiresAt(ngoDetails.getSubscriptionExpiresAt());
+        ngo.setSubscriptionPlan(ngoDetails.getSubscriptionPlan());
+        ngo.setSubscriptionOrderId(ngoDetails.getSubscriptionOrderId());
+        ngo.setSubscriptionPaymentId(ngoDetails.getSubscriptionPaymentId());
         return ngoRepository.save(ngo);
     }
 
@@ -83,6 +93,28 @@ public class NGOService {
     public NGO verifyNGO(Long id) {
         NGO ngo = getNGOById(id);
         ngo.setVerified(true);
+        return ngoRepository.save(ngo);
+    }
+
+    public NGO activateSubscription(Long id, String plan, String orderId, String paymentId, Integer durationDays) {
+        NGO ngo = getNGOById(id);
+        int days = durationDays == null || durationDays <= 0 ? 30 : durationDays;
+
+        ngo.setSubscriptionActive(true);
+        ngo.setSubscriptionActivatedAt(java.time.LocalDateTime.now());
+        ngo.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusDays(days));
+        ngo.setSubscriptionPlan(plan == null || plan.isBlank() ? "MONTHLY" : plan.trim().toUpperCase());
+        ngo.setSubscriptionOrderId(orderId);
+        ngo.setSubscriptionPaymentId(paymentId);
+
+        return ngoRepository.save(ngo);
+    }
+
+    public NGO deactivateSubscription(Long id) {
+        NGO ngo = getNGOById(id);
+        ngo.setSubscriptionActive(false);
+        ngo.setSubscriptionPlan("FREE");
+        ngo.setSubscriptionExpiresAt(null);
         return ngoRepository.save(ngo);
     }
 }

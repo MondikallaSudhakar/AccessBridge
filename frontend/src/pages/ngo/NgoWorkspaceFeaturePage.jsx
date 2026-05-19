@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { NGO_FEATURES } from './ngoWorkspaceData'
 import NgoJobApplicationsPage from './NgoJobApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
+import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
 const API = 'http://localhost:8081/api'
 const GREEN = '#5BCB2B'
@@ -19,6 +20,41 @@ const FEATURE_ACTIONS = {
   achievements: { tips: ['Showcase milestones and impact stories', 'Add certifications and recognition', 'Build trust with donors and CSR partners'] },
   messages: { tips: ['Respond to direct messages from users', 'Coordinate with volunteers and supporters', 'Keep communication organized by thread'] },
   csr: { tips: ['Connect with corporate CSR teams for funding and partnerships', 'Post your NGO\'s needs for CSR alignment', 'Track ongoing CSR collaboration progress'] },
+}
+
+function SubscriptionBanner({ subscription, onSubscribe }) {
+  const active = Boolean(subscription?.active)
+  const expired = Boolean(subscription?.expired)
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">NGO Subscription</p>
+          <h3 className="mt-1 text-lg font-black text-slate-900">{active ? 'Subscription active' : 'Activate subscription to post jobs, events, campaigns, and more'}</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            {active
+              ? `Plan: ${subscription.plan || 'MONTHLY'}${subscription.expiresAt ? ` · Expires ${new Date(subscription.expiresAt).toLocaleDateString('en-IN')}` : ''}`
+              : 'Razorpay checkout is required before creating any NGO posting.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onSubscribe}
+          className="rounded-xl px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          style={{ backgroundColor: '#5BCB2B' }}
+          disabled={active}
+        >
+          {active ? 'Subscribed' : 'Pay with Razorpay'}
+        </button>
+      </div>
+      {!active && expired && (
+        <p className="mt-3 rounded-2xl bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+          Your subscription expired. Renew it to restore posting access.
+        </p>
+      )}
+    </section>
+  )
 }
 
 /* ── Jobs sub-section: list posted jobs with in-platform application panel ── */
@@ -1439,6 +1475,15 @@ function VolunteersSection() {
 export default function NgoWorkspaceFeaturePage({ type }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState(type || 'requirements')
+    const { loading: subscriptionLoading, subscription, startSubscription, subscriptionAmountInr } = useNgoSubscription()
+
+    const handleSubscribe = async () => {
+      try {
+        await startSubscription()
+      } catch (error) {
+        window.alert(error.message || 'Unable to start Razorpay checkout.')
+      }
+    }
   
   // Tab configuration
   const TABS = [
@@ -1465,6 +1510,8 @@ export default function NgoWorkspaceFeaturePage({ type }) {
 
   return (
     <div className="space-y-5 max-w-5xl">
+      <SubscriptionBanner subscription={subscription} onSubscribe={handleSubscribe} />
+
       {/* Header */}
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -1475,6 +1522,9 @@ export default function NgoWorkspaceFeaturePage({ type }) {
             </div>
             <h2 className="mt-3 text-2xl font-black text-slate-900">{config.title}</h2>
             <p className="mt-1 text-sm text-slate-600">{config.subtitle}</p>
+            <p className="mt-2 text-xs font-semibold text-slate-500">
+              {subscriptionLoading ? 'Checking subscription status…' : subscription.active ? `Posting unlocked for ₹${subscriptionAmountInr}/month.` : `Posting locked until subscription is active.`}
+            </p>
           </div>
         </div>
       </section>

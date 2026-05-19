@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { NGO_CAPABILITIES_DO, NGO_CAPABILITIES_VIEW, NGO_WORKSPACE_NAV } from './ngoWorkspaceData'
+import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
 const GREEN = '#5BCB2B'
 
@@ -202,6 +203,15 @@ function PostingTimeline({ items, accentColor }) {
 export default function NgoWorkspaceHome() {
   const navigate = useNavigate()
   const featureLinks = NGO_WORKSPACE_NAV.filter((item) => item.to !== '/ngo')
+  const { loading: subscriptionLoading, subscription, startSubscription, subscriptionAmountInr } = useNgoSubscription()
+
+  const handleSubscribe = async () => {
+    try {
+      await startSubscription()
+    } catch (error) {
+      window.alert(error.message || 'Unable to start Razorpay checkout.')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -217,6 +227,9 @@ export default function NgoWorkspaceHome() {
             <p className="mt-1 max-w-xl text-sm text-slate-600">
               Manage requirements, volunteers, jobs, CSR collaborations, products, and services — all from one place.
             </p>
+            <p className="mt-3 text-xs font-semibold text-slate-500">
+              {subscriptionLoading ? 'Checking subscription status…' : subscription.active ? `Subscription active until ${subscription.expiresAt ? new Date(subscription.expiresAt).toLocaleDateString('en-IN') : 'your next billing cycle'}.` : 'Posting access is locked until you activate the NGO subscription.'}
+            </p>
           </div>
           <button
             type="button"
@@ -226,6 +239,26 @@ export default function NgoWorkspaceHome() {
           >
             Open NGO Profile
           </button>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">Subscription</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {subscription.active ? `Plan ${subscription.plan || 'MONTHLY'} is active.` : `Activate monthly access for ₹${subscriptionAmountInr} with Razorpay.`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSubscribe}
+              className="rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+              style={{ backgroundColor: GREEN }}
+              disabled={subscription.active}
+            >
+              {subscription.active ? 'Subscribed' : 'Pay with Razorpay'}
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

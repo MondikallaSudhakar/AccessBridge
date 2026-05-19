@@ -69,6 +69,18 @@ public class NGO {
     @Column(nullable = false)
     private Boolean mentorshipEnabled = false;
 
+    private Boolean subscriptionActive = false;
+
+    private LocalDateTime subscriptionActivatedAt;
+
+    private LocalDateTime subscriptionExpiresAt;
+
+    private String subscriptionPlan = "FREE";
+
+    private String subscriptionOrderId;
+
+    private String subscriptionPaymentId;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
