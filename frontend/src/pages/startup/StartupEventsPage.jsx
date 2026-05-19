@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import StartupEventsSection from './StartupEventsSection'
-
-const GREEN = '#5BCB2B'
+import { COLORS } from '../../utils/colors'
 
 export default function StartupEventsPage() {
   const { user } = useAuth()
@@ -33,11 +32,11 @@ export default function StartupEventsPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0d9488' }}>Startup Admin</p>
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: COLORS.primary }}>Startup Admin</p>
             <h1 className="text-3xl font-black text-slate-900">Posted Events</h1>
             <p className="text-sm text-slate-500 mt-1">Create and manage events for your startup in a dedicated page.</p>
           </div>
-          <button onClick={() => navigate('/startup/profile')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>
+          <button onClick={() => navigate('/startup/profile')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>
             Back to Profile
           </button>
         </div>

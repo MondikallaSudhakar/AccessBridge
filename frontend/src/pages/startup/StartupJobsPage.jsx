@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import StartupJobApplicationsPage from './StartupJobApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
 import { useStartupSubscription } from '../../hooks/useStartupSubscription'
+import { COLORS } from '../../utils/colors'
 
 const API = 'http://localhost:8081/api'
-const GREEN = '#5BCB2B'
 
 export default function StartupJobsPage() {
   const { user } = useAuth()
@@ -73,7 +73,7 @@ export default function StartupJobsPage() {
   if (selectedJob) {
     return (
       <div>
-        <button type="button" onClick={() => setSelectedJob(null)} className="mb-4 flex items-center gap-2 text-sm font-bold" style={{ color: GREEN }}>
+        <button type="button" onClick={() => setSelectedJob(null)} className="mb-4 flex items-center gap-2 text-sm font-bold" style={{ color: COLORS.primary }}>
           ← Back to Jobs
         </button>
         <StartupJobApplicationsPage jobId={selectedJob.id} jobTitle={selectedJob.title} startupId={startupId} />
@@ -90,7 +90,7 @@ export default function StartupJobsPage() {
         </div>
         <div className="flex gap-2">
           {!subscription?.active && (
-            <button type="button" onClick={() => startSubscription({ onActivated: load })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: GREEN }}>
+            <button type="button" onClick={() => startSubscription({ onActivated: load })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.success }}>
               Pay with Razorpay
             </button>
           )}
@@ -99,7 +99,7 @@ export default function StartupJobsPage() {
             onClick={() => setShowForm((v) => !v)}
             disabled={!subscription?.active}
             className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
-            style={{ backgroundColor: GREEN }}
+            style={{ backgroundColor: COLORS.success }}
           >
             {showForm ? '✕ Cancel' : '+ Post New Job'}
           </button>
@@ -172,7 +172,7 @@ export default function StartupJobsPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={{ backgroundColor: job.status === 'OPEN' ? '#dcfce7' : '#fee2e2', color: job.status === 'OPEN' ? '#16a34a' : '#dc2626' }}>
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase" style={{ backgroundColor: job.status === 'OPEN' ? '#dcfce7' : '#fee2e2', color: job.status === 'OPEN' ? COLORS.success : '#dc2626' }}>
                   {job.status}
                 </span>
                 {job.employmentType && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">{EMP_LABELS[job.employmentType] || job.employmentType}</span>}
@@ -181,7 +181,7 @@ export default function StartupJobsPage() {
               <p className="text-xs text-slate-500">{job.location ? `${job.location} • ` : ''}Last date: {fmtDate(job.lastDateToApply)}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => setSelectedJob(job)} className="rounded-xl px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: GREEN }}>
+                <button type="button" onClick={() => setSelectedJob(job)} className="rounded-xl px-3 py-1.5 text-xs font-bold text-white" style={{ backgroundColor: COLORS.success }}>
                 View Applications
               </button>
               {job.status === 'OPEN' && (

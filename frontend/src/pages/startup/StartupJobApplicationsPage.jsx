@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { COLORS } from '../../utils/colors'
 
 const API = 'http://localhost:8081/api'
 
 const STATUS_STYLE = {
   PENDING: { bg: '#fef3c7', color: '#d97706', label: 'Pending' },
   SHORTLISTED: { bg: '#dbeafe', color: '#2563eb', label: 'Shortlisted' },
-  HIRED: { bg: '#dcfce7', color: '#16a34a', label: 'Hired' },
+  HIRED: { bg: '#dcfce7', color: COLORS.success, label: 'Hired' },
   REJECTED: { bg: '#fee2e2', color: '#dc2626', label: 'Rejected' },
 }
 
-const GREEN = '#5BCB2B'
+// colors moved to shared COLORS
 
 function fmt(dateStr) {
   if (!dateStr) return '—'
@@ -66,7 +67,7 @@ function ApplicationCard({ app, onStatusChange }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="mt-3 text-xs font-bold"
-        style={{ color: GREEN }}
+        style={{ color: COLORS.primary }}
       >
         {open ? '▲ Hide details' : '▼ View application'}
       </button>
@@ -154,17 +155,17 @@ export default function StartupJobApplicationsPage({ jobId, jobTitle, startupId 
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: GREEN }}>Job Applications</p>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: COLORS.primary }}>Job Applications</p>
           <h3 className="mt-0.5 text-lg font-extrabold text-slate-900">{jobTitle || 'Applications'}</h3>
         </div>
-        <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: '#f0f9e7', color: GREEN }}>
+        <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: '#f0f9e7', color: COLORS.success }}>
           {applications.length} total
         </span>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTS.map((f) => {
-          const st = f === 'all' ? { bg: GREEN, color: '#fff' } : STATUS_STYLE[f]
+          const st = f === 'all' ? { bg: COLORS.success, color: '#fff' } : STATUS_STYLE[f]
           const active = filter === f
           return (
             <button

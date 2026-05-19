@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { useNavigate } from 'react-router-dom'
+import { COLORS } from '../../utils/colors'
 
 const normalizeOrder = (order) => {
   const items = Array.isArray(order?.items)
@@ -96,13 +97,13 @@ export default function StartupOrders() {
     <div className="space-y-6" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#0d9488' }}>Startup Admin</p>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: COLORS.primary }}>Startup Admin</p>
           <h1 className="text-3xl font-black text-slate-900">Product Orders</h1>
           <p className="text-sm text-slate-500 mt-1">Review customer orders placed for your startup products.</p>
         </div>
         <button onClick={() => navigate('/startup/profile')}
           className="hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: '#5BCB2B' }}>
+          style={{ backgroundColor: COLORS.success }}>
           Back to Profile
         </button>
       </div>

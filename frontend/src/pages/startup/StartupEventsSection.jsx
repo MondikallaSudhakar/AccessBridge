@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../../services/api'
 import { useStartupSubscription } from '../../hooks/useStartupSubscription'
+import { COLORS } from '../../utils/colors'
 
 const EVENT_TYPES = ['WORKSHOP', 'SEMINAR', 'FUNDRAISER', 'AWARENESS', 'COMMUNITY']
 
@@ -172,7 +173,7 @@ export default function StartupEventsSection({ startupId }) {
           type="button"
           onClick={() => setSelectedEvent(null)}
           className="text-sm font-bold"
-          style={{ color: '#e65100' }}
+          style={{ color: COLORS.primary }}
         >
           ← Back to Events
         </button>
@@ -224,7 +225,7 @@ export default function StartupEventsSection({ startupId }) {
                     type="button"
                     onClick={() => updateApplicationStatus(application.id, 'APPROVED')}
                     className="rounded-xl px-3 py-1.5 text-xs font-bold text-white"
-                    style={{ backgroundColor: '#16a34a' }}
+                    style={{ backgroundColor: COLORS.success }}
                   >
                     Approve
                   </button>
@@ -254,7 +255,7 @@ export default function StartupEventsSection({ startupId }) {
         </div>
         <div className="flex gap-2">
           {!subscription?.active && (
-            <button type="button" onClick={() => startSubscription({ onActivated: loadEvents })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: '#e65100' }}>
+            <button type="button" onClick={() => startSubscription({ onActivated: loadEvents })} className="rounded-xl px-4 py-2 text-xs font-bold text-white" style={{ backgroundColor: COLORS.primary }}>
               Pay with Razorpay
             </button>
           )}
@@ -266,7 +267,7 @@ export default function StartupEventsSection({ startupId }) {
             }}
             disabled={!subscription?.active}
             className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
-            style={{ backgroundColor: '#e65100' }}
+            style={{ backgroundColor: COLORS.primary }}
           >
             {showForm ? '✕ Cancel' : '+ Create Event'}
           </button>
@@ -358,15 +359,15 @@ export default function StartupEventsSection({ startupId }) {
             />
           </label>
           {error && <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
-          <button
-            type="button"
-            onClick={handleSaveEvent}
-            disabled={saving || !form.title || !form.description || !form.eventDate || !form.location || !subscription?.active}
-            className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
-            style={{ backgroundColor: '#e65100' }}
-          >
-            {saving ? 'Creating…' : 'Create Event'}
-          </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEvent}
+                  disabled={saving || !form.title || !form.description || !form.eventDate || !form.location || !subscription?.active}
+                  className="rounded-xl px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
+                  style={{ backgroundColor: COLORS.primary }}
+                >
+                  {saving ? 'Creating…' : 'Create Event'}
+                </button>
         </div>
       )}
 
@@ -408,7 +409,7 @@ export default function StartupEventsSection({ startupId }) {
                   type="button"
                   onClick={() => handleSelectEvent(event)}
                   className="rounded-xl px-3 py-1.5 text-xs font-bold text-white"
-                  style={{ backgroundColor: '#e65100' }}
+                  style={{ backgroundColor: COLORS.primary }}
                 >
                   View Applicants
                 </button>

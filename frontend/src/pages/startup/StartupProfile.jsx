@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { useStartupSubscription } from '../../hooks/useStartupSubscription'
-
-const GREEN = '#5BCB2B'
-const TEAL = '#0d9488'
+import { COLORS } from '../../utils/colors'
 
 function SummaryCard({ label, value, hint }) {
   return (
@@ -118,15 +116,15 @@ export default function StartupProfile() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: TEAL }}>Startup Admin</p>
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: COLORS.primary }}>Startup Admin</p>
                 <h1 className="text-3xl font-black text-slate-900">{startup?.name || 'My Startup'}</h1>
                 {startup?.city && <p className="text-sm text-slate-500 mt-1">{[startup.city, startup.state].filter(Boolean).join(', ')}</p>}
               </div>
               <div className="flex flex-col items-end gap-3">
                 <div className="flex flex-wrap gap-3">
-                  <button onClick={() => navigate('/startup/products')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: GREEN }}>View Products</button>
-                  <button onClick={() => navigate('/startup/events')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: TEAL }}>View Events</button>
-                  <button onClick={() => navigate('/startup/orders')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: '#5BCB2B' }}>View Orders</button>
+                  <button onClick={() => navigate('/startup/products')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>View Products</button>
+                  <button onClick={() => navigate('/startup/events')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>View Events</button>
+                  <button onClick={() => navigate('/startup/orders')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>View Orders</button>
                 </div>
                 <button
                   type="button"
