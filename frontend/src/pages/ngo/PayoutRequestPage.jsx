@@ -64,6 +64,21 @@ function SummaryCard({ label, value, hint, tone = 'primary' }) {
   )
 }
 
+function getRequestBg(status) {
+  switch (status) {
+    case 'PENDING':
+      return '#fffdf0'
+    case 'SENT':
+      return '#f0f7ff'
+    case 'SETTLED':
+      return '#f0fdf4'
+    case 'CANCELLED':
+      return '#fff1f2'
+    default:
+      return '#ffffff'
+  }
+}
+
 export default function PayoutRequestPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -243,9 +258,7 @@ export default function PayoutRequestPage() {
               <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: COLORS.success }}>NGO Payout Request</span>
             </div>
             <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-900">Payout Request</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-              Request money from the platform against completed orders. The page keeps track of pending, sent, and settled payout requests in one place.
-            </p>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">Create payout requests and track their status from one simple view.</p>
           </div>
         </section>
 
@@ -286,8 +299,8 @@ export default function PayoutRequestPage() {
               <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900">Request history</h2>
-                    <p className="mt-1 text-sm text-slate-500">Track every payout request by status. Super admin can move a request through the workflow.</p>
+                    <h2 className="text-2xl font-black text-slate-900">Requests</h2>
+                    <p className="mt-1 text-sm text-slate-500">Tap a request to see its details and status.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {['ALL', 'PENDING', 'SENT', 'SETTLED', 'CANCELLED'].map((status) => (
@@ -316,47 +329,63 @@ export default function PayoutRequestPage() {
                   ) : (
                     filteredRequests.map((request) => {
                       const style = getStatusStyle(String(request.status || 'PENDING').toUpperCase())
+                      const status = String(request.status || 'PENDING').toUpperCase()
                       return (
-                        <article key={request.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="text-base font-extrabold text-slate-900">{request.reference || `PR-${request.id}`}</h3>
-                                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: style.bg, color: style.color }}>
-                                  {style.label}
-                                </span>
+                        <div
+                          key={request.id}
+                          className="rounded-2xl border border-slate-200 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                          style={{ backgroundColor: getRequestBg(status) }}
+                        >
+                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <button
+                              type="button"
+                              className="flex flex-1 items-center justify-between gap-3 text-left"
+                              onClick={() => setFilter(String(request.status || 'PENDING').toUpperCase())}
+                              style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+                            >
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h3 className="text-base font-extrabold text-slate-900">{request.reference || `PR-${request.id}`}</h3>
+                                  <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: style.bg, color: style.color }}>
+                                    {style.label}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-sm font-bold text-slate-900">{money(request.amount)}</p>
+                                <p className="mt-1 text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '—'}</p>
+                                {request.note && <p className="mt-2 text-sm leading-6 text-slate-600">{request.note}</p>}
                               </div>
-                              <p className="mt-1 text-sm font-bold text-slate-900">{money(request.amount)}</p>
-                              <p className="mt-1 text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '—'}</p>
-                              {request.note && <p className="mt-3 text-sm leading-6 text-slate-600">{request.note}</p>}
-                            </div>
+                              <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 md:inline-flex">
+                                View
+                              </span>
+                            </button>
+
                             {isSuperAdmin && (
-                              <div className="flex flex-wrap gap-2">
+                              <div className="flex flex-wrap gap-2 md:justify-end">
                                 {request.status === 'PENDING' && (
                                   <button
                                     type="button"
                                     onClick={() => updateRequestStatus(request.id, 'SENT')}
-                                    className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+                                    className="rounded-full px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
                                     style={{ backgroundColor: COLORS.primary }}
                                   >
-                                    Mark Sent
+                                    Sent
                                   </button>
                                 )}
                                 {request.status === 'SENT' && (
                                   <button
                                     type="button"
                                     onClick={() => updateRequestStatus(request.id, 'SETTLED')}
-                                    className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+                                    className="rounded-full px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
                                     style={{ backgroundColor: COLORS.success }}
                                   >
-                                    Mark Settled
+                                    Settled
                                   </button>
                                 )}
                                 {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
                                   <button
                                     type="button"
                                     onClick={() => updateRequestStatus(request.id, 'CANCELLED')}
-                                    className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
+                                    className="rounded-full border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
                                   >
                                     Cancel
                                   </button>
@@ -364,14 +393,14 @@ export default function PayoutRequestPage() {
                                 <button
                                   type="button"
                                   onClick={() => removeRequest(request.id)}
-                                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                                  className="rounded-full border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
                                 >
                                   Delete
                                 </button>
                               </div>
                             )}
                           </div>
-                        </article>
+                        </div>
                       )
                     })
                   )}
