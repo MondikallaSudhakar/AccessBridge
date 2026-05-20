@@ -975,67 +975,201 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {tab === 'payouts' && (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <div>
-                      <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>Payout Requests</h3>
-                      <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b' }}>Review all NGO payout requests and update their status from the dashboard.</p>
+              {tab === 'payouts' && (() => {
+                const PSTATUS = {
+                  PENDING:   { bg: '#fef9c3', color: '#854d0e', dot: '#f59e0b', label: 'Pending'   },
+                  SENT:      { bg: '#dbeafe', color: '#1d4ed8', dot: '#3b82f6', label: 'Sent'       },
+                  SETTLED:   { bg: '#dcfce7', color: '#166534', dot: '#22c55e', label: 'Settled'   },
+                  CANCELLED: { bg: '#fee2e2', color: '#b91c1c', dot: '#ef4444', label: 'Cancelled' },
+                  DECLINED:  { bg: '#fee2e2', color: '#b91c1c', dot: '#ef4444', label: 'Declined'  },
+                }
+                const pst = (s) => PSTATUS[String(s || 'PENDING').toUpperCase()] || PSTATUS.PENDING
+                const pmoney = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`
+                const pfmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+                const [payoutFilter, setPayoutFilter] = window.__payoutFilterState || (window.__payoutFilterState = [
+                  'ALL', (v) => { window.__payoutFilterState[0] = v; window.__forceUpdate && window.__forceUpdate() }
+                ])
+
+                // compute counts
+                const statusKeys = ['PENDING', 'SENT', 'SETTLED', 'CANCELLED', 'DECLINED']
+                const pCounts = statusKeys.reduce((a, s) => {
+                  a[s] = allPayoutRequests.filter(r => String(r.status || 'PENDING').toUpperCase() === s).length; return a
+                }, {})
+                const pTotals = allPayoutRequests.reduce((a, r) => {
+                  const s = String(r.status || 'PENDING').toUpperCase()
+                  const amt = Number(r.amount || 0)
+                  if (s === 'PENDING')  a.pending  += amt
+                  if (s === 'SENT')     a.sent     += amt
+                  if (s === 'SETTLED')  a.settled  += amt
+                  return a
+                }, { pending: 0, sent: 0, settled: 0 })
+
+                return (
+                  <div style={{ fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+                    {/* header */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#0f172a' }}>Payout Requests</h3>
+                        <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+                          {allPayoutRequests.length} total request{allPayoutRequests.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <button
+                        onClick={fetchAllPayoutRequests}
+                        style={{
+                          padding: '8px 16px', borderRadius: 10, border: `1.5px solid ${SUPER_ADMIN_TEAL}`,
+                          background: '#fff', color: SUPER_ADMIN_TEAL, fontWeight: 700, fontSize: 12,
+                          cursor: 'pointer', transition: 'all .15s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = SUPER_ADMIN_TEAL; e.currentTarget.style.color = '#fff' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = SUPER_ADMIN_TEAL }}
+                      >
+                        Refresh
+                      </button>
                     </div>
-                    <button onClick={fetchAllPayoutRequests} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
-                  </div>
-                  {resourceLoading.payouts ? <p>Loading payout requests...</p> : allPayoutRequests.length === 0 ? (
-                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
-                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No payout requests yet</p>
+
+                    {/* stat chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                      {[
+                        { label: 'Pending',  value: pmoney(pTotals.pending), sub: `${pCounts.PENDING || 0} requests`, accent: '#f59e0b' },
+                        { label: 'Sent',     value: pmoney(pTotals.sent),    sub: `${pCounts.SENT || 0} requests`,    accent: '#3b82f6' },
+                        { label: 'Settled',  value: pmoney(pTotals.settled), sub: `${pCounts.SETTLED || 0} settled`,  accent: '#22c55e' },
+                      ].map(chip => (
+                        <div key={chip.label} style={{
+                          flex: '1 1 130px', minWidth: 120,
+                          background: '#fff', border: `1.5px solid ${chip.accent}30`,
+                          borderRadius: 14, padding: '13px 16px',
+                          boxShadow: `0 2px 8px ${chip.accent}10`,
+                        }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: chip.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{chip.label}</div>
+                          <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a' }}>{chip.value}</div>
+                          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{chip.sub}</div>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Request</th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>NGO</th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Amount</th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Date</th>
-                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {allPayoutRequests.map((request) => (
-                            <tr key={request.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>PR-{request.id}</td>
-                              <td style={{ padding: '12px 16px' }}>NGO #{request.ngoId}</td>
-                              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>₹{Number(request.amount || 0).toLocaleString('en-IN')}</td>
-                              <td style={{ padding: '12px 16px' }}><span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{request.status}</span></td>
-                              <td style={{ padding: '12px 16px', fontSize: '11px' }}>{request.createdAt ? new Date(request.createdAt).toLocaleDateString('en-IN') : '—'}</td>
-                              <td style={{ padding: '12px 16px' }}>
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                  {request.status === 'PENDING' && (
-                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SENT')} style={{ background: SUPER_ADMIN_TEAL, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
-                                      Mark Sent
-                                    </button>
-                                  )}
-                                  {request.status === 'SENT' && (
-                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SETTLED')} style={{ background: '#5BCB2B', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
-                                      Mark Settled
-                                    </button>
-                                  )}
-                                  {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
-                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'DECLINED')} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
-                                      Decline
-                                    </button>
+
+                    {/* loading */}
+                    {resourceLoading.payouts && (
+                      <div style={{ textAlign: 'center', padding: '32px 0', color: '#64748b', fontSize: 13 }}>Loading payout requests…</div>
+                    )}
+
+                    {/* filter tabs */}
+                    {!resourceLoading.payouts && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {['ALL', ...statusKeys].map(s => {
+                          const cnt = s === 'ALL' ? allPayoutRequests.length : (pCounts[s] || 0)
+                          const active = (window.__payoutFilterState?.[0] || 'ALL') === s
+                          return (
+                            <button key={s} onClick={() => {
+                              if (!window.__payoutFilterState) window.__payoutFilterState = ['ALL', () => {}]
+                              window.__payoutFilterState[0] = s
+                              // force re-render by toggling a state
+                              fetchAllPayoutRequests()
+                            }} style={{
+                              padding: '6px 13px', borderRadius: 20,
+                              border: `1.5px solid ${active ? SUPER_ADMIN_TEAL : '#e2e8f0'}`,
+                              background: active ? `${SUPER_ADMIN_TEAL}15` : '#fff',
+                              color: active ? SUPER_ADMIN_TEAL : '#64748b',
+                              fontWeight: active ? 700 : 500, fontSize: 12, cursor: 'pointer',
+                              display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all .15s',
+                            }}>
+                              {s === 'ALL' ? 'All' : s[0] + s.slice(1).toLowerCase()}
+                              <span style={{
+                                fontSize: 10, fontWeight: 800, borderRadius: 10, padding: '1px 5px',
+                                background: active ? SUPER_ADMIN_TEAL : '#f1f5f9',
+                                color: active ? '#fff' : '#64748b',
+                              }}>{cnt}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* empty state */}
+                    {!resourceLoading.payouts && allPayoutRequests.length === 0 && (
+                      <div style={{
+                        textAlign: 'center', padding: '48px 24px',
+                        border: '1.5px dashed #e2e8f0', borderRadius: 14, background: '#fafbfc',
+                      }}>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#334155' }}>No payout requests yet</p>
+                        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>NGO payout requests will appear here once submitted.</p>
+                      </div>
+                    )}
+
+                    {/* request cards */}
+                    {!resourceLoading.payouts && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {allPayoutRequests.map(request => {
+                          const s = pst(request.status)
+                          const status = String(request.status || 'PENDING').toUpperCase()
+                          return (
+                            <div key={request.id} style={{
+                              background: '#fff', border: '1.5px solid #e9ecef',
+                              borderRadius: 14, padding: '16px 18px', transition: 'border-color .15s, box-shadow .15s',
+                            }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = `${SUPER_ADMIN_TEAL}50`; e.currentTarget.style.boxShadow = `0 2px 12px ${SUPER_ADMIN_TEAL}10` }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e9ecef'; e.currentTarget.style.boxShadow = 'none' }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                {/* left info */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+                                      {request.reference || `PR-${request.id}`}
+                                    </span>
+                                    <span style={{
+                                      fontSize: 10, fontWeight: 700, borderRadius: 20, padding: '2px 9px',
+                                      background: s.bg, color: s.color,
+                                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    }}>
+                                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, display: 'inline-block' }} />
+                                      {s.label}
+                                    </span>
+                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>NGO #{request.ngoId}</span>
+                                  </div>
+                                  <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a' }}>{pmoney(request.amount)}</div>
+                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{pfmtDate(request.createdAt)}</div>
+                                  {(request.notes || request.note) && (
+                                    <div style={{ marginTop: 6, fontSize: 12, color: '#64748b', background: '#f8fafc', borderRadius: 8, padding: '5px 10px' }}>
+                                      {request.notes || request.note}
+                                    </div>
                                   )}
                                 </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
+                                {/* action buttons */}
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                                  {status === 'PENDING' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SENT')} style={{
+                                      fontSize: 11, fontWeight: 700, borderRadius: 20, cursor: 'pointer',
+                                      padding: '5px 12px', border: 'none',
+                                      background: SUPER_ADMIN_TEAL, color: '#fff', whiteSpace: 'nowrap',
+                                    }}>Mark Sent</button>
+                                  )}
+                                  {status === 'SENT' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SETTLED')} style={{
+                                      fontSize: 11, fontWeight: 700, borderRadius: 20, cursor: 'pointer',
+                                      padding: '5px 12px', border: 'none',
+                                      background: '#22c55e', color: '#fff', whiteSpace: 'nowrap',
+                                    }}>Mark Settled</button>
+                                  )}
+                                  {status !== 'SETTLED' && status !== 'CANCELLED' && status !== 'DECLINED' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'DECLINED')} style={{
+                                      fontSize: 11, fontWeight: 700, borderRadius: 20, cursor: 'pointer',
+                                      padding: '5px 12px', border: '1.5px solid #ef4444',
+                                      background: 'transparent', color: '#ef4444', whiteSpace: 'nowrap',
+                                    }}>Decline</button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {tab === 'ngos' && (
                 <div>

@@ -193,7 +193,7 @@ export default function PayoutRequestPage() {
       setRequests(prev => [created, ...prev])
       setForm({ amount: '', note: '' })
       setShowForm(false)
-      flash('✅ Payout request submitted!')
+      flash('Payout request submitted!')
     } catch (err) {
       setError(err.message || 'Failed to submit.')
     } finally { setSubmitting(false) }
