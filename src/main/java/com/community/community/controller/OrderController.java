@@ -11,6 +11,7 @@ import com.community.community.repository.NGORepository;
 import com.community.community.repository.StartupRepository;
 import com.community.community.repository.UserRepository;
 import com.community.community.service.OrderService;
+import com.community.community.service.OrderCheckoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderCheckoutService orderCheckoutService;
     private final NGORepository ngoRepository;
     private final StartupRepository startupRepository;
     private final UserRepository userRepository;
@@ -37,6 +39,25 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Order> createOrder(@RequestParam Long userId, @RequestBody List<Map<String, Object>> cartItems) {
         Order order = orderService.createOrder(userId, cartItems);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
+    @PostMapping("/payment-order")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> createPaymentOrder(@RequestParam Long userId, @RequestBody List<Map<String, Object>> cartItems) {
+        return ResponseEntity.ok(orderCheckoutService.createPaymentOrder(userId, cartItems));
+    }
+
+    @PostMapping("/payment-verify")
+    @PreAuthorize("hasAnyRole('USER', 'SPECIAL_ABLED_PERSON', 'NGO_ADMIN', 'STARTUP_ADMIN', 'SCHOOL_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Order> verifyPaymentAndCreateOrder(@RequestParam Long userId, @RequestBody Map<String, Object> payload) {
+        String orderId = payload == null ? null : (String) payload.get("orderId");
+        String paymentId = payload == null ? null : (String) payload.get("paymentId");
+        String signature = payload == null ? null : (String) payload.get("signature");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> cartItems = payload == null ? List.of() : (List<Map<String, Object>>) payload.get("cartItems");
+
+        Order order = orderCheckoutService.verifyPaymentAndCreateOrder(userId, orderId, paymentId, signature, cartItems);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 

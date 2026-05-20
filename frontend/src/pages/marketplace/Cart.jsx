@@ -5,6 +5,32 @@ import { useAuth } from '../../context/AuthContext'
 import authService from '../../services/authService'
 import api from '../../services/api'
 
+const RAZORPAY_SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js'
+const DEFAULT_CURRENCY = 'INR'
+
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true)
+      return
+    }
+
+    const existingScript = document.querySelector(`script[src="${RAZORPAY_SCRIPT_URL}"]`)
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(true), { once: true })
+      existingScript.addEventListener('error', () => resolve(false), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = RAZORPAY_SCRIPT_URL
+    script.async = true
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
+
 export default function Cart() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -80,18 +106,63 @@ export default function Cart() {
         sourceId: item.sourceId,
       }))
 
-      // Create order
-      const response = await api.post(`/orders?userId=${currentUserId}`, cartItems)
+      const paymentOrder = await api.post(`/orders/payment-order?userId=${currentUserId}`, cartItems)
+      const razorpayKeyId = paymentOrder?.keyId
+      const razorpayOrderId = paymentOrder?.id || paymentOrder?.orderId
 
-      if (response.id) {
-        setOrderPlaced(true)
-        clearCart()
-        
-        // Show success message
-        setTimeout(() => {
-          navigate(ordersPath)
-        }, 2000)
+      if (!razorpayKeyId || !razorpayOrderId) {
+        throw new Error('Unable to start Razorpay checkout.')
       }
+
+      const scriptReady = await loadRazorpayScript()
+      if (!scriptReady || !window.Razorpay) {
+        throw new Error('Unable to load Razorpay checkout.')
+      }
+
+      const totalAmount = Number(paymentOrder?.amount || 0)
+      const checkout = new window.Razorpay({
+        key: razorpayKeyId,
+        order_id: razorpayOrderId,
+        amount: paymentOrder.amountPaise || Math.round(totalAmount * 100),
+        currency: paymentOrder.currency || DEFAULT_CURRENCY,
+        name: 'Community Marketplace',
+        description: 'Product order payment',
+        notes: {
+          userId: String(currentUserId),
+          itemCount: String(cartItems.length),
+        },
+        theme: {
+          color: '#0d9488',
+        },
+        handler: async (response) => {
+          const createdOrder = await api.post(`/orders/payment-verify?userId=${currentUserId}`, {
+            orderId: response.razorpay_order_id || response.order_id,
+            paymentId: response.razorpay_payment_id || response.payment_id,
+            signature: response.razorpay_signature || response.signature,
+            cartItems,
+          })
+
+          if (createdOrder?.id) {
+            setOrderPlaced(true)
+            clearCart()
+
+            setTimeout(() => {
+              navigate(ordersPath)
+            }, 2000)
+          }
+        },
+        modal: {
+          ondismiss: () => {},
+        },
+        prefill: {
+          name: user?.name || 'Customer',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
+      })
+
+      checkout.open()
+
     } catch (err) {
       setError(err.message || 'Failed to place order. Please try again.')
       console.error('Checkout error:', err)
