@@ -89,6 +89,7 @@ function SummaryCard({ label, value, hint, tone = 'primary' }) {
 export default function PayoutRequestPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
 
   const [ngo, setNgo] = useState(null)
   const [orders, setOrders] = useState([])
@@ -369,7 +370,7 @@ export default function PayoutRequestPage() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <h2 className="text-2xl font-black text-slate-900">Request history</h2>
-                    <p className="mt-1 text-sm text-slate-500">Track every payout request by status. Use the buttons to move a request through the workflow.</p>
+                    <p className="mt-1 text-sm text-slate-500">Track every payout request by status. Super admin can move a request through the workflow.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {['ALL', 'PENDING', 'SENT', 'SETTLED', 'CANCELLED'].map((status) => (
@@ -412,44 +413,46 @@ export default function PayoutRequestPage() {
                               <p className="mt-1 text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '—'}</p>
                               {request.note && <p className="mt-3 text-sm leading-6 text-slate-600">{request.note}</p>}
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              {request.status === 'PENDING' && (
+                            {isSuperAdmin && (
+                              <div className="flex flex-wrap gap-2">
+                                {request.status === 'PENDING' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateRequestStatus(request.id, 'SENT')}
+                                    className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+                                    style={{ backgroundColor: COLORS.primary }}
+                                  >
+                                    Mark Sent
+                                  </button>
+                                )}
+                                {request.status === 'SENT' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateRequestStatus(request.id, 'SETTLED')}
+                                    className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
+                                    style={{ backgroundColor: COLORS.success }}
+                                  >
+                                    Mark Settled
+                                  </button>
+                                )}
+                                {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateRequestStatus(request.id, 'CANCELLED')}
+                                    className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => updateRequestStatus(request.id, 'SENT')}
-                                  className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
-                                  style={{ backgroundColor: COLORS.primary }}
+                                  onClick={() => removeRequest(request.id)}
+                                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
                                 >
-                                  Mark Sent
+                                  Delete
                                 </button>
-                              )}
-                              {request.status === 'SENT' && (
-                                <button
-                                  type="button"
-                                  onClick={() => updateRequestStatus(request.id, 'SETTLED')}
-                                  className="rounded-lg px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
-                                  style={{ backgroundColor: COLORS.success }}
-                                >
-                                  Mark Settled
-                                </button>
-                              )}
-                              {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
-                                <button
-                                  type="button"
-                                  onClick={() => updateRequestStatus(request.id, 'CANCELLED')}
-                                  className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
-                                >
-                                  Cancel
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => removeRequest(request.id)}
-                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
-                              >
-                                Delete
-                              </button>
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </article>
                       )
