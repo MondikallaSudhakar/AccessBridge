@@ -33,6 +33,12 @@ public class StartupService {
         startup.setWebsiteUrl(startupDetails.getWebsiteUrl());
         startup.setLogoUrl(startupDetails.getLogoUrl());
         startup.setRegistrationNumber(startupDetails.getRegistrationNumber());
+        startup.setPayoutContactName(startupDetails.getPayoutContactName());
+        startup.setBankName(startupDetails.getBankName());
+        startup.setBankAccountName(startupDetails.getBankAccountName());
+        startup.setBankAccountNumber(startupDetails.getBankAccountNumber());
+        startup.setBankIfscCode(startupDetails.getBankIfscCode());
+        startup.setUpiId(startupDetails.getUpiId());
         return startupRepository.save(startup);
     }
 

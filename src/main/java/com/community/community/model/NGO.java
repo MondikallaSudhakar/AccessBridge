@@ -81,6 +81,18 @@ public class NGO {
 
     private String subscriptionPaymentId;
 
+    private String payoutContactName;
+
+    private String bankName;
+
+    private String bankAccountName;
+
+    private String bankAccountNumber;
+
+    private String bankIfscCode;
+
+    private String upiId;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -55,6 +55,15 @@ export default function StartupProfile() {
 
   const [startup, setStartup] = useState(null)
   const [profileLoading, setProfileLoading] = useState(true)
+  const [payoutForm, setPayoutForm] = useState({
+    payoutContactName: '',
+    bankName: '',
+    bankAccountName: '',
+    bankAccountNumber: '',
+    bankIfscCode: '',
+    upiId: '',
+  })
+  const [savingPayout, setSavingPayout] = useState(false)
   const [products, setProducts] = useState([])
   const [events, setEvents] = useState([])
   const { loading: subscriptionLoading, subscription, startSubscription } = useStartupSubscription(startup?.id)
@@ -74,6 +83,14 @@ export default function StartupProfile() {
       const encoded = encodeURIComponent(user.email)
       const data = await api.get(`/startups/email/${encoded}`)
       setStartup(data)
+      setPayoutForm({
+        payoutContactName: data?.payoutContactName || '',
+        bankName: data?.bankName || '',
+        bankAccountName: data?.bankAccountName || '',
+        bankAccountNumber: data?.bankAccountNumber || '',
+        bankIfscCode: data?.bankIfscCode || '',
+        upiId: data?.upiId || '',
+      })
 
       if (data?.id) {
         const [productData, eventData] = await Promise.all([
@@ -86,10 +103,49 @@ export default function StartupProfile() {
     } catch (error) {
       console.error('Error fetching startup profile:', error)
       setStartup(null)
+      setPayoutForm({
+        payoutContactName: '',
+        bankName: '',
+        bankAccountName: '',
+        bankAccountNumber: '',
+        bankIfscCode: '',
+        upiId: '',
+      })
       setProducts([])
       setEvents([])
     } finally {
       setProfileLoading(false)
+    }
+  }
+
+  const handlePayoutChange = (event) => {
+    const { name, value } = event.target
+    setPayoutForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const savePayoutDetails = async () => {
+    if (!startup?.id) return
+
+    setSavingPayout(true)
+    try {
+      const updated = await api.put(`/startups/${startup.id}`, {
+        ...startup,
+        ...payoutForm,
+      })
+      setStartup(updated)
+      setPayoutForm({
+        payoutContactName: updated?.payoutContactName || '',
+        bankName: updated?.bankName || '',
+        bankAccountName: updated?.bankAccountName || '',
+        bankAccountNumber: updated?.bankAccountNumber || '',
+        bankIfscCode: updated?.bankIfscCode || '',
+        upiId: updated?.upiId || '',
+      })
+      alert('Payment details saved successfully.')
+    } catch (error) {
+      alert(error.message || 'Unable to save payment details.')
+    } finally {
+      setSavingPayout(false)
     }
   }
 
@@ -150,6 +206,52 @@ export default function StartupProfile() {
               <SummaryCard label="Events" value={events.length} hint="Total posted startup events" />
               <SummaryCard label="Upcoming" value={upcomingEvents.length} hint="Upcoming or live events" />
               <SummaryCard label="Owner" value={startup?.email ? 'Verified' : 'Pending'} hint={startup?.email || 'No email available'} />
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: COLORS.primary }}>Payout Details</p>
+                <h2 className="text-2xl font-black text-slate-900">Bank and UPI information</h2>
+                <p className="text-sm text-slate-500 mt-1">Share the payment details the super admin should use to settle startup order payouts.</p>
+              </div>
+              <button
+                type="button"
+                onClick={savePayoutDetails}
+                disabled={savingPayout}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+                style={{ backgroundColor: COLORS.success }}
+              >
+                {savingPayout ? 'Saving…' : 'Save Payment Details'}
+              </button>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Payee / Contact Name</label>
+                <input name="payoutContactName" value={payoutForm.payoutContactName} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="Name on account or UPI" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Bank Name</label>
+                <input name="bankName" value={payoutForm.bankName} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="Bank name" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Account Holder Name</label>
+                <input name="bankAccountName" value={payoutForm.bankAccountName} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="Account holder name" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Account Number</label>
+                <input name="bankAccountNumber" value={payoutForm.bankAccountNumber} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="Bank account number" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">IFSC Code</label>
+                <input name="bankIfscCode" value={payoutForm.bankIfscCode} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="IFSC code" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">UPI ID</label>
+                <input name="upiId" value={payoutForm.upiId} onChange={handlePayoutChange} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-400" placeholder="name@bank" />
+              </div>
             </div>
           </section>
 

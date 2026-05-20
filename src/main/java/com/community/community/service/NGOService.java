@@ -47,6 +47,12 @@ public class NGOService {
         ngo.setSubscriptionPlan(ngoDetails.getSubscriptionPlan());
         ngo.setSubscriptionOrderId(ngoDetails.getSubscriptionOrderId());
         ngo.setSubscriptionPaymentId(ngoDetails.getSubscriptionPaymentId());
+        ngo.setPayoutContactName(ngoDetails.getPayoutContactName());
+        ngo.setBankName(ngoDetails.getBankName());
+        ngo.setBankAccountName(ngoDetails.getBankAccountName());
+        ngo.setBankAccountNumber(ngoDetails.getBankAccountNumber());
+        ngo.setBankIfscCode(ngoDetails.getBankIfscCode());
+        ngo.setUpiId(ngoDetails.getUpiId());
         return ngoRepository.save(ngo);
     }
 

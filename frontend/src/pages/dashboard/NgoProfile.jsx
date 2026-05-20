@@ -771,7 +771,7 @@ export default function NgoProfile() {
       setForm(withDefaults); 
       await loadData(d.id)
     } catch {
-      setNgo(null); setForm({ email:user.email, verified:false, country:'India', mentorshipEnabled: false })
+      setNgo(null); setForm({ email:user.email, verified:false, country:'India', mentorshipEnabled: false, payoutContactName:'', bankName:'', bankAccountName:'', bankAccountNumber:'', bankIfscCode:'', upiId:'' })
     } finally { setLoading(false) }
   }
 
@@ -900,7 +900,7 @@ export default function NgoProfile() {
       }
     } catch(err) { 
       // On error, revert the form to the last saved state
-      setForm(ngo || { email:user.email, verified:false, country:'India', mentorshipEnabled: false })
+      setForm(ngo || { email:user.email, verified:false, country:'India', mentorshipEnabled: false, payoutContactName:'', bankName:'', bankAccountName:'', bankAccountNumber:'', bankIfscCode:'', upiId:'' })
       setError(err.message||'Failed to save profile. Mentorship setting not updated.')
     }
     finally { setSaving(false) }
@@ -1376,6 +1376,12 @@ export default function NgoProfile() {
                       </div>
                     ))}
                     <div style={{gridColumn:'1/-1'}}><FieldLabel>Logo URL</FieldLabel><TextInput name="logoUrl" value={form.logoUrl||''} onChange={pi} placeholder="https://…/logo.png"/></div>
+                    <div><FieldLabel>Payee / Contact Name</FieldLabel><TextInput name="payoutContactName" value={form.payoutContactName||''} onChange={pi} placeholder="Name on account or UPI"/></div>
+                    <div><FieldLabel>Bank Name</FieldLabel><TextInput name="bankName" value={form.bankName||''} onChange={pi} placeholder="Bank name"/></div>
+                    <div><FieldLabel>Account Holder Name</FieldLabel><TextInput name="bankAccountName" value={form.bankAccountName||''} onChange={pi} placeholder="Account holder name"/></div>
+                    <div><FieldLabel>Account Number</FieldLabel><TextInput name="bankAccountNumber" value={form.bankAccountNumber||''} onChange={pi} placeholder="Account number"/></div>
+                    <div><FieldLabel>IFSC Code</FieldLabel><TextInput name="bankIfscCode" value={form.bankIfscCode||''} onChange={pi} placeholder="IFSC code"/></div>
+                    <div><FieldLabel>UPI ID</FieldLabel><TextInput name="upiId" value={form.upiId||''} onChange={pi} placeholder="name@bank"/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel required>Address</FieldLabel><TextArea name="address" value={form.address||''} onChange={pi} placeholder="Full postal address" rows={2} required/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel>Mission Statement</FieldLabel><TextArea name="mission" value={form.mission||''} onChange={pi} placeholder="What drives your organisation?" rows={2}/></div>
                     <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea name="description" value={form.description||''} onChange={pi} placeholder="Tell the community about your work and impact…" rows={3}/></div>
