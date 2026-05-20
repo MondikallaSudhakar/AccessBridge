@@ -244,7 +244,7 @@ export default function PayoutRequestPage() {
             transition: 'all .15s',
           }}
         >
-          {showForm ? '✕ Close' : '＋ New Payout Request'}
+          {showForm ? 'Close' : 'New Payout Request'}
         </button>
       </div>
 
@@ -375,7 +375,6 @@ export default function PayoutRequestPage() {
           border: '1.5px dashed #e2e8f0', borderRadius: 16,
           background: '#fafbfc',
         }}>
-          <div style={{ fontSize: 32, marginBottom: 10 }}>💸</div>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#334155' }}>
             {filter === 'ALL' ? 'No payout requests yet' : `No ${filter.toLowerCase()} requests`}
           </p>
@@ -410,7 +409,7 @@ export default function PayoutRequestPage() {
             cursor: 'pointer', userSelect: 'none', background: '#f8fafc',
             listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <span>📦 Eligible Orders Snapshot</span>
+            <span>Eligible Orders Snapshot</span>
             <span style={{ fontSize: 11, color: '#94a3b8' }}>
               {eligibleOrders.length} orders · {money(eligibleAmount)} total
             </span>
