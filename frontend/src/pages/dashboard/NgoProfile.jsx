@@ -1359,35 +1359,61 @@ export default function NgoProfile() {
                 </div>
 
                 <form onSubmit={saveProfile}>
-                  <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
-                    {[
-                      {name:'name',               label:'NGO Name',            req:true},
-                      {name:'email',              label:'Email Address',        req:true},
-                      {name:'phone',              label:'Phone Number'},
-                      {name:'registrationNumber', label:'Registration Number'},
-                      {name:'city',               label:'City'},
-                      {name:'state',              label:'State'},
-                      {name:'country',            label:'Country'},
-                      {name:'websiteUrl',         label:'Website URL'},
-                    ].map(f=>(
-                      <div key={f.name}>
-                        <FieldLabel required={f.req}>{f.label}</FieldLabel>
-                        <TextInput name={f.name} value={form[f.name]||''} onChange={pi} placeholder={f.label} required={!!f.req}/>
+                  <div style={{display:'flex',flexDirection:'column',gap:18}}>
+                    <div style={{border:'1px solid #e5e7eb',borderRadius:14,padding:18,background:'#fafafa'}}>
+                      <div style={{marginBottom:14}}>
+                        <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>NGO Details</div>
+                        <div style={{fontSize:12,color:'#64748b'}}>Basic organisation information shown on your profile.</div>
                       </div>
-                    ))}
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Logo URL</FieldLabel><TextInput name="logoUrl" value={form.logoUrl||''} onChange={pi} placeholder="https://…/logo.png"/></div>
-                    <div><FieldLabel>Payee / Contact Name</FieldLabel><TextInput name="payoutContactName" value={form.payoutContactName||''} onChange={pi} placeholder="Name on account or UPI"/></div>
-                    <div><FieldLabel>Bank Name</FieldLabel><TextInput name="bankName" value={form.bankName||''} onChange={pi} placeholder="Bank name"/></div>
-                    <div><FieldLabel>Account Holder Name</FieldLabel><TextInput name="bankAccountName" value={form.bankAccountName||''} onChange={pi} placeholder="Account holder name"/></div>
-                    <div><FieldLabel>Account Number</FieldLabel><TextInput name="bankAccountNumber" value={form.bankAccountNumber||''} onChange={pi} placeholder="Account number"/></div>
-                    <div><FieldLabel>IFSC Code</FieldLabel><TextInput name="bankIfscCode" value={form.bankIfscCode||''} onChange={pi} placeholder="IFSC code"/></div>
-                    <div><FieldLabel>UPI ID</FieldLabel><TextInput name="upiId" value={form.upiId||''} onChange={pi} placeholder="name@bank"/></div>
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel required>Address</FieldLabel><TextArea name="address" value={form.address||''} onChange={pi} placeholder="Full postal address" rows={2} required/></div>
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Mission Statement</FieldLabel><TextArea name="mission" value={form.mission||''} onChange={pi} placeholder="What drives your organisation?" rows={2}/></div>
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea name="description" value={form.description||''} onChange={pi} placeholder="Tell the community about your work and impact…" rows={3}/></div>
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel>Past Campaign Highlights</FieldLabel><TextArea name="campaignHistory" value={form.campaignHistory||''} onChange={pi} placeholder="Share previously run campaigns and outcomes." rows={3}/></div>
-                    <div style={{gridColumn:'1/-1'}}><FieldLabel>What You Provided</FieldLabel><TextArea name="supportProvidedSummary" value={form.supportProvidedSummary||''} onChange={pi} placeholder="Mention devices/services/support provided to beneficiaries." rows={3}/></div>
-                    <div><FieldLabel>Total Spend (INR)</FieldLabel><TextInput name="totalSpend" type="number" value={form.totalSpend||''} onChange={pi} placeholder="e.g. 2500000"/></div>
+                      <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
+                        {[
+                          {name:'name',               label:'NGO Name',            req:true},
+                          {name:'registrationNumber', label:'Registration Number'},
+                          {name:'city',               label:'City'},
+                          {name:'state',              label:'State'},
+                          {name:'country',            label:'Country'},
+                          {name:'websiteUrl',         label:'Website URL'},
+                        ].map(f=>(
+                          <div key={f.name}>
+                            <FieldLabel required={f.req}>{f.label}</FieldLabel>
+                            <TextInput name={f.name} value={form[f.name]||''} onChange={pi} placeholder={f.label} required={!!f.req}/>
+                          </div>
+                        ))}
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel>Logo URL</FieldLabel><TextInput name="logoUrl" value={form.logoUrl||''} onChange={pi} placeholder="https://…/logo.png"/></div>
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel required>Address</FieldLabel><TextArea name="address" value={form.address||''} onChange={pi} placeholder="Full postal address" rows={2} required/></div>
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel>Mission Statement</FieldLabel><TextArea name="mission" value={form.mission||''} onChange={pi} placeholder="What drives your organisation?" rows={2}/></div>
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel>Description</FieldLabel><TextArea name="description" value={form.description||''} onChange={pi} placeholder="Tell the community about your work and impact…" rows={3}/></div>
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel>Past Campaign Highlights</FieldLabel><TextArea name="campaignHistory" value={form.campaignHistory||''} onChange={pi} placeholder="Share previously run campaigns and outcomes." rows={3}/></div>
+                        <div style={{gridColumn:'1/-1'}}><FieldLabel>What You Provided</FieldLabel><TextArea name="supportProvidedSummary" value={form.supportProvidedSummary||''} onChange={pi} placeholder="Mention devices/services/support provided to beneficiaries." rows={3}/></div>
+                        <div><FieldLabel>Total Spend (INR)</FieldLabel><TextInput name="totalSpend" type="number" value={form.totalSpend||''} onChange={pi} placeholder="e.g. 2500000"/></div>
+                      </div>
+                    </div>
+
+                    <div style={{border:'1px solid #e5e7eb',borderRadius:14,padding:18,background:'#fff'}}>
+                      <div style={{marginBottom:14}}>
+                        <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Contact Details</div>
+                        <div style={{fontSize:12,color:'#64748b'}}>How the community and your team can reach you.</div>
+                      </div>
+                      <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
+                        <div><FieldLabel required>Email Address</FieldLabel><TextInput name="email" value={form.email||''} onChange={pi} placeholder="Email Address" required/></div>
+                        <div><FieldLabel>Phone Number</FieldLabel><TextInput name="phone" value={form.phone||''} onChange={pi} placeholder="Phone Number"/></div>
+                        <div><FieldLabel>Payee / Contact Name</FieldLabel><TextInput name="payoutContactName" value={form.payoutContactName||''} onChange={pi} placeholder="Name on account or UPI"/></div>
+                      </div>
+                    </div>
+
+                    <div style={{border:'1px solid #e5e7eb',borderRadius:14,padding:18,background:'#fafafa'}}>
+                      <div style={{marginBottom:14}}>
+                        <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Bank Details</div>
+                        <div style={{fontSize:12,color:'#64748b'}}>Used for payouts and payment verification.</div>
+                      </div>
+                      <div className="ngo-form-2col" style={{display:'grid',gap:18}}>
+                        <div><FieldLabel>Bank Name</FieldLabel><TextInput name="bankName" value={form.bankName||''} onChange={pi} placeholder="Bank name"/></div>
+                        <div><FieldLabel>Account Holder Name</FieldLabel><TextInput name="bankAccountName" value={form.bankAccountName||''} onChange={pi} placeholder="Account holder name"/></div>
+                        <div><FieldLabel>Account Number</FieldLabel><TextInput name="bankAccountNumber" value={form.bankAccountNumber||''} onChange={pi} placeholder="Account number"/></div>
+                        <div><FieldLabel>IFSC Code</FieldLabel><TextInput name="bankIfscCode" value={form.bankIfscCode||''} onChange={pi} placeholder="IFSC code"/></div>
+                        <div><FieldLabel>UPI ID</FieldLabel><TextInput name="upiId" value={form.upiId||''} onChange={pi} placeholder="name@bank"/></div>
+                      </div>
+                    </div>
                   </div>
                   <div style={{marginTop:22,paddingTop:18,borderTop:'1px solid #f1f5f9'}}>
                     <PrimaryBtn type="submit" iconName="save" loading={saving}>{saving?'Saving…':'Save Profile'}</PrimaryBtn>
