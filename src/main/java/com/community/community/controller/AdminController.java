@@ -18,6 +18,8 @@ import java.util.List;
 @PreAuthorize("hasRole('SUPER_ADMIN')")
 public class AdminController {
 
+    private static final double SUBSCRIPTION_AMOUNT_INR = 499.0;
+
     private final UserService userService;
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
@@ -50,6 +52,9 @@ public class AdminController {
 
     @GetMapping("/stats")
     public ResponseEntity<AdminStatsDTO> getAdminStats() {
+        long ngoActiveSubscriptions = ngoRepository.countActiveSubscriptions();
+        long startupActiveSubscriptions = startupRepository.countActiveSubscriptions();
+
         AdminStatsDTO stats = AdminStatsDTO.builder()
                 // User counts by role
                 .totalUsers(userRepository.count())
@@ -83,6 +88,10 @@ public class AdminController {
                 // Platform stats
                 .totalActiveOrganizations(schoolRepository.count() + ngoRepository.count() + startupRepository.count())
                 .totalApprovedUsers(userRepository.countByStatus("APPROVED"))
+                .totalNGOSubscriptions(ngoActiveSubscriptions)
+                .totalStartupSubscriptions(startupActiveSubscriptions)
+                .totalNGOSubscriptionAmount(ngoActiveSubscriptions * SUBSCRIPTION_AMOUNT_INR)
+                .totalStartupSubscriptionAmount(startupActiveSubscriptions * SUBSCRIPTION_AMOUNT_INR)
                 .build();
 
         return ResponseEntity.ok(stats);

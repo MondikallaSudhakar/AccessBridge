@@ -41,4 +41,8 @@ public class AdminStatsDTO {
     private Double totalDonationAmount;
     private Long totalActiveOrganizations;
     private Long totalApprovedUsers;
+    private Long totalNGOSubscriptions;
+    private Long totalStartupSubscriptions;
+    private Double totalNGOSubscriptionAmount;
+    private Double totalStartupSubscriptionAmount;
 }

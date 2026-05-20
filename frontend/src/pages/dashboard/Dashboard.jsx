@@ -12,7 +12,6 @@ const NAVY = '#0f172a'   // dark text
 
 // Super Admin constants
 const SUPER_ADMIN_TEAL = '#0197B2'
-const SUBSCRIPTION_AMOUNT_INR = 499
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
 
 /* ── SVG icon helper ──────────────────────────────────────────────────── */
@@ -47,14 +46,6 @@ function Ic({ n, s = 16, c = 'currentColor', sw = 1.8, st = {} }) {
       {dMatch && <path strokeLinecap="round" strokeLinejoin="round" d={dMatch[1]} />}
     </svg>
   )
-}
-
-function isActiveSubscription(item) {
-  if (!item || !Boolean(item.subscriptionActive)) return false
-  if (!item.subscriptionExpiresAt) return true
-
-  const expiresAt = new Date(item.subscriptionExpiresAt)
-  return !Number.isNaN(expiresAt.getTime()) && expiresAt > new Date()
 }
 
 /* ── role config ──────────────────────────────────────────────────────── */
@@ -355,11 +346,6 @@ export default function Dashboard() {
   const roleInfo = ROLE_MAP[user?.role] || { label: user?.role, icon: 'user', color: '#64748b' }
 
   const visibleCards = CARDS.filter(c => !c.role || c.role === user?.role)
-
-  const activeNGOSubscriptions = allNGOs.filter(isActiveSubscription).length
-  const activeStartupSubscriptions = allStartups.filter(isActiveSubscription).length
-  const ngoSubscriptionRevenue = activeNGOSubscriptions * SUBSCRIPTION_AMOUNT_INR
-  const startupSubscriptionRevenue = activeStartupSubscriptions * SUBSCRIPTION_AMOUNT_INR
 
   const sidebarSections = user?.role === 'USER'
     ? GENERAL_USER_NAV_GROUP
@@ -741,10 +727,10 @@ export default function Dashboard() {
                           <StatCard label="Active Organizations" value={stats.totalActiveOrganizations || 0} color="#8b5cf6" />
                           <StatCard label="Total Courses" value={stats.totalCourses || 0} color="#ec4899" />
                           <StatCard label="Total Products" value={stats.totalProducts || 0} color="#f59e0b" />
-                          <StatCard label="NGO Subscriptions" value={activeNGOSubscriptions} color="#0f766e" />
-                          <StatCard label={`NGO Revenue (@ ₹${SUBSCRIPTION_AMOUNT_INR})`} value={`₹${ngoSubscriptionRevenue.toLocaleString('en-IN')}`} color="#14b8a6" />
-                          <StatCard label="Startup Subscriptions" value={activeStartupSubscriptions} color="#b45309" />
-                          <StatCard label={`Startup Revenue (@ ₹${SUBSCRIPTION_AMOUNT_INR})`} value={`₹${startupSubscriptionRevenue.toLocaleString('en-IN')}`} color="#f97316" />
+                          <StatCard label="NGO Subscriptions" value={stats.totalNGOSubscriptions || 0} color="#0f766e" />
+                          <StatCard label="NGO Subscription Amount" value={`₹${Number(stats.totalNGOSubscriptionAmount || 0).toLocaleString('en-IN')}`} color="#14b8a6" />
+                          <StatCard label="Startup Subscriptions" value={stats.totalStartupSubscriptions || 0} color="#b45309" />
+                          <StatCard label="Startup Subscription Amount" value={`₹${Number(stats.totalStartupSubscriptionAmount || 0).toLocaleString('en-IN')}`} color="#f97316" />
                         </div>
                       </div>
 
