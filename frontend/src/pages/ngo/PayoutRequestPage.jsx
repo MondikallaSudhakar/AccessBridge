@@ -31,28 +31,6 @@ function toNumber(value) {
   return Number.isFinite(numeric) ? numeric : 0
 }
 
-function normalizeOrder(order) {
-  const items = Array.isArray(order?.items)
-    ? order.items
-    : Array.isArray(order?.orderItems)
-      ? order.orderItems
-      : []
-
-  const computedItemsTotal = items.reduce((sum, item) => {
-    const itemTotal = item?.totalPrice ?? item?.total_price ?? (toNumber(item?.price) * toNumber(item?.quantity))
-    return sum + toNumber(itemTotal)
-  }, 0)
-
-  return {
-    ...order,
-    orderId: order?.orderId ?? order?.id ?? null,
-    items,
-    orderTotalPrice: order?.orderTotalPrice ?? order?.totalPrice ?? order?.total_price ?? computedItemsTotal,
-    sourceTotalPrice: order?.sourceTotalPrice ?? order?.sourceTotal ?? order?.source_total_price ?? computedItemsTotal,
-    createdAt: order?.createdAt ?? order?.created_at ?? null,
-  }
-}
-
 function getStatusStyle(status) {
   return statusStyles[status] || statusStyles.PENDING
 }
@@ -163,13 +141,6 @@ export default function PayoutRequestPage() {
 
   const payoutEligibleOrders = useMemo(() => {
     return orders.filter((order) => PAYOUT_ELIGIBLE_STATUSES.includes(String(order.status || '').toUpperCase()))
-  }, [orders])
-
-  const visibleOrders = useMemo(() => {
-    return [...orders]
-      .map(normalizeOrder)
-      .filter((order) => String(order.status || '').toUpperCase() !== 'CANCELLED')
-      .sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
   }, [orders])
 
   const deliveredAmount = useMemo(() => {
@@ -310,60 +281,6 @@ export default function PayoutRequestPage() {
               <SummaryCard label="Sent" value={money(requestTotals.sent)} hint={`${requestStatusCounts.SENT || 0} request${(requestStatusCounts.SENT || 0) === 1 ? '' : 's'}` } tone="primary" />
               <SummaryCard label="Settled" value={money(requestTotals.settled)} hint={`${requestStatusCounts.SETTLED || 0} request${(requestStatusCounts.SETTLED || 0) === 1 ? '' : 's'}` } tone="success" />
             </div>
-
-            <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">Order records</h2>
-                  <p className="mt-1 text-sm text-slate-500">All non-cancelled NGO orders are shown here, and confirmed or later orders count toward payout availability.</p>
-                </div>
-                <div className="text-sm text-slate-500">
-                  Showing <span className="font-bold text-slate-900">{visibleOrders.length}</span> order{visibleOrders.length === 1 ? '' : 's'}
-                </div>
-              </div>
-
-              <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50">
-                    <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
-                      <th className="px-4 py-3">Order ID</th>
-                      <th className="px-4 py-3">Customer</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3 text-right">Order Total</th>
-                      <th className="px-4 py-3 text-right">Your Share</th>
-                      <th className="px-4 py-3">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {visibleOrders.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
-                          No orders found yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      visibleOrders.map((order) => (
-                        <tr key={order.orderId ?? order.id} className="hover:bg-slate-50/70">
-                          <td className="px-4 py-4 font-mono text-xs font-semibold text-slate-900">#{order.orderId ?? order.id ?? '—'}</td>
-                          <td className="px-4 py-4">
-                            <div className="font-semibold text-slate-900">{order.buyerName || 'Community User'}</div>
-                            <div className="text-xs text-slate-500">{order.buyerEmail || 'No email'}</div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-700">
-                              {order.status || 'PENDING'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 text-right font-semibold text-slate-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</td>
-                          <td className="px-4 py-4 text-right font-semibold text-emerald-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</td>
-                          <td className="px-4 py-4 text-sm text-slate-600">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
 
             <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
               <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
