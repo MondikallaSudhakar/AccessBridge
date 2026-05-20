@@ -13,6 +13,7 @@ const COLORS = {
 }
 
 const REQUEST_STATUSES = ['PENDING', 'SENT', 'SETTLED', 'CANCELLED']
+const PAYOUT_ELIGIBLE_STATUSES = ['CONFIRMED', 'SHIPPED', 'DELIVERED']
 
 const statusStyles = {
   PENDING: { bg: '#fef3c7', color: '#b45309', label: 'Pending' },
@@ -28,6 +29,28 @@ function money(value) {
 function toNumber(value) {
   const numeric = Number(value)
   return Number.isFinite(numeric) ? numeric : 0
+}
+
+function normalizeOrder(order) {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : Array.isArray(order?.orderItems)
+      ? order.orderItems
+      : []
+
+  const computedItemsTotal = items.reduce((sum, item) => {
+    const itemTotal = item?.totalPrice ?? item?.total_price ?? (toNumber(item?.price) * toNumber(item?.quantity))
+    return sum + toNumber(itemTotal)
+  }, 0)
+
+  return {
+    ...order,
+    orderId: order?.orderId ?? order?.id ?? null,
+    items,
+    orderTotalPrice: order?.orderTotalPrice ?? order?.totalPrice ?? order?.total_price ?? computedItemsTotal,
+    sourceTotalPrice: order?.sourceTotalPrice ?? order?.sourceTotal ?? order?.source_total_price ?? computedItemsTotal,
+    createdAt: order?.createdAt ?? order?.created_at ?? null,
+  }
 }
 
 function getStatusStyle(status) {
@@ -137,13 +160,20 @@ export default function PayoutRequestPage() {
     }
   }, [user?.email])
 
-  const deliveredOrders = useMemo(() => {
-    return orders.filter((order) => String(order.status || '').toUpperCase() === 'DELIVERED')
+  const payoutEligibleOrders = useMemo(() => {
+    return orders.filter((order) => PAYOUT_ELIGIBLE_STATUSES.includes(String(order.status || '').toUpperCase()))
+  }, [orders])
+
+  const visibleOrders = useMemo(() => {
+    return [...orders]
+      .map(normalizeOrder)
+      .filter((order) => String(order.status || '').toUpperCase() !== 'CANCELLED')
+      .sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
   }, [orders])
 
   const deliveredAmount = useMemo(() => {
-    return deliveredOrders.reduce((sum, order) => sum + toNumber(order.sourceTotalPrice ?? order.orderTotalPrice ?? order.totalPrice), 0)
-  }, [deliveredOrders])
+    return payoutEligibleOrders.reduce((sum, order) => sum + toNumber(order.sourceTotalPrice ?? order.orderTotalPrice ?? order.totalPrice), 0)
+  }, [payoutEligibleOrders])
 
   const requestTotals = useMemo(() => {
     return requests.reduce(
@@ -266,19 +296,73 @@ export default function PayoutRequestPage() {
           </div>
         ) : (
           <>
-            {/* Empty-state: show a friendly message when no delivered orders and no requests */}
+            {/* Empty-state: show a friendly message when there are no payout-eligible orders and no requests */}
             {!loading && (deliveredAmount <= 0) && requests.length === 0 && (
               <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-500">
                 <h3 className="text-lg font-bold text-slate-900">No payouts available</h3>
-                <p className="mt-2">There are no delivered orders yet, so no payout is available. Once orders are delivered, their amounts will appear here and you can create payout requests.</p>
+                <p className="mt-2">There are no confirmed, shipped, or delivered orders yet, so no payout is available. Once an order reaches one of those states, its amount will appear here and you can create payout requests.</p>
               </div>
             )}
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard label="Available to Request" value={money(availableToRequest)} hint="Delivered orders minus all active requests" tone="success" />
+              <SummaryCard label="Available to Request" value={money(availableToRequest)} hint="Confirmed, shipped, or delivered orders minus all active requests" tone="success" />
               <SummaryCard label="Pending" value={money(requestTotals.pending)} hint={`${requestStatusCounts.PENDING || 0} request${(requestStatusCounts.PENDING || 0) === 1 ? '' : 's'}` } tone="warning" />
               <SummaryCard label="Sent" value={money(requestTotals.sent)} hint={`${requestStatusCounts.SENT || 0} request${(requestStatusCounts.SENT || 0) === 1 ? '' : 's'}` } tone="primary" />
               <SummaryCard label="Settled" value={money(requestTotals.settled)} hint={`${requestStatusCounts.SETTLED || 0} request${(requestStatusCounts.SETTLED || 0) === 1 ? '' : 's'}` } tone="success" />
             </div>
+
+            <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900">Order records</h2>
+                  <p className="mt-1 text-sm text-slate-500">All non-cancelled NGO orders are shown here, and confirmed or later orders count toward payout availability.</p>
+                </div>
+                <div className="text-sm text-slate-500">
+                  Showing <span className="font-bold text-slate-900">{visibleOrders.length}</span> order{visibleOrders.length === 1 ? '' : 's'}
+                </div>
+              </div>
+
+              <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50">
+                    <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
+                      <th className="px-4 py-3">Order ID</th>
+                      <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-right">Order Total</th>
+                      <th className="px-4 py-3 text-right">Your Share</th>
+                      <th className="px-4 py-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {visibleOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
+                          No orders found yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      visibleOrders.map((order) => (
+                        <tr key={order.orderId ?? order.id} className="hover:bg-slate-50/70">
+                          <td className="px-4 py-4 font-mono text-xs font-semibold text-slate-900">#{order.orderId ?? order.id ?? '—'}</td>
+                          <td className="px-4 py-4">
+                            <div className="font-semibold text-slate-900">{order.buyerName || 'Community User'}</div>
+                            <div className="text-xs text-slate-500">{order.buyerEmail || 'No email'}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-700">
+                              {order.status || 'PENDING'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-right font-semibold text-slate-900">₹{Number(order.orderTotalPrice ?? order.totalPrice ?? 0).toLocaleString('en-IN')}</td>
+                          <td className="px-4 py-4 text-right font-semibold text-emerald-600">₹{Number(order.sourceTotalPrice ?? order.sourceTotal ?? 0).toLocaleString('en-IN')}</td>
+                          <td className="px-4 py-4 text-sm text-slate-600">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
             <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
               <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -414,24 +498,6 @@ export default function PayoutRequestPage() {
                       {submitting ? 'Submitting…' : 'Request Amount'}
                     </button>
                   </form>
-                </section>
-
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <h3 className="text-lg font-black text-slate-900">Order snapshot</h3>
-                  <div className="mt-4 space-y-3 text-sm">
-                    <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                      <span className="font-medium text-slate-600">Delivered orders</span>
-                      <span className="font-bold text-slate-900">{deliveredOrders.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                      <span className="font-medium text-slate-600">Delivered value</span>
-                      <span className="font-bold text-slate-900">{money(deliveredAmount)}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                      <span className="font-medium text-slate-600">Active requests</span>
-                      <span className="font-bold text-slate-900">{requests.filter((request) => REQUEST_STATUSES.includes(String(request.status || 'PENDING').toUpperCase()) && String(request.status || 'PENDING').toUpperCase() !== 'CANCELLED').length}</span>
-                    </div>
-                  </div>
                 </section>
               </aside>
             </div>
