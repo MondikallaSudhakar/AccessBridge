@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,14 @@ public class PayoutRequestService {
     @Transactional(readOnly = true)
     public List<PayoutRequestDto> listForNgo(Long ngoId) {
         return payoutRequestRepository.findByNgoIdOrderByCreatedAtDesc(ngoId).stream()
+                .map(PayoutRequestDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PayoutRequestDto> listAll() {
+        return payoutRequestRepository.findAll().stream()
+                .sorted(Comparator.comparing(PayoutRequest::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(PayoutRequestDto::fromEntity)
                 .collect(Collectors.toList());
     }

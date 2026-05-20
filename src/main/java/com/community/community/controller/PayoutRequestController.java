@@ -38,6 +38,12 @@ public class PayoutRequestController {
         return ResponseEntity.ok(payoutRequestService.listForNgo(ngoId));
     }
 
+    @GetMapping("/payout-requests/all")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<List<PayoutRequestDto>> listAll() {
+        return ResponseEntity.ok(payoutRequestService.listAll());
+    }
+
     @PostMapping("/{ngoId}/payout-requests")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PayoutRequestDto> createForNgo(@PathVariable Long ngoId, @RequestBody Map<String, Object> payload) {

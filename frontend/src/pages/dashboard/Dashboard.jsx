@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import SidebarNav from '../../components/common/UserNavbar'
 
@@ -136,6 +137,7 @@ const NAV_GROUPS = [
       { id: 'admin-needs', label: 'Requirements', icon: 'info', tabId: 'needs' },
       { id: 'admin-support', label: 'Support', icon: 'shield', tabId: 'support' },
       { id: 'admin-donations', label: 'Donations', icon: 'shop', tabId: 'donations' },
+      { id: 'admin-payouts', label: 'Payout Requests', icon: 'bag', tabId: 'payouts' },
       { id: 'admin-ngos', label: 'NGOs', icon: 'ngo', tabId: 'ngos' },
       { id: 'admin-startups', label: 'Startups', icon: 'startup', tabId: 'startups' },
     ],
@@ -302,11 +304,12 @@ function QuickCard({ card, onClick }) {
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeNav, setActiveNav] = useState('home')
 
   // Super Admin state
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState(() => new URLSearchParams(location.search).get('tab') || 'overview')
   const [stats, setStats] = useState(null)
   const [pendingUsers, setPendingUsers] = useState([])
   const [courses, setCourses] = useState([])
@@ -324,6 +327,7 @@ export default function Dashboard() {
   const [allNeeds, setAllNeeds] = useState([])
   const [allSupport, setAllSupport] = useState([])
   const [allDonations, setAllDonations] = useState([])
+  const [allPayoutRequests, setAllPayoutRequests] = useState([])
   const [allNGOs, setAllNGOs] = useState([])
   const [allStartups, setAllStartups] = useState([])
   const [resourceLoading, setResourceLoading] = useState({})
@@ -340,6 +344,13 @@ export default function Dashboard() {
     if (user?.role === 'SPECIAL_ABLED_PERSON') navigate('/special', { replace: true })
     if (user?.role === 'GUARDIAN_CAREGIVER') navigate('/guardian', { replace: true })
   }, [navigate, user])
+
+  useEffect(() => {
+    const tabParam = new URLSearchParams(location.search).get('tab')
+    if (tabParam) {
+      setTab(tabParam)
+    }
+  }, [location.search])
 
   const handleLogout = () => { logout(); navigate('/') }
 
@@ -364,6 +375,7 @@ export default function Dashboard() {
     // If the item has a tabId, switch to that tab instead of navigating
     if (item.tabId) {
       setTab(item.tabId)
+      navigate(`/dashboard?tab=${encodeURIComponent(item.tabId)}`)
       return
     }
     if (item.path) navigate(item.path)
@@ -483,6 +495,32 @@ export default function Dashboard() {
     }
   }
 
+  const fetchAllPayoutRequests = async () => {
+    setResourceLoading(prev => ({ ...prev, payouts: true }))
+    try {
+      const data = await api.get('/ngos/payout-requests/all')
+      setAllPayoutRequests(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load payout requests:', err)
+      setError('Failed to load payout requests')
+    } finally {
+      setResourceLoading(prev => ({ ...prev, payouts: false }))
+    }
+  }
+
+  const updatePayoutRequestStatus = async (requestId, status) => {
+    setActionLoading(prev => ({ ...prev, [`payout-${requestId}`]: status }))
+    try {
+      await api.patch(`/ngos/payout-requests/${requestId}/status`, { status })
+      await fetchAllPayoutRequests()
+    } catch (err) {
+      console.error('Failed to update payout request:', err)
+      setError(err.message || 'Failed to update payout request')
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`payout-${requestId}`]: null }))
+    }
+  }
+
   const fetchAllNGOs = async () => {
     setResourceLoading(prev => ({ ...prev, ngos: true }))
     try {
@@ -591,10 +629,17 @@ export default function Dashboard() {
       fetchAllEvents()
       fetchAllNeeds()
       fetchAllDonations()
+      fetchAllPayoutRequests()
       fetchAllNGOs()
       fetchAllStartups()
     }
   }, [navigate, user])
+
+  useEffect(() => {
+    if (user?.role === 'SUPER_ADMIN' && tab === 'payouts' && allPayoutRequests.length === 0) {
+      fetchAllPayoutRequests()
+    }
+  }, [tab, user?.role, allPayoutRequests.length])
 
   // Flatten nav items for mobile bottom bar (only relevant)
   const bottomNav = [
@@ -930,6 +975,68 @@ export default function Dashboard() {
                 </div>
               )}
 
+              {tab === 'payouts' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', margin: 0, textTransform: 'uppercase' }}>Payout Requests</h3>
+                      <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748b' }}>Review all NGO payout requests and update their status from the dashboard.</p>
+                    </div>
+                    <button onClick={fetchAllPayoutRequests} style={{ fontSize: '12px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', color: SUPER_ADMIN_TEAL }}>Refresh</button>
+                  </div>
+                  {resourceLoading.payouts ? <p>Loading payout requests...</p> : allPayoutRequests.length === 0 ? (
+                    <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '48px 32px', textAlign: 'center' }}>
+                      <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>No payout requests yet</p>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Request</th>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>NGO</th>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Amount</th>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Status</th>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Date</th>
+                            <th style={{ textAlign: 'left', padding: '12px 16px', fontWeight: 600 }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allPayoutRequests.map((request) => (
+                            <tr key={request.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>PR-{request.id}</td>
+                              <td style={{ padding: '12px 16px' }}>NGO #{request.ngoId}</td>
+                              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>₹{Number(request.amount || 0).toLocaleString('en-IN')}</td>
+                              <td style={{ padding: '12px 16px' }}><span style={{ background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>{request.status}</span></td>
+                              <td style={{ padding: '12px 16px', fontSize: '11px' }}>{request.createdAt ? new Date(request.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+                              <td style={{ padding: '12px 16px' }}>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  {request.status === 'PENDING' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SENT')} style={{ background: SUPER_ADMIN_TEAL, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+                                      Mark Sent
+                                    </button>
+                                  )}
+                                  {request.status === 'SENT' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'SETTLED')} style={{ background: '#5BCB2B', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+                                      Mark Settled
+                                    </button>
+                                  )}
+                                  {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
+                                    <button onClick={() => updatePayoutRequestStatus(request.id, 'DECLINED')} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+                                      Decline
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {tab === 'ngos' && (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -1124,7 +1231,7 @@ export default function Dashboard() {
             {user?.role === 'SPECIAL_ABLED_PERSON' && <HeroCta label="Open Specially Abled Workspace" onClick={() => navigate('/special')} />}
             {user?.role === 'GUARDIAN_CAREGIVER' && <HeroCta label="Open Guardian Workspace" onClick={() => navigate('/guardian')} />}
             {user?.role === 'STARTUP_ADMIN' && <HeroCta label="Go to Startup Dashboard" onClick={() => navigate('/startup/profile')} />}
-            {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => { setActiveNav('approvals'); setTab('approvals') }} />}
+            {user?.role === 'SUPER_ADMIN' && <HeroCta label="Review Approvals" onClick={() => { setActiveNav('approvals'); setTab('approvals'); navigate('/dashboard?tab=approvals') }} />}
           </div>
 
           {/* ── Quick access grid ── */}
@@ -1144,6 +1251,7 @@ export default function Dashboard() {
                   if (card.path === '/admin/approvals' && user?.role === 'SUPER_ADMIN') {
                     setActiveNav('approvals')
                     setTab('approvals')
+                    navigate('/dashboard?tab=approvals')
                     setMobileMenuOpen(false)
                     return
                   }
