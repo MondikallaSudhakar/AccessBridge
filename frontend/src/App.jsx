@@ -22,7 +22,6 @@ import StartupOrders from './pages/startup/StartupOrders'
 import StartupJobsPage from './pages/startup/StartupJobsPage'
 import StartupWorkspaceLayout from './pages/startup/StartupWorkspaceLayout'
 import NgoProfile from './pages/dashboard/NgoProfile'
-import PayoutRequestPage from './pages/ngo/PayoutRequestPage'
 import NgoWorkspaceLayout from './pages/ngo/NgoWorkspaceLayout'
 import NgoWorkspaceHome from './pages/ngo/NgoWorkspaceHome'
 import NgoWorkspaceFeaturePage from './pages/ngo/NgoWorkspaceFeaturePage'
@@ -119,12 +118,12 @@ function App() {
           <Route path="saved" element={<GuardianSavedPage />} />
           <Route path="progress" element={<GuardianProgressPage />} />
         </Route>
+        <Route path="/ngo/payout-requests" element={<Navigate to="/ngo/profile?tab=payouts" replace />} />
         <Route path="/ngo" element={<RoleRoute allowedRoles={['NGO_ADMIN', 'SUPER_ADMIN']}><NgoWorkspaceLayout /></RoleRoute>}>
           <Route index element={<NgoWorkspaceHome />} />
           <Route path="requirements" element={<NgoWorkspaceFeaturePage type="requirements" />} />
           <Route path="support-requests" element={<NgoWorkspaceFeaturePage type="support-requests" />} />
           <Route path="volunteers" element={<NgoWorkspaceFeaturePage type="volunteers" />} />
-          <Route path="payout-requests" element={<PayoutRequestPage />} />
           <Route path="campaigns" element={<NgoWorkspaceFeaturePage type="campaigns" />} />
           <Route path="events" element={<NgoWorkspaceFeaturePage type="events" />} />
           <Route path="jobs" element={<NgoWorkspaceFeaturePage type="jobs" />} />

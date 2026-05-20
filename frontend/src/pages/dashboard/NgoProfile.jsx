@@ -658,6 +658,19 @@ export default function NgoProfile() {
   const [showCourseForm, setShowCourseForm] = useState(false)
   const [needForm, setNeedForm]               = useState(blankNeed)
   const [showNeedForm, setShowNeedForm]       = useState(false)
+
+  useEffect(() => {
+    console.log('NgoProfile mounted — tab=', tab)
+  }, [])
+
+  // Keep `tab` state in sync with the URL `?tab=` parameter so redirects work
+  useEffect(() => {
+    const qp = searchParams.get('tab') || 'overview'
+    if (qp !== tab) {
+      console.log('syncing tab from searchParams', qp)
+      setTab(qp)
+    }
+  }, [searchParams])
   const [supportRequestFilter, setSupportRequestFilter] = useState('PENDING')
   const [selectedJobApps, setSelectedJobApps] = useState(null) // { job, apps[] }
   const [loadingApps, setLoadingApps] = useState(false)
@@ -2588,23 +2601,20 @@ export default function NgoProfile() {
                   </div>
                 )}
               </Panel>
+            </div>
+          )}
 
           {/* ── PAYOUTS ─────────────────────────────────────────────── */}
           {tab === 'payouts' && (
             <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
-              <Panel>
-                <PanelHeader title="Payout Requests" subtitle="Request and track payouts from delivered orders." />
-                <div style={{padding:0}}>
-                  <PayoutRequestPage />
-                </div>
-              </Panel>
-            </div>
-          )}
+              <PayoutRequestPage />
             </div>
           )}
 
         </div>{/* /scrollable */}
       </main>
+
+
 
       {/* ══════════ MOBILE BOTTOM NAV ══════════ */}
       <nav className="ngo-bottom-nav" style={{

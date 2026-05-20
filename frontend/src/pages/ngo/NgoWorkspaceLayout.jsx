@@ -34,7 +34,6 @@ const NAV_ICON = {
   Services: 'heart',
   Achievements: 'star',
   Messages: 'chat',
-  'Payout Requests': 'currency',
   'Corporate CSR': 'building',
 }
 

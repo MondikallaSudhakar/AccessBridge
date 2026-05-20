@@ -7,7 +7,6 @@ export const NGO_WORKSPACE_NAV = [
   },
   { to: '/ngo/support-requests', label: 'Support Requests' },
   { to: '/ngo/volunteers', label: 'Volunteers' },
-  { to: '/ngo/payout-requests', label: 'Payout Requests' },
   { to: '/ngo/campaigns', label: 'Campaigns' },
   { to: '/ngo/events', label: 'Events' },
   {

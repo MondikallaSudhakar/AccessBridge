@@ -84,6 +84,10 @@ export default function PayoutRequestPage() {
   }, [user, navigate])
 
   useEffect(() => {
+    console.log('PayoutRequestPage mounted', { user, ngo })
+  }, [])
+
+  useEffect(() => {
     if (!user?.email) return
 
     let alive = true
@@ -102,7 +106,18 @@ export default function PayoutRequestPage() {
         if (!alive) return
 
         setOrders(Array.isArray(orderData) ? orderData : [])
-        setRequests(ngoId ? readRequests(ngoId) : [])
+
+        // load persisted payout requests from backend
+        if (ngoId) {
+          try {
+            const payoutData = await api.get(`/ngos/${ngoId}/payout-requests`)
+            if (!alive) return
+            setRequests(Array.isArray(payoutData) ? payoutData : [])
+          } catch (pdErr) {
+            // ignore payout load errors but surface to UI
+            if (alive) setRequests([])
+          }
+        }
       } catch (loadError) {
         if (alive) {
           setNgo(null)
@@ -159,10 +174,7 @@ export default function PayoutRequestPage() {
     }, {})
   }, [requests])
 
-  const persistRequests = (nextRequests) => {
-    if (!ngo?.id) return
-    localStorage.setItem(getStorageKey(ngo.id), JSON.stringify(nextRequests))
-  }
+  // persistence now happens on the server via API
 
   const flashSuccess = (message) => {
     setSuccess(message)
@@ -186,18 +198,9 @@ export default function PayoutRequestPage() {
     setSubmitting(true)
     setError('')
     try {
-      const nextRequest = {
-        id: Date.now(),
-        reference: `PR-${String(Date.now()).slice(-6)}`,
-        amount,
-        note: form.note.trim(),
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      const nextRequests = [nextRequest, ...requests]
+      const created = await api.post(`/ngos/${ngo.id}/payout-requests`, { amount, notes: form.note.trim() })
+      const nextRequests = [created, ...requests]
       setRequests(nextRequests)
-      persistRequests(nextRequests)
       setForm({ amount: '', note: '' })
       flashSuccess('Payout request created.')
     } catch (submitError) {
@@ -210,45 +213,37 @@ export default function PayoutRequestPage() {
   const updateRequestStatus = (requestId, status) => {
     if (!ngo?.id) return
 
-    const nextRequests = requests.map((request) => {
-      if (request.id !== requestId) return request
-      return { ...request, status, updatedAt: new Date().toISOString() }
-    })
-
-    setRequests(nextRequests)
-    persistRequests(nextRequests)
+    // admin-only operation: call server
+    api.patch(`/ngos/payout-requests/${requestId}/status`, { status })
+      .then((updated) => {
+        setRequests((current) => current.map((r) => (r.id === updated.id ? updated : r)))
+      })
+      .catch((err) => setError(err.message || 'Failed to update request status'))
   }
 
   const removeRequest = (requestId) => {
     if (!ngo?.id) return
-    const nextRequests = requests.filter((request) => request.id !== requestId)
-    setRequests(nextRequests)
-    persistRequests(nextRequests)
+    // cancel via server endpoint
+    api.patch(`/ngos/${ngo.id}/payout-requests/${requestId}/cancel`, {})
+      .then((updated) => {
+        setRequests((current) => current.map((r) => (r.id === updated.id ? updated : r)))
+      })
+      .catch((err) => setError(err.message || 'Failed to cancel payout request'))
   }
 
   return (
-    <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div>
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${COLORS.success}12` }}>
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.success }} />
-                <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: COLORS.success }}>NGO Payout Request</span>
-              </div>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Payout Request</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-                Request money from the platform against completed orders. The page keeps track of pending, sent, and settled payout requests in one place.
-              </p>
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${COLORS.success}12` }}>
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.success }} />
+              <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: COLORS.success }}>NGO Payout Request</span>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/ngo')}
-              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
-              style={{ backgroundColor: COLORS.primary }}
-            >
-              Back to Workspace
-            </button>
+            <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-900">Payout Request</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+              Request money from the platform against completed orders. The page keeps track of pending, sent, and settled payout requests in one place.
+            </p>
           </div>
         </section>
 
@@ -271,6 +266,13 @@ export default function PayoutRequestPage() {
           </div>
         ) : (
           <>
+            {/* Empty-state: show a friendly message when no delivered orders and no requests */}
+            {!loading && (deliveredAmount <= 0) && requests.length === 0 && (
+              <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-500">
+                <h3 className="text-lg font-bold text-slate-900">No payouts available</h3>
+                <p className="mt-2">There are no delivered orders yet, so no payout is available. Once orders are delivered, their amounts will appear here and you can create payout requests.</p>
+              </div>
+            )}
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryCard label="Available to Request" value={money(availableToRequest)} hint="Delivered orders minus all active requests" tone="success" />
               <SummaryCard label="Pending" value={money(requestTotals.pending)} hint={`${requestStatusCounts.PENDING || 0} request${(requestStatusCounts.PENDING || 0) === 1 ? '' : 's'}` } tone="warning" />
