@@ -1,458 +1,447 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
-const COLORS = {
-  primary: '#0197B2',
-  success: '#5BCB2B',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  slate: '#64748b',
-  navy: '#0f172a',
-}
+/* ── colours ── */
+const G  = '#5BCB2B'   // brand green
+const B  = '#1A8FD1'   // brand blue
+const NAVY = '#0f172a'
 
-const REQUEST_STATUSES = ['PENDING', 'SENT', 'SETTLED', 'CANCELLED']
 const PAYOUT_ELIGIBLE_STATUSES = ['CONFIRMED', 'SHIPPED', 'DELIVERED']
+const REQUEST_STATUSES = ['PENDING', 'SENT', 'SETTLED', 'CANCELLED']
 
-const statusStyles = {
-  PENDING: { bg: '#fef3c7', color: '#b45309', label: 'Pending' },
-  SENT: { bg: '#dbeafe', color: '#1d4ed8', label: 'Sent' },
-  SETTLED: { bg: '#dcfce7', color: '#166534', label: 'Settled' },
-  CANCELLED: { bg: '#fee2e2', color: '#b91c1c', label: 'Cancelled' },
+const STATUS = {
+  PENDING:   { bg: '#fef9c3', color: '#854d0e',  dot: '#f59e0b', label: 'Pending'   },
+  SENT:      { bg: '#dbeafe', color: '#1d4ed8',  dot: '#3b82f6', label: 'Sent'      },
+  SETTLED:   { bg: '#dcfce7', color: '#166534',  dot: '#22c55e', label: 'Settled'   },
+  CANCELLED: { bg: '#fee2e2', color: '#b91c1c',  dot: '#ef4444', label: 'Cancelled' },
 }
 
-function money(value) {
-  return `₹${Number(value || 0).toLocaleString('en-IN')}`
-}
+const money = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`
+const toNum  = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+const st = (s) => STATUS[String(s || 'PENDING').toUpperCase()] || STATUS.PENDING
 
-function toNumber(value) {
-  const numeric = Number(value)
-  return Number.isFinite(numeric) ? numeric : 0
-}
-
-function getStatusStyle(status) {
-  return statusStyles[status] || statusStyles.PENDING
-}
-
-function getStorageKey(ngoId) {
-  return `ngo-payout-requests-${ngoId}`
-}
-
-function readRequests(ngoId) {
-  try {
-    const raw = localStorage.getItem(getStorageKey(ngoId))
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function SummaryCard({ label, value, hint, tone = 'primary' }) {
-  const bg = tone === 'success' ? '#f0fdf4' : tone === 'warning' ? '#fffbeb' : tone === 'danger' ? '#fef2f2' : '#f0f8fc'
-  const accent = tone === 'success' ? COLORS.success : tone === 'warning' ? COLORS.warning : tone === 'danger' ? COLORS.danger : COLORS.primary
-
+/* ── Stat chip ── */
+function StatChip({ label, value, sub, accent }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ backgroundColor: bg, color: accent }}>
-        {label}
-      </div>
-      <p className="mt-3 text-2xl font-black text-slate-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+    <div style={{
+      flex: '1 1 140px', minWidth: 130,
+      background: '#fff',
+      border: `1.5px solid ${accent}30`,
+      borderRadius: 16, padding: '14px 18px',
+      boxShadow: `0 2px 10px ${accent}12`,
+    }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 900, color: NAVY, lineHeight: 1.1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>{sub}</div>}
     </div>
   )
 }
 
-function getRequestBg(status) {
-  switch (status) {
-    case 'PENDING':
-      return '#fffdf0'
-    case 'SENT':
-      return '#f0f7ff'
-    case 'SETTLED':
-      return '#f0fdf4'
-    case 'CANCELLED':
-      return '#fff1f2'
-    default:
-      return '#ffffff'
+/* ── Request card ── */
+function RequestCard({ request, isSuperAdmin, onUpdate, onCancel }) {
+  const s = st(request.status)
+  const status = String(request.status || 'PENDING').toUpperCase()
+  return (
+    <div style={{
+      background: '#fff',
+      border: '1.5px solid #e9ecef',
+      borderRadius: 14,
+      padding: '16px 18px',
+      transition: 'box-shadow .15s, border-color .15s',
+    }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = `${G}50`}
+      onMouseLeave={e => e.currentTarget.style.borderColor = '#e9ecef'}
+    >
+      {/* top row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: NAVY }}>
+              {request.reference || `PR-${request.id}`}
+            </span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, borderRadius: 20,
+              padding: '2px 9px', background: s.bg, color: s.color,
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, display: 'inline-block' }} />
+              {s.label}
+            </span>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: NAVY }}>{money(request.amount)}</div>
+          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{fmtDate(request.createdAt)}</div>
+          {request.note && (
+            <div style={{ marginTop: 6, fontSize: 12, color: '#64748b', background: '#f8fafc', borderRadius: 8, padding: '6px 10px' }}>
+              {request.note}
+            </div>
+          )}
+        </div>
+
+        {/* action buttons */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          {isSuperAdmin && status === 'PENDING' && (
+            <button onClick={() => onUpdate(request.id, 'SENT')} style={actionBtn(B)}>Mark Sent</button>
+          )}
+          {isSuperAdmin && status === 'SENT' && (
+            <button onClick={() => onUpdate(request.id, 'SETTLED')} style={actionBtn(G)}>Mark Settled</button>
+          )}
+          {status !== 'SETTLED' && status !== 'CANCELLED' && (
+            <button onClick={() => onCancel(request.id)} style={actionBtn('#ef4444', true)}>Cancel</button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function actionBtn(color, outline = false) {
+  return {
+    fontSize: 11, fontWeight: 700, borderRadius: 20, cursor: 'pointer',
+    padding: '5px 12px', border: `1.5px solid ${color}`,
+    background: outline ? 'transparent' : color,
+    color: outline ? color : '#fff',
+    transition: 'opacity .15s',
+    whiteSpace: 'nowrap',
   }
 }
 
+/* ── Main component ── */
 export default function PayoutRequestPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const isSuperAdmin = user?.role === 'SUPER_ADMIN'
 
-  const [ngo, setNgo] = useState(null)
-  const [orders, setOrders] = useState([])
+  const [ngo, setNgo]           = useState(null)
+  const [orders, setOrders]     = useState([])
   const [requests, setRequests] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]   = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [filter, setFilter] = useState('ALL')
-  const [form, setForm] = useState({ amount: '', note: '' })
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [filter, setFilter]     = useState('ALL')
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm]         = useState({ amount: '', note: '' })
+  const [error, setError]       = useState('')
+  const [success, setSuccess]   = useState('')
 
-  useEffect(() => {
-    if (user && user.role !== 'NGO_ADMIN' && user.role !== 'SUPER_ADMIN') {
-      navigate('/dashboard')
-    }
-  }, [user, navigate])
-
-  useEffect(() => {
-    console.log('PayoutRequestPage mounted', { user, ngo })
-  }, [])
-
+  /* load data */
   useEffect(() => {
     if (!user?.email) return
-
     let alive = true
-
     const load = async () => {
-      setLoading(true)
-      setError('')
+      setLoading(true); setError('')
       try {
         const ngoData = await api.get(`/ngos/email/${encodeURIComponent(user.email)}`)
         if (!alive) return
-
-        const ngoId = ngoData?.id
         setNgo(ngoData || null)
-
+        const ngoId = ngoData?.id
         const orderData = ngoId ? await api.get(`/orders/ngo/${ngoId}/orders`) : []
         if (!alive) return
-
         setOrders(Array.isArray(orderData) ? orderData : [])
-
-        // load persisted payout requests from backend
         if (ngoId) {
           try {
-            const payoutData = await api.get(`/ngos/${ngoId}/payout-requests`)
-            if (!alive) return
-            setRequests(Array.isArray(payoutData) ? payoutData : [])
-          } catch (pdErr) {
-            // ignore payout load errors but surface to UI
-            if (alive) setRequests([])
-          }
+            const pd = await api.get(`/ngos/${ngoId}/payout-requests`)
+            if (alive) setRequests(Array.isArray(pd) ? pd : [])
+          } catch { if (alive) setRequests([]) }
         }
-      } catch (loadError) {
-        if (alive) {
-          setNgo(null)
-          setOrders([])
-          setRequests([])
-          setError(loadError.message || 'Failed to load payout request data.')
-        }
-      } finally {
-        if (alive) setLoading(false)
-      }
+      } catch (e) {
+        if (alive) { setNgo(null); setOrders([]); setRequests([]); setError(e.message || 'Failed to load.') }
+      } finally { if (alive) setLoading(false) }
     }
-
     load()
-
-    return () => {
-      alive = false
-    }
+    return () => { alive = false }
   }, [user?.email])
 
-  const payoutEligibleOrders = useMemo(() => {
-    return orders.filter((order) => PAYOUT_ELIGIBLE_STATUSES.includes(String(order.status || '').toUpperCase()))
-  }, [orders])
+  /* derived */
+  const eligibleOrders = useMemo(() =>
+    orders.filter(o => PAYOUT_ELIGIBLE_STATUSES.includes(String(o.status || '').toUpperCase())), [orders])
 
-  const deliveredAmount = useMemo(() => {
-    return payoutEligibleOrders.reduce((sum, order) => sum + toNumber(order.sourceTotalPrice ?? order.orderTotalPrice ?? order.totalPrice), 0)
-  }, [payoutEligibleOrders])
+  const eligibleAmount = useMemo(() =>
+    eligibleOrders.reduce((s, o) => s + toNum(o.sourceTotalPrice ?? o.orderTotalPrice ?? o.totalPrice), 0), [eligibleOrders])
 
-  const requestTotals = useMemo(() => {
-    return requests.reduce(
-      (accumulator, request) => {
-        const amount = toNumber(request.amount)
-        const status = String(request.status || 'PENDING').toUpperCase()
-        if (status !== 'CANCELLED') accumulator.requested += amount
-        if (status === 'PENDING') accumulator.pending += amount
-        if (status === 'SENT') accumulator.sent += amount
-        if (status === 'SETTLED') accumulator.settled += amount
-        return accumulator
-      },
-      { requested: 0, pending: 0, sent: 0, settled: 0 },
-    )
-  }, [requests])
+  const totals = useMemo(() => requests.reduce((acc, r) => {
+    const a = toNum(r.amount), s = String(r.status || 'PENDING').toUpperCase()
+    if (s !== 'CANCELLED') acc.requested += a
+    if (s === 'PENDING')   acc.pending   += a
+    if (s === 'SENT')      acc.sent      += a
+    if (s === 'SETTLED')   acc.settled   += a
+    return acc
+  }, { requested: 0, pending: 0, sent: 0, settled: 0 }), [requests])
 
-  const availableToRequest = Math.max(0, deliveredAmount - requestTotals.requested)
+  const available = Math.max(0, eligibleAmount - totals.requested)
 
-  const filteredRequests = useMemo(() => {
-    const sorted = [...requests].sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
-    return filter === 'ALL' ? sorted : sorted.filter((request) => String(request.status || 'PENDING').toUpperCase() === filter)
+  const filtered = useMemo(() => {
+    const sorted = [...requests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    return filter === 'ALL' ? sorted : sorted.filter(r => String(r.status || 'PENDING').toUpperCase() === filter)
   }, [filter, requests])
 
-  const requestStatusCounts = useMemo(() => {
-    return REQUEST_STATUSES.reduce((accumulator, status) => {
-      accumulator[status] = requests.filter((request) => String(request.status || 'PENDING').toUpperCase() === status).length
-      return accumulator
-    }, {})
-  }, [requests])
+  const counts = useMemo(() =>
+    REQUEST_STATUSES.reduce((a, s) => {
+      a[s] = requests.filter(r => String(r.status || 'PENDING').toUpperCase() === s).length; return a
+    }, {}), [requests])
 
-  // persistence now happens on the server via API
+  /* actions */
+  const flash = (msg) => { setSuccess(msg); setTimeout(() => setSuccess(''), 3000) }
 
-  const flashSuccess = (message) => {
-    setSuccess(message)
-    window.setTimeout(() => setSuccess(''), 2500)
-  }
-
-  const submitRequest = async (event) => {
-    event.preventDefault()
-    if (!ngo?.id) return
-
-    const amount = toNumber(form.amount)
-    if (amount <= 0) {
-      setError('Enter a valid payout amount.')
-      return
-    }
-    if (amount > availableToRequest) {
-      setError('Requested amount is higher than the available payout balance.')
-      return
-    }
-
-    setSubmitting(true)
-    setError('')
+  const submit = async (e) => {
+    e.preventDefault()
+    const amount = toNum(form.amount)
+    if (amount <= 0) { setError('Enter a valid amount.'); return }
+    if (amount > available) { setError('Amount exceeds available balance.'); return }
+    setSubmitting(true); setError('')
     try {
       const created = await api.post(`/ngos/${ngo.id}/payout-requests`, { amount, notes: form.note.trim() })
-      const nextRequests = [created, ...requests]
-      setRequests(nextRequests)
+      setRequests(prev => [created, ...prev])
       setForm({ amount: '', note: '' })
-      flashSuccess('Payout request created.')
-    } catch (submitError) {
-      setError(submitError.message || 'Unable to create payout request.')
-    } finally {
-      setSubmitting(false)
-    }
+      setShowForm(false)
+      flash('✅ Payout request submitted!')
+    } catch (err) {
+      setError(err.message || 'Failed to submit.')
+    } finally { setSubmitting(false) }
   }
 
-  const updateRequestStatus = (requestId, status) => {
-    if (!ngo?.id) return
-
-    // admin-only operation: call server
-    api.patch(`/ngos/payout-requests/${requestId}/status`, { status })
-      .then((updated) => {
-        setRequests((current) => current.map((r) => (r.id === updated.id ? updated : r)))
-      })
-      .catch((err) => setError(err.message || 'Failed to update request status'))
+  const updateStatus = (id, status) => {
+    api.patch(`/ngos/payout-requests/${id}/status`, { status })
+      .then(updated => setRequests(prev => prev.map(r => r.id === updated.id ? updated : r)))
+      .catch(e => setError(e.message || 'Failed to update status.'))
   }
 
-  const removeRequest = (requestId) => {
-    if (!ngo?.id) return
-    // cancel via server endpoint
-    api.patch(`/ngos/${ngo.id}/payout-requests/${requestId}/cancel`, {})
-      .then((updated) => {
-        setRequests((current) => current.map((r) => (r.id === updated.id ? updated : r)))
-      })
-      .catch((err) => setError(err.message || 'Failed to cancel payout request'))
+  const cancelRequest = (id) => {
+    api.patch(`/ngos/${ngo?.id}/payout-requests/${id}/cancel`, {})
+      .then(updated => setRequests(prev => prev.map(r => r.id === updated.id ? updated : r)))
+      .catch(e => setError(e.message || 'Failed to cancel.'))
   }
+
+  /* ── render ── */
+  if (loading) return (
+    <div style={{ padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: `3px solid ${G}30`, borderTopColor: G, animation: 'spin .8s linear infinite' }} />
+      <p style={{ fontSize: 13, color: '#64748b' }}>Loading payout data…</p>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  )
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
-      <div>
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1" style={{ backgroundColor: `${COLORS.success}12` }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.success }} />
-              <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: COLORS.success }}>NGO Payout Request</span>
-            </div>
-            <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-900">Payout Request</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">Create payout requests and track their status from one simple view.</p>
-          </div>
-        </section>
+    <div style={{ fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {error && (
-          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm">
-            {success}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="h-72 animate-pulse rounded-3xl bg-white shadow-sm" />
-            <div className="h-72 animate-pulse rounded-3xl bg-white shadow-sm" />
-          </div>
-        ) : (
-          <>
-            {/* Empty-state: show a friendly message when there are no payout-eligible orders and no requests */}
-            {!loading && (deliveredAmount <= 0) && requests.length === 0 && (
-              <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-500">
-                <h3 className="text-lg font-bold text-slate-900">No payouts available</h3>
-                <p className="mt-2">There are no confirmed, shipped, or delivered orders yet, so no payout is available. Once an order reaches one of those states, its amount will appear here and you can create payout requests.</p>
-              </div>
-            )}
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard label="Available to Request" value={money(availableToRequest)} hint="Confirmed, shipped, or delivered orders minus all active requests" tone="success" />
-              <SummaryCard label="Pending" value={money(requestTotals.pending)} hint={`${requestStatusCounts.PENDING || 0} request${(requestStatusCounts.PENDING || 0) === 1 ? '' : 's'}` } tone="warning" />
-              <SummaryCard label="Sent" value={money(requestTotals.sent)} hint={`${requestStatusCounts.SENT || 0} request${(requestStatusCounts.SENT || 0) === 1 ? '' : 's'}` } tone="primary" />
-              <SummaryCard label="Settled" value={money(requestTotals.settled)} hint={`${requestStatusCounts.SETTLED || 0} request${(requestStatusCounts.SETTLED || 0) === 1 ? '' : 's'}` } tone="success" />
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Requests</h2>
-                    <p className="mt-1 text-sm text-slate-500">Tap a request to see its details and status.</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {['ALL', 'PENDING', 'SENT', 'SETTLED', 'CANCELLED'].map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => setFilter(status)}
-                        className="rounded-full border px-3 py-1.5 text-xs font-bold transition-colors"
-                        style={{
-                          borderColor: filter === status ? `${COLORS.success}40` : '#e2e8f0',
-                          backgroundColor: filter === status ? '#f0fdf4' : '#fff',
-                          color: filter === status ? '#166534' : COLORS.slate,
-                        }}
-                      >
-                        {status}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-3">
-                  {filteredRequests.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                      No payout requests yet. Create one on the right to start tracking the balance.
-                    </div>
-                  ) : (
-                    filteredRequests.map((request) => {
-                      const style = getStatusStyle(String(request.status || 'PENDING').toUpperCase())
-                      const status = String(request.status || 'PENDING').toUpperCase()
-                      return (
-                        <div
-                          key={request.id}
-                          className="rounded-2xl border border-slate-200 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                          style={{ backgroundColor: getRequestBg(status) }}
-                        >
-                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <button
-                              type="button"
-                              className="flex flex-1 items-center justify-between gap-3 text-left"
-                              onClick={() => setFilter(String(request.status || 'PENDING').toUpperCase())}
-                              style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
-                            >
-                              <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <h3 className="text-base font-extrabold text-slate-900">{request.reference || `PR-${request.id}`}</h3>
-                                  <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold" style={{ backgroundColor: style.bg, color: style.color }}>
-                                    {style.label}
-                                  </span>
-                                </div>
-                                <p className="mt-1 text-sm font-bold text-slate-900">{money(request.amount)}</p>
-                                <p className="mt-1 text-xs text-slate-500">{request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '—'}</p>
-                                {request.note && <p className="mt-2 text-sm leading-6 text-slate-600">{request.note}</p>}
-                              </div>
-                              <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 md:inline-flex">
-                                View
-                              </span>
-                            </button>
-
-                            {isSuperAdmin && (
-                              <div className="flex flex-wrap gap-2 md:justify-end">
-                                {request.status === 'PENDING' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => updateRequestStatus(request.id, 'SENT')}
-                                    className="rounded-full px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
-                                    style={{ backgroundColor: COLORS.primary }}
-                                  >
-                                    Sent
-                                  </button>
-                                )}
-                                {request.status === 'SENT' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => updateRequestStatus(request.id, 'SETTLED')}
-                                    className="rounded-full px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90"
-                                    style={{ backgroundColor: COLORS.success }}
-                                  >
-                                    Settled
-                                  </button>
-                                )}
-                                {request.status !== 'SETTLED' && request.status !== 'CANCELLED' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => updateRequestStatus(request.id, 'CANCELLED')}
-                                    className="rounded-full border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => removeRequest(request.id)}
-                                  className="rounded-full border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </section>
-
-              <aside className="space-y-6">
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <h2 className="text-xl font-black text-slate-900">Request payout</h2>
-                  <p className="mt-1 text-sm text-slate-500">Create a request from the amount currently available to your NGO.</p>
-
-                  <form onSubmit={submitRequest} className="mt-5 space-y-4">
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Amount</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max={availableToRequest}
-                        value={form.amount}
-                        onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400"
-                        placeholder="Enter amount to request"
-                      />
-                      <p className="mt-1 text-xs text-slate-500">Maximum available: {money(availableToRequest)}</p>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Note</label>
-                      <textarea
-                        rows="4"
-                        value={form.note}
-                        onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400"
-                        placeholder="Optional note for the platform team"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={submitting || availableToRequest <= 0}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                      style={{ backgroundColor: COLORS.success }}
-                    >
-                      {submitting ? 'Submitting…' : 'Request Amount'}
-                    </button>
-                  </form>
-                </section>
-              </aside>
-            </div>
-          </>
-        )}
+      {/* ── Header row ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: NAVY }}>Payouts</h2>
+          <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
+            {eligibleOrders.length} eligible order{eligibleOrders.length !== 1 ? 's' : ''} · {requests.length} request{requests.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => { setShowForm(v => !v); setError('') }}
+          disabled={available <= 0}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '9px 20px', borderRadius: 12, border: 'none',
+            background: available <= 0 ? '#e2e8f0' : G,
+            color: available <= 0 ? '#94a3b8' : '#fff',
+            fontWeight: 700, fontSize: 13, cursor: available <= 0 ? 'not-allowed' : 'pointer',
+            boxShadow: available > 0 ? `0 3px 10px ${G}40` : 'none',
+            transition: 'all .15s',
+          }}
+        >
+          {showForm ? '✕ Close' : '＋ New Payout Request'}
+        </button>
       </div>
+
+      {/* ── Alerts ── */}
+      {error && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 600 }}>
+          {error}
+        </div>
+      )}
+      {success && (
+        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#166534', fontWeight: 600 }}>
+          {success}
+        </div>
+      )}
+
+      {/* ── Stat chips ── */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+        <StatChip label="Available" value={money(available)} sub="Ready to request" accent={G} />
+        <StatChip label="Pending"   value={money(totals.pending)} sub={`${counts.PENDING || 0} request${counts.PENDING !== 1 ? 's' : ''}`} accent="#f59e0b" />
+        <StatChip label="Sent"      value={money(totals.sent)}    sub={`${counts.SENT || 0} request${counts.SENT !== 1 ? 's' : ''}`}    accent={B} />
+        <StatChip label="Settled"   value={money(totals.settled)} sub={`${counts.SETTLED || 0} settled`}  accent="#22c55e" />
+      </div>
+
+      {/* ── Request form (inline collapsible) ── */}
+      {showForm && (
+        <div style={{
+          background: '#fff', border: `1.5px solid ${G}40`,
+          borderRadius: 16, padding: '20px 22px',
+          boxShadow: `0 4px 20px ${G}12`,
+        }}>
+          <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: NAVY }}>New Payout Request</h3>
+          <p style={{ margin: '0 0 16px', fontSize: 12, color: '#64748b' }}>
+            Max available: <strong style={{ color: G }}>{money(available)}</strong>
+          </p>
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Amount (₹) *
+              </label>
+              <input
+                type="number" required min="1" max={available}
+                value={form.amount}
+                onChange={e => setForm(p => ({ ...p, amount: e.target.value }))}
+                placeholder={`Up to ${money(available)}`}
+                style={{
+                  display: 'block', width: '100%', boxSizing: 'border-box',
+                  marginTop: 5, border: '1.5px solid #e2e8f0', borderRadius: 10,
+                  padding: '10px 13px', fontSize: 14, color: NAVY,
+                  outline: 'none', fontFamily: "'Inter', sans-serif",
+                }}
+                onFocus={e => { e.target.style.borderColor = G; e.target.style.boxShadow = `0 0 0 3px ${G}20` }}
+                onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Note (optional)
+              </label>
+              <textarea
+                rows={3} value={form.note}
+                onChange={e => setForm(p => ({ ...p, note: e.target.value }))}
+                placeholder="Any note for the platform team…"
+                style={{
+                  display: 'block', width: '100%', boxSizing: 'border-box',
+                  marginTop: 5, border: '1.5px solid #e2e8f0', borderRadius: 10,
+                  padding: '10px 13px', fontSize: 13, color: NAVY, resize: 'vertical',
+                  outline: 'none', fontFamily: "'Inter', sans-serif",
+                }}
+                onFocus={e => { e.target.style.borderColor = G; e.target.style.boxShadow = `0 0 0 3px ${G}20` }}
+                onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="submit" disabled={submitting}
+                style={{
+                  padding: '10px 22px', borderRadius: 10, border: 'none',
+                  background: submitting ? '#94a3b8' : G, color: '#fff',
+                  fontWeight: 700, fontSize: 13, cursor: submitting ? 'not-allowed' : 'pointer',
+                  boxShadow: submitting ? 'none' : `0 3px 10px ${G}40`,
+                }}
+              >
+                {submitting ? 'Submitting…' : 'Submit Request'}
+              </button>
+              <button
+                type="button" onClick={() => setShowForm(false)}
+                style={{
+                  padding: '10px 18px', borderRadius: 10,
+                  border: '1.5px solid #e2e8f0', background: '#fff',
+                  color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── Filter tabs ── */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {['ALL', ...REQUEST_STATUSES].map(s => {
+          const active = filter === s
+          const cnt = s === 'ALL' ? requests.length : (counts[s] || 0)
+          return (
+            <button key={s} onClick={() => setFilter(s)} style={{
+              padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${active ? G : '#e2e8f0'}`,
+              background: active ? `${G}12` : '#fff',
+              color: active ? '#166534' : '#64748b',
+              fontWeight: active ? 700 : 500, fontSize: 12, cursor: 'pointer',
+              transition: 'all .15s',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+            }}>
+              {s === 'ALL' ? 'All' : s[0] + s.slice(1).toLowerCase()}
+              <span style={{
+                fontSize: 10, fontWeight: 800, borderRadius: 10, padding: '1px 6px',
+                background: active ? G : '#f1f5f9', color: active ? '#fff' : '#64748b',
+              }}>{cnt}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Empty state ── */}
+      {filtered.length === 0 && (
+        <div style={{
+          textAlign: 'center', padding: '48px 24px',
+          border: '1.5px dashed #e2e8f0', borderRadius: 16,
+          background: '#fafbfc',
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 10 }}>💸</div>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#334155' }}>
+            {filter === 'ALL' ? 'No payout requests yet' : `No ${filter.toLowerCase()} requests`}
+          </p>
+          <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
+            {filter === 'ALL' && available > 0
+              ? 'Click "New Payout Request" above to get started.'
+              : filter === 'ALL'
+              ? 'Once orders are confirmed or delivered, you can request payouts here.'
+              : `No requests with status "${filter}" found.`}
+          </p>
+        </div>
+      )}
+
+      {/* ── Request cards ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {filtered.map(req => (
+          <RequestCard
+            key={req.id}
+            request={req}
+            isSuperAdmin={isSuperAdmin}
+            onUpdate={updateStatus}
+            onCancel={cancelRequest}
+          />
+        ))}
+      </div>
+
+      {/* ── Orders snapshot ── */}
+      {eligibleOrders.length > 0 && (
+        <details style={{ border: '1.5px solid #e9ecef', borderRadius: 14, overflow: 'hidden' }}>
+          <summary style={{
+            padding: '12px 18px', fontSize: 13, fontWeight: 700, color: NAVY,
+            cursor: 'pointer', userSelect: 'none', background: '#f8fafc',
+            listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span>📦 Eligible Orders Snapshot</span>
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+              {eligibleOrders.length} orders · {money(eligibleAmount)} total
+            </span>
+          </summary>
+          <div style={{ padding: '0 18px 14px', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+            {eligibleOrders.slice(0, 10).map(o => (
+              <div key={o.orderId ?? o.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                background: '#fff', border: '1px solid #f1f5f9', borderRadius: 10, padding: '10px 14px', fontSize: 12,
+              }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: NAVY }}>#{o.orderId ?? o.id}</span>
+                  <span style={{ color: '#64748b', marginLeft: 8 }}>{o.buyerName || 'Customer'}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                    background: '#d1fae5', color: '#065f46',
+                  }}>{o.status}</span>
+                  <span style={{ fontWeight: 700, color: G }}>{money(o.sourceTotalPrice ?? o.orderTotalPrice ?? o.totalPrice)}</span>
+                </div>
+              </div>
+            ))}
+            {eligibleOrders.length > 10 && (
+              <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
+                +{eligibleOrders.length - 10} more orders
+              </p>
+            )}
+          </div>
+        </details>
+      )}
     </div>
   )
 }
