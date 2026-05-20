@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import PayoutRequestPage from '../ngo/PayoutRequestPage'
 import api from '../../services/api'
 import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
@@ -99,6 +100,7 @@ const TABS = [
   { id:'requirements',  label:'Requirements', icon:'clipboard' },
   { id:'supportRequests', label:'Support Requests', icon:'chat' },
   { id:'orders',        label:'Orders',       icon:'box'       },
+  { id:'payouts',       label:'Payouts',      icon:'currency'  },
   { id:'volunteers',    label:'Volunteers',   icon:'users'     },
   { id:'campaigns',     label:'Campaigns',    icon:'calendar'  },
   { id:'courses',       label:'Courses',      icon:'clipboard' },
@@ -2480,6 +2482,8 @@ export default function NgoProfile() {
                             }
                             const textColors = {
                               PENDING: '#854d0e',
+
+                      
                               CONFIRMED: '#1d4ed8',
                               SHIPPED: '#7c3aed',
                               DELIVERED: '#065f46',
@@ -2584,6 +2588,18 @@ export default function NgoProfile() {
                   </div>
                 )}
               </Panel>
+
+          {/* ── PAYOUTS ─────────────────────────────────────────────── */}
+          {tab === 'payouts' && (
+            <div className="fade-in" style={{display:'flex',flexDirection:'column',gap:24}}>
+              <Panel>
+                <PanelHeader title="Payout Requests" subtitle="Request and track payouts from delivered orders." />
+                <div style={{padding:0}}>
+                  <PayoutRequestPage />
+                </div>
+              </Panel>
+            </div>
+          )}
             </div>
           )}
 
