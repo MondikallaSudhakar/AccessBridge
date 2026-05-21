@@ -79,6 +79,7 @@ export default function StartupWorkspaceLayout() {
           <SidebarLink to="/startup/jobs" label="Jobs" icon="orders" />
           <SidebarLink to="/startup/events" label="Events" icon="calendar" />
           <SidebarLink to="/startup/orders" label="Orders" icon="orders" />
+          <SidebarLink to="/startup/payouts" label="Payouts" icon="currency" />
         </nav>
 
         <div className="space-y-1.5 border-t border-slate-100 p-3">

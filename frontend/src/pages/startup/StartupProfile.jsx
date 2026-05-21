@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 import { COLORS } from '../../utils/colors'
+import StartupPayoutRequest from './StartupPayoutRequest'
 
 function SummaryCard({ label, value, hint }) {
   return (
@@ -52,6 +53,8 @@ function DataPanel({ title, subtitle, items, emptyText, actionLabel, actionHref,
 export default function StartupProfile() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const tab = searchParams.get('tab') || 'overview'
 
   const [startup, setStartup] = useState(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -167,6 +170,10 @@ export default function StartupProfile() {
         <div className="space-y-4">
           {[1, 2, 3].map((item) => <div key={item} className="h-14 rounded-lg bg-gray-200 animate-pulse" />)}
         </div>
+      ) : tab === 'payouts' ? (
+        <div className="mt-2">
+          <StartupPayoutRequest />
+        </div>
       ) : (
         <>
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -181,6 +188,7 @@ export default function StartupProfile() {
                   <button onClick={() => navigate('/startup/products')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>View Products</button>
                   <button onClick={() => navigate('/startup/events')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>View Events</button>
                   <button onClick={() => navigate('/startup/orders')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.success }}>View Orders</button>
+                  <button onClick={() => navigate('/startup/profile?tab=payouts')} className="rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>View Payouts</button>
                 </div>
                 <button
                   type="button"

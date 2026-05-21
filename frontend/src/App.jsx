@@ -119,6 +119,7 @@ function App() {
           <Route path="progress" element={<GuardianProgressPage />} />
         </Route>
         <Route path="/ngo/payout-requests" element={<Navigate to="/ngo/profile?tab=payouts" replace />} />
+        <Route path="/startup/payout-requests" element={<Navigate to="/startup/profile?tab=payouts" replace />} />
         <Route path="/ngo" element={<RoleRoute allowedRoles={['NGO_ADMIN', 'SUPER_ADMIN']}><NgoWorkspaceLayout /></RoleRoute>}>
           <Route index element={<NgoWorkspaceHome />} />
           <Route path="requirements" element={<NgoWorkspaceFeaturePage type="requirements" />} />
