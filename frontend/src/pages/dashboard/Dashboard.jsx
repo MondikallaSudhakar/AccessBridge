@@ -330,6 +330,7 @@ export default function Dashboard() {
   const [allPayoutRequests, setAllPayoutRequests] = useState([])
   const [allNGOs, setAllNGOs] = useState([])
   const [allStartups, setAllStartups] = useState([])
+  const [payoutSourceFilter, setPayoutSourceFilter] = useState('ALL')
   const [resourceLoading, setResourceLoading] = useState({})
   
   // Detail modal states
@@ -987,16 +988,25 @@ export default function Dashboard() {
                 const pmoney = (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`
                 const pfmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
-                const [payoutFilter, setPayoutFilter] = window.__payoutFilterState || (window.__payoutFilterState = [
-                  'ALL', (v) => { window.__payoutFilterState[0] = v; window.__forceUpdate && window.__forceUpdate() }
-                ])
+                const sourceLabel = (request) => {
+                  if (request?.startupId) return `Startup #${request.startupId}`
+                  if (request?.ngoId) return `NGO #${request.ngoId}`
+                  return 'Unknown source'
+                }
+
+                const filteredPayoutRequests = allPayoutRequests.filter((request) => {
+                  if (payoutSourceFilter === 'ALL') return true
+                  if (payoutSourceFilter === 'NGO') return Boolean(request.ngoId) && !request.startupId
+                  if (payoutSourceFilter === 'STARTUP') return Boolean(request.startupId)
+                  return true
+                })
 
                 // compute counts
                 const statusKeys = ['PENDING', 'SENT', 'SETTLED', 'CANCELLED', 'DECLINED']
                 const pCounts = statusKeys.reduce((a, s) => {
-                  a[s] = allPayoutRequests.filter(r => String(r.status || 'PENDING').toUpperCase() === s).length; return a
+                  a[s] = filteredPayoutRequests.filter(r => String(r.status || 'PENDING').toUpperCase() === s).length; return a
                 }, {})
-                const pTotals = allPayoutRequests.reduce((a, r) => {
+                const pTotals = filteredPayoutRequests.reduce((a, r) => {
                   const s = String(r.status || 'PENDING').toUpperCase()
                   const amt = Number(r.amount || 0)
                   if (s === 'PENDING')  a.pending  += amt
@@ -1004,6 +1014,12 @@ export default function Dashboard() {
                   if (s === 'SETTLED')  a.settled  += amt
                   return a
                 }, { pending: 0, sent: 0, settled: 0 })
+
+                const sourceCounts = {
+                  ALL: allPayoutRequests.length,
+                  NGO: allPayoutRequests.filter(r => Boolean(r.ngoId) && !r.startupId).length,
+                  STARTUP: allPayoutRequests.filter(r => Boolean(r.startupId)).length,
+                }
 
                 return (
                   <div style={{ fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -1013,7 +1029,7 @@ export default function Dashboard() {
                       <div>
                         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#0f172a' }}>Payout Requests</h3>
                         <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
-                          {allPayoutRequests.length} total request{allPayoutRequests.length !== 1 ? 's' : ''}
+                          {filteredPayoutRequests.length} total request{filteredPayoutRequests.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                       <button
@@ -1028,6 +1044,38 @@ export default function Dashboard() {
                       >
                         Refresh
                       </button>
+                    </div>
+
+                    {/* source tabs */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {[
+                        { id: 'ALL', label: 'All Requests' },
+                        { id: 'NGO', label: 'NGO Requests' },
+                        { id: 'STARTUP', label: 'Startup Requests' },
+                      ].map(source => {
+                        const active = payoutSourceFilter === source.id
+                        return (
+                          <button
+                            key={source.id}
+                            onClick={() => setPayoutSourceFilter(source.id)}
+                            style={{
+                              padding: '6px 13px', borderRadius: 20,
+                              border: `1.5px solid ${active ? SUPER_ADMIN_TEAL : '#e2e8f0'}`,
+                              background: active ? `${SUPER_ADMIN_TEAL}15` : '#fff',
+                              color: active ? SUPER_ADMIN_TEAL : '#64748b',
+                              fontWeight: active ? 700 : 500, fontSize: 12, cursor: 'pointer',
+                              display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all .15s',
+                            }}
+                          >
+                            {source.label}
+                            <span style={{
+                              fontSize: 10, fontWeight: 800, borderRadius: 10, padding: '1px 5px',
+                              background: active ? SUPER_ADMIN_TEAL : '#f1f5f9',
+                              color: active ? '#fff' : '#64748b',
+                            }}>{sourceCounts[source.id]}</span>
+                          </button>
+                        )
+                      })}
                     </div>
 
                     {/* stat chips */}
@@ -1088,22 +1136,29 @@ export default function Dashboard() {
                     )}
 
                     {/* empty state */}
-                    {!resourceLoading.payouts && allPayoutRequests.length === 0 && (
+                    {!resourceLoading.payouts && filteredPayoutRequests.length === 0 && (
                       <div style={{
                         textAlign: 'center', padding: '48px 24px',
                         border: '1.5px dashed #e2e8f0', borderRadius: 14, background: '#fafbfc',
                       }}>
                         <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#334155' }}>No payout requests yet</p>
-                        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>NGO payout requests will appear here once submitted.</p>
+                        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
+                          {payoutSourceFilter === 'STARTUP'
+                            ? 'Startup payout requests will appear here once submitted.'
+                            : payoutSourceFilter === 'NGO'
+                            ? 'NGO payout requests will appear here once submitted.'
+                            : 'Payout requests will appear here once submitted.'}
+                        </p>
                       </div>
                     )}
 
                     {/* request cards */}
                     {!resourceLoading.payouts && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {allPayoutRequests.map(request => {
+                        {filteredPayoutRequests.map(request => {
                           const s = pst(request.status)
                           const status = String(request.status || 'PENDING').toUpperCase()
+                          const source = sourceLabel(request)
                           return (
                             <div key={request.id} style={{
                               background: '#fff', border: '1.5px solid #e9ecef',
@@ -1127,7 +1182,7 @@ export default function Dashboard() {
                                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, display: 'inline-block' }} />
                                       {s.label}
                                     </span>
-                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>NGO #{request.ngoId}</span>
+                                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{source}</span>
                                   </div>
                                   <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a' }}>{pmoney(request.amount)}</div>
                                   <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{pfmtDate(request.createdAt)}</div>
