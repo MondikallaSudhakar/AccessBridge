@@ -21,8 +21,12 @@ public class PayoutRequest {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ngo_id", nullable = false)
+    @JoinColumn(name = "ngo_id")
     private NGO ngo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "startup_id")
+    private Startup startup;
 
     @Column(precision = 14, scale = 2, nullable = false)
     private BigDecimal amount;

@@ -2,6 +2,7 @@ package com.community.community.service;
 
 import com.community.community.dto.PayoutRequestDto;
 import com.community.community.model.NGO;
+import com.community.community.model.Startup;
 import com.community.community.model.PayoutRequest;
 import com.community.community.repository.NGORepository;
 import com.community.community.repository.PayoutRequestRepository;
@@ -20,6 +21,7 @@ public class PayoutRequestService {
 
     private final PayoutRequestRepository payoutRequestRepository;
     private final NGORepository ngoRepository;
+    private final com.community.community.repository.StartupRepository startupRepository;
 
     @Transactional
     public PayoutRequestDto createRequest(Long ngoId, BigDecimal amount, String notes) {
@@ -27,6 +29,20 @@ public class PayoutRequestService {
 
         PayoutRequest req = new PayoutRequest();
         req.setNgo(ngo);
+        req.setAmount(amount);
+        req.setNotes(notes);
+        req.setStatus(PayoutRequest.Status.PENDING);
+
+        PayoutRequest saved = payoutRequestRepository.save(req);
+        return PayoutRequestDto.fromEntity(saved);
+    }
+
+    @Transactional
+    public PayoutRequestDto createRequestForStartup(Long startupId, BigDecimal amount, String notes) {
+        Startup startup = startupRepository.findById(startupId).orElseThrow(() -> new IllegalArgumentException("Startup not found"));
+
+        PayoutRequest req = new PayoutRequest();
+        req.setStartup(startup);
         req.setAmount(amount);
         req.setNotes(notes);
         req.setStatus(PayoutRequest.Status.PENDING);
@@ -50,6 +66,13 @@ public class PayoutRequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PayoutRequestDto> listForStartup(Long startupId) {
+        return payoutRequestRepository.findByStartupIdOrderByCreatedAtDesc(startupId).stream()
+                .map(PayoutRequestDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public PayoutRequestDto updateStatus(Long id, PayoutRequest.Status status) {
         PayoutRequest req = payoutRequestRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Payout request not found"));
@@ -61,7 +84,18 @@ public class PayoutRequestService {
     @Transactional
     public PayoutRequestDto cancelRequest(Long ngoId, Long id) {
         PayoutRequest req = payoutRequestRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Payout request not found"));
-        if (!req.getNgo().getId().equals(ngoId)) {
+        if (req.getNgo() == null || !req.getNgo().getId().equals(ngoId)) {
+            throw new IllegalArgumentException("Not authorized to cancel this request");
+        }
+        req.setStatus(PayoutRequest.Status.CANCELLED);
+        PayoutRequest saved = payoutRequestRepository.save(req);
+        return PayoutRequestDto.fromEntity(saved);
+    }
+
+    @Transactional
+    public PayoutRequestDto cancelRequestForStartup(Long startupId, Long id) {
+        PayoutRequest req = payoutRequestRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Payout request not found"));
+        if (req.getStartup() == null || !req.getStartup().getId().equals(startupId)) {
             throw new IllegalArgumentException("Not authorized to cancel this request");
         }
         req.setStatus(PayoutRequest.Status.CANCELLED);

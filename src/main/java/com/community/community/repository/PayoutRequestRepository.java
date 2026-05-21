@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface PayoutRequestRepository extends JpaRepository<PayoutRequest, Long> {
     List<PayoutRequest> findByNgoIdOrderByCreatedAtDesc(Long ngoId);
+    List<PayoutRequest> findByStartupIdOrderByCreatedAtDesc(Long startupId);
 }
