@@ -228,7 +228,9 @@ export default function StartupProductsPage() {
               {products.map((product) => (
                 <div key={product.id} className="flex flex-col sm:flex-row overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
                     <div className="flex h-40 w-full sm:h-auto sm:w-48 shrink-0 items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-white">
-                    {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <span className="text-4xl text-slate-300">📦</span>}
+                    {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : (
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    )}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
                     <div className="flex items-start justify-between gap-3">

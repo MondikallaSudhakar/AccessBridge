@@ -130,7 +130,9 @@ export default function StartupOrders() {
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-50 text-xl">📦</div>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                  </div>
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Order #{order.orderId ?? order.id ?? '—'}</p>
                     <h3 className="text-base font-bold text-gray-900">{order.buyerName || 'Community User'}</h3>

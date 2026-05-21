@@ -267,7 +267,9 @@ export default function StartupProfile() {
             renderItem={(product) => (
               <div key={product.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="h-28 overflow-hidden rounded-xl bg-white border border-slate-100 flex items-center justify-center">
-                  {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : <span className="text-4xl text-slate-300">📦</span>}
+                  {product.imageUrl ? <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" /> : (
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                  )}
                 </div>
                 <div className="mt-3 flex items-start justify-between gap-3">
                   <h3 className="font-semibold text-slate-900 line-clamp-1">{product.name}</h3>
