@@ -73,6 +73,7 @@ function SidebarLink({ item }) {
 }
 
 export default function NgoWorkspaceLayout() {
+    console.log("NAV =",NGO_WORKSPACE_NAV)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -134,7 +135,8 @@ export default function NgoWorkspaceLayout() {
             <div className="flex items-center gap-2">
               <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${GREEN}12` }}>
                 <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
+                <span className="
+                text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
               </div>
             </div>
             <h1 className="mt-2 text-lg font-black text-slate-900">Workspace</h1>
@@ -160,3 +162,4 @@ export default function NgoWorkspaceLayout() {
     </div>
   )
 }
+

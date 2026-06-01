@@ -16,7 +16,8 @@ export const NGO_WORKSPACE_NAV = [
   },
   { to: '/ngo/products', label: 'Products' },
   { to: '/ngo/orders', label: 'Orders' },
-  { to: '/ngo/services', label: 'Services' },
+  { to: '/ngo/services', label: 'Test' },
+  { to: '/ngo/schoolsPartners', label: 'schoolsPartners',},
   { to: '/ngo/achievements', label: 'Achievements' },
   // { to: '/ngo/messages', label: 'Messages' },
   { to: '/ngo/csr', label: 'Corporate CSR' },
@@ -76,6 +77,11 @@ export const NGO_FEATURES = {
     title: 'Services',
     subtitle: 'List NGO services and beneficiary support options.',
     tab: 'services',
+  },
+  schoolsPartners: {
+    title: 'Schools & Partners',
+    subtitle: 'Collaborate with schools and training centers.',
+    tab: 'schoolsPartners',
   },
   achievements: {
     title: 'Achievements',
