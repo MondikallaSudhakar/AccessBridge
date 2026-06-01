@@ -924,6 +924,7 @@ function EventsSection() {
     state: '',
     eventType: 'WORKSHOP',
     maxParticipants: '',
+    registrationFee: '',
   })
 
   // Resolve ngoId from logged-in user's email
@@ -971,6 +972,7 @@ function EventsSection() {
     const payload = {
       ...form,
       maxParticipants: form.maxParticipants ? Number(form.maxParticipants) : 0,
+      registrationFee: form.registrationFee ? Number(form.registrationFee) : 0,
       // Convert local datetime to ISO
       eventDate: form.eventDate ? new Date(form.eventDate).toISOString() : null,
     }
@@ -981,7 +983,7 @@ function EventsSection() {
     })
     if (res.ok) {
       setShowForm(false)
-      setForm({ title: '', description: '', eventDate: '', location: '', city: '', state: '', eventType: 'WORKSHOP', maxParticipants: '' })
+      setForm({ title: '', description: '', eventDate: '', location: '', city: '', state: '', eventType: 'WORKSHOP', maxParticipants: '', registrationFee: '' })
       loadEvents()
     }
     setSaving(false)
@@ -1182,6 +1184,18 @@ function EventsSection() {
                 placeholder="e.g. 100 (leave blank for unlimited)"
               />
             </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Registration Fee (₹)</span>
+              <input
+                value={form.registrationFee}
+                onChange={(e) => setForm((f) => ({ ...f, registrationFee: e.target.value }))}
+                type="number"
+                min="0"
+                step="0.01"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
+                placeholder="e.g. 149"
+              />
+            </label>
           </div>
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
@@ -1229,6 +1243,9 @@ function EventsSection() {
                       {ev.eventType}
                     </span>
                   )}
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                    {ev.registrationFee ? `Fee ₹${Number(ev.registrationFee).toLocaleString('en-IN')}` : 'Free entry'}
+                  </span>
                 </div>
                 <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{ev.title}</h4>
                 <p className="text-xs text-slate-500">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 import './VolunteerDashboard.css'
+import { openRazorpayCheckout } from '../../utils/razorpay'
 
 const INTEREST_TYPES = [
   { value: 'VOLUNTEER_ROLE', label: 'Volunteer Role' },
@@ -184,6 +185,7 @@ export default function VolunteerDashboard() {
       location: [event.location, event.city].filter(Boolean).join(', '),
       type: event.eventType || 'Event',
       description: event.description,
+      registrationFee: event.registrationFee || 0,
     }))
   }, [events])
 
@@ -229,11 +231,37 @@ export default function VolunteerDashboard() {
     setEventApplying(true)
     setEventMessage('')
     try {
-      await api.post(`/events/${selectedEvent.id}/apply`, eventForm.notes ? { notes: eventForm.notes } : {})
-      setEventMessage('Event application submitted successfully.')
+      const payload = eventForm.notes ? { notes: eventForm.notes } : {}
+      const registrationFee = Number(selectedEvent.registrationFee || 0)
+      if (registrationFee > 0) {
+        await openRazorpayCheckout({
+          order: await api.post(`/events/${selectedEvent.id}/registration/order`, {}),
+          name: 'Community Event Registration',
+          description: selectedEvent.title,
+          themeColor: '#0d9488',
+          notes: {
+            eventId: String(selectedEvent.id),
+            eventTitle: selectedEvent.title,
+          },
+          prefill: {
+            name: user?.name || '',
+            email: user?.email || '',
+          },
+          onSuccess: async (paymentResponse) => api.post(`/events/${selectedEvent.id}/registration/verify`, {
+            ...payload,
+            orderId: paymentResponse.razorpay_order_id || paymentResponse.order_id,
+            paymentId: paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
+            signature: paymentResponse.razorpay_signature || paymentResponse.signature,
+          }),
+        })
+        setEventMessage('Payment completed and event registration submitted.')
+      } else {
+        await api.post(`/events/${selectedEvent.id}/apply`, payload)
+        setEventMessage('Event application submitted successfully.')
+      }
       setTimeout(() => {
         closeEventApplication()
-        setSuccess('Event application submitted successfully.')
+        setSuccess(registrationFee > 0 ? 'Payment completed and event registration submitted.' : 'Event application submitted successfully.')
       }, 1400)
     } catch (err) {
       setEventMessage(err.message || 'Failed to submit event application')
@@ -415,6 +443,9 @@ export default function VolunteerDashboard() {
                   <h3>{event.title}</h3>
                   <p>{event.description}</p>
                   <div className="meta-line">{event.location}</div>
+                  {Number(event.registrationFee || 0) > 0 && (
+                    <div className="meta-line">Registration fee: ₹{Number(event.registrationFee).toLocaleString('en-IN')}</div>
+                  )}
                   <button onClick={() => openEventApplication(event)}>Apply for event</button>
                 </article>
               ))}
@@ -525,6 +556,9 @@ export default function VolunteerDashboard() {
               <p className="eyebrow">Apply for Event</p>
               <h2>{selectedEvent.title}</h2>
               <p className="hero-copy">By: {selectedEvent.location || 'Community event'}{selectedEvent.date ? ` • ${selectedEvent.date}` : ''}</p>
+              {Number(selectedEvent.registrationFee || 0) > 0 && (
+                <p className="hero-copy">Registration fee: ₹{Number(selectedEvent.registrationFee).toLocaleString('en-IN')}</p>
+              )}
               <form onSubmit={submitEventApplication} className="volunteer-modal-form">
                 <label>
                   <span>Additional Notes (optional)</span>

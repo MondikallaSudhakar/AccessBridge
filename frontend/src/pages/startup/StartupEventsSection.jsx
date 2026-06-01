@@ -37,6 +37,7 @@ export default function StartupEventsSection({ startupId }) {
     state: '',
     eventType: 'WORKSHOP',
     maxParticipants: '',
+    registrationFee: '',
   })
 
   const resetForm = () => {
@@ -49,6 +50,7 @@ export default function StartupEventsSection({ startupId }) {
       state: '',
       eventType: 'WORKSHOP',
       maxParticipants: '',
+      registrationFee: '',
     })
   }
 
@@ -110,6 +112,7 @@ export default function StartupEventsSection({ startupId }) {
         state: form.state.trim(),
         eventType: form.eventType,
         maxParticipants: form.maxParticipants ? Number(form.maxParticipants) : 0,
+        registrationFee: form.registrationFee ? Number(form.registrationFee) : 0,
       }
 
       await api.post(`/events/startup/${startupId}/create`, payload)
@@ -347,6 +350,18 @@ export default function StartupEventsSection({ startupId }) {
                 placeholder="e.g. 100"
               />
             </label>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Registration Fee (₹)</span>
+              <input
+                value={form.registrationFee}
+                onChange={(e) => setForm((current) => ({ ...current, registrationFee: e.target.value }))}
+                type="number"
+                min="0"
+                step="0.01"
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                placeholder="e.g. 199"
+              />
+            </label>
           </div>
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Description *</span>
@@ -395,6 +410,9 @@ export default function StartupEventsSection({ startupId }) {
                       {event.eventType}
                     </span>
                   )}
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                    {event.registrationFee ? `Fee ₹${Number(event.registrationFee).toLocaleString('en-IN')}` : 'Free entry'}
+                  </span>
                 </div>
                 <h4 className="mt-1.5 text-base font-extrabold text-slate-900">{event.title}</h4>
                 <p className="text-xs text-slate-500">

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -47,6 +48,9 @@ public class Event {
     private Integer maxParticipants = 0;
 
     private Integer registeredParticipants = 0;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal registrationFee = BigDecimal.ZERO;
 
     @Column(nullable = false)
     private String status = "UPCOMING"; // UPCOMING, ONGOING, COMPLETED, CANCELLED

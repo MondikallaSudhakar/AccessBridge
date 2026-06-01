@@ -4,6 +4,7 @@ import { VOLUNTEER_FEATURES } from './volunteerData'
 import VolunteerApplicationsPage from './VolunteerApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import { openRazorpayCheckout } from '../../utils/razorpay'
 
 const TEAL = '#0d9488'
 
@@ -44,6 +45,11 @@ function Card({ item, onApply, applied, config, primaryLabel, onDetails, details
         )}
       </div>
       <p className="mt-3 text-sm text-slate-600">{item.summary || item.description || 'Opportunity details available.'}</p>
+      {isEvent && Number(item.registrationFee || 0) > 0 && (
+        <p className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+          Registration fee: ₹{Number(item.registrationFee).toLocaleString('en-IN')}
+        </p>
+      )}
       {item.date && (
         <p className="mt-3 inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
           {new Date(item.date).toLocaleDateString()}
@@ -308,7 +314,7 @@ export default function VolunteerFeaturePage({ type }) {
         return
       }
 
-      await api.post('/volunteer-applications', {
+      const eventPayload = {
         fullName,
         email,
         ngoId: selectedOpportunity.ngoId,
@@ -321,7 +327,31 @@ export default function VolunteerFeaturePage({ type }) {
         targetOrganization: selectedOpportunity.org,
         availability: applyForm.availability.trim(),
         message: applyForm.note.trim(),
-      })
+      }
+
+      if (selectedOpportunity.type === 'EVENT' && Number(selectedOpportunity.registrationFee || 0) > 0) {
+        await openRazorpayCheckout({
+          order: await api.post(`/events/${selectedOpportunity.sourceId}/registration/order`, {}),
+          name: 'Community Event Registration',
+          description: selectedOpportunity.title,
+          themeColor: '#0d9488',
+          notes: {
+            eventId: String(selectedOpportunity.sourceId),
+            eventTitle: selectedOpportunity.title,
+          },
+          prefill: { name: fullName, email },
+          onSuccess: async (paymentResponse) => api.post(`/events/${selectedOpportunity.sourceId}/registration/verify`, {
+            notes: applyForm.note.trim(),
+            orderId: paymentResponse.razorpay_order_id || paymentResponse.order_id,
+            paymentId: paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
+            signature: paymentResponse.razorpay_signature || paymentResponse.signature,
+          }),
+        })
+      } else if (selectedOpportunity.type === 'EVENT') {
+        await api.post(`/events/${selectedOpportunity.sourceId}/apply`, applyForm.note.trim() ? { notes: applyForm.note.trim() } : {})
+      } else {
+        await api.post('/volunteer-applications', eventPayload)
+      }
 
       setApplications((prev) => [...prev, {
         opportunityType: selectedOpportunity.type,
@@ -329,7 +359,7 @@ export default function VolunteerFeaturePage({ type }) {
         status: 'PENDING',
       }])
 
-      setApplyMsg('Interest submitted successfully!')
+      setApplyMsg(selectedOpportunity.type === 'EVENT' && Number(selectedOpportunity.registrationFee || 0) > 0 ? 'Payment completed and event registration submitted!' : 'Interest submitted successfully!')
       setTimeout(() => {
         setSelectedOpportunity(null)
         setApplyMsg('')

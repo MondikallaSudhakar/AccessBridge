@@ -11,6 +11,7 @@ import com.community.community.repository.EventApplicationRepository;
 import com.community.community.repository.NGORepository;
 import com.community.community.repository.StartupRepository;
 import com.community.community.repository.UserRepository;
+import com.community.community.service.EventRegistrationPaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class EventController {
     private final NGORepository ngoRepository;
     private final StartupRepository startupRepository;
     private final UserRepository userRepository;
+    private final EventRegistrationPaymentService eventRegistrationPaymentService;
 
     // ── Public Event Endpoints ────────────────────────────────────────────
 
@@ -61,6 +63,8 @@ public class EventController {
                     map.put("imageUrl", event.getImageUrl());
                     map.put("maxParticipants", event.getMaxParticipants());
                     map.put("registeredParticipants", event.getRegisteredParticipants());
+                    map.put("registrationFee", event.getRegistrationFee());
+                    map.put("registrationRequired", event.getRegistrationFee() != null && event.getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) > 0);
                     map.put("status", event.getStatus());
                     map.put("createdAt", event.getCreatedAt());
                     map.put("updatedAt", event.getUpdatedAt());
@@ -204,6 +208,9 @@ public class EventController {
         event.setNgo(ngo.get());
         event.setOrganizer(organizer.get());
         event.setStatus("UPCOMING");
+        if (event.getRegistrationFee() == null) {
+            event.setRegistrationFee(java.math.BigDecimal.ZERO);
+        }
         event.setCreatedAt(LocalDateTime.now());
 
         Event savedEvent = eventRepository.save(event);
@@ -252,6 +259,9 @@ public class EventController {
         event.setOrganizer(organizer.get());
         event.setStatus("UPCOMING");
         event.setRegisteredParticipants(0);
+        if (event.getRegistrationFee() == null) {
+            event.setRegistrationFee(java.math.BigDecimal.ZERO);
+        }
         event.setCreatedAt(LocalDateTime.now());
 
         Event savedEvent = eventRepository.save(event);
@@ -397,6 +407,10 @@ public class EventController {
                     .body("User not found");
         }
 
+        if (event.get().getRegistrationFee() != null && event.get().getRegistrationFee().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED, "This event requires payment. Create a Razorpay order first.");
+        }
+
         // Check if already applied
         Optional<EventApplication> existing = eventApplicationRepository.findByEventAndUser(event.get(), user.get());
         if (existing.isPresent()) {
@@ -427,6 +441,32 @@ public class EventController {
         eventRepository.save(event.get());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PostMapping("/{eventId}/registration/order")
+    @PreAuthorize("hasAnyRole('SPECIAL_ABLED_PERSON', 'USER', 'NGO_ADMIN', 'GUARDIAN_CAREGIVER', 'SUPER_ADMIN', 'VOLUNTEER')")
+    public ResponseEntity<?> createEventRegistrationOrder(@PathVariable Long eventId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User> user = userRepository.findByEmail(auth.getName());
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+
+        return ResponseEntity.ok(eventRegistrationPaymentService.createOrder(eventId, user.get().getId()));
+    }
+
+    @PostMapping("/{eventId}/registration/verify")
+    @PreAuthorize("hasAnyRole('SPECIAL_ABLED_PERSON', 'USER', 'NGO_ADMIN', 'GUARDIAN_CAREGIVER', 'SUPER_ADMIN', 'VOLUNTEER')")
+    public ResponseEntity<?> verifyEventRegistrationPayment(
+            @PathVariable Long eventId,
+            @RequestBody Map<String, Object> payload) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User> user = userRepository.findByEmail(auth.getName());
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+
+        return ResponseEntity.ok(eventRegistrationPaymentService.verifyAndRegister(eventId, user.get().getId(), payload));
     }
 
     @GetMapping("/{eventId}/my-application")

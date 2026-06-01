@@ -4,6 +4,7 @@ import { readGuardianBookmarks, toggleGuardianBookmark } from './guardianData'
 import useGuardianOpportunities from '../../hooks/useGuardianOpportunities'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import { openRazorpayCheckout } from '../../utils/razorpay'
 
 const CONFIG = {
   schools: {
@@ -57,6 +58,11 @@ function Card({ item, onPrimary, onBookmark, saved, config, primaryLabel, primar
         </button>
       </div>
       <p className="mt-3 text-sm text-slate-600">{item.summary}</p>
+      {item.registrationFee != null && Number(item.registrationFee) > 0 && (
+        <p className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+          Registration fee: ₹{Number(item.registrationFee).toLocaleString('en-IN')}
+        </p>
+      )}
       {statusLabel && (
         <p className="mt-3 inline-flex rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
           Application status: {statusLabel}
@@ -216,9 +222,31 @@ export default function GuardianFeaturePage({ type }) {
     setSubmittingReg(true)
     try {
       const payload = regForm.notes.trim() ? { notes: regForm.notes.trim() } : {}
-      const response = await api.post(`/events/${registeringEvent.sourceId}/apply`, payload)
+      const registrationFee = Number(registeringEvent.registrationFee || 0)
+      const response = registrationFee > 0
+        ? await openRazorpayCheckout({
+            order: await api.post(`/events/${registeringEvent.sourceId}/registration/order`, {}),
+            name: 'Community Event Registration',
+            description: registeringEvent.title,
+            themeColor: '#10b981',
+            notes: {
+              eventId: String(registeringEvent.sourceId),
+              eventTitle: registeringEvent.title,
+            },
+            prefill: {
+              name: user?.name || '',
+              email: user?.email || '',
+            },
+            onSuccess: async (paymentResponse) => api.post(`/events/${registeringEvent.sourceId}/registration/verify`, {
+              ...payload,
+              orderId: paymentResponse.razorpay_order_id || paymentResponse.order_id,
+              paymentId: paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
+              signature: paymentResponse.razorpay_signature || paymentResponse.signature,
+            }),
+          })
+        : await api.post(`/events/${registeringEvent.sourceId}/apply`, payload)
       setMyApplications((current) => ({ ...current, [registeringEvent.sourceId]: response }))
-      setRegMsg('Applied successfully.')
+      setRegMsg(registrationFee > 0 ? 'Payment completed and event registration submitted.' : 'Applied successfully.')
       setTimeout(() => {
         setRegisteringEvent(null)
         setRegMsg('')

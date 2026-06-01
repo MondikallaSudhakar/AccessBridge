@@ -108,6 +108,7 @@ export default function StartupPayoutRequest() {
 
   const [startup, setStartup]           = useState(null)
   const [orders, setOrders]     = useState([])
+  const [eventRevenue, setEventRevenue] = useState(0)
   const [requests, setRequests] = useState([])
   const [loading, setLoading]   = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -127,9 +128,36 @@ export default function StartupPayoutRequest() {
         if (!alive) return
         setStartup(startupData || null)
         const startupId = startupData?.id
-        const orderData = startupId ? await api.get(`/orders/startup/${startupId}/orders`) : []
+        const [orderData, startupEvents] = startupId
+          ? await Promise.all([
+              api.get(`/orders/startup/${startupId}/orders`),
+              api.get(`/events/startup/${startupId}`),
+            ])
+          : [[], []]
         if (!alive) return
         setOrders(Array.isArray(orderData) ? orderData : [])
+        if (startupId) {
+          const eventList = Array.isArray(startupEvents) ? startupEvents : []
+          const applicationsByEvent = await Promise.all(eventList.map(async (event) => {
+            try {
+              const applications = await api.get(`/events/startup/${startupId}/events/${event.id}/applications`)
+              return Array.isArray(applications) ? applications : []
+            } catch {
+              return []
+            }
+          }))
+
+          const paidEventRevenue = applicationsByEvent.flat().reduce((sum, application) => {
+            if (String(application?.paymentStatus || '').toUpperCase() !== 'PAID') {
+              return sum
+            }
+            return sum + toNum(application?.paymentAmount ?? application?.payment_amount ?? application?.amount)
+          }, 0)
+
+          if (alive) setEventRevenue(paidEventRevenue)
+        } else if (alive) {
+          setEventRevenue(0)
+        }
         if (startupId) {
           try {
             const pd = await api.get(`/startups/${startupId}/payout-requests`)
@@ -137,7 +165,7 @@ export default function StartupPayoutRequest() {
           } catch { if (alive) setRequests([]) }
         }
       } catch (e) {
-        if (alive) { setStartup(null); setOrders([]); setRequests([]); setError(e.message || 'Failed to load.') }
+        if (alive) { setStartup(null); setOrders([]); setEventRevenue(0); setRequests([]); setError(e.message || 'Failed to load.') }
       } finally { if (alive) setLoading(false) }
     }
     load()
@@ -150,6 +178,8 @@ export default function StartupPayoutRequest() {
   const eligibleAmount = useMemo(() =>
     eligibleOrders.reduce((s, o) => s + toNum(o.sourceTotalPrice ?? o.orderTotalPrice ?? o.totalPrice), 0), [eligibleOrders])
 
+  const totalEligibleRevenue = useMemo(() => eligibleAmount + eventRevenue, [eligibleAmount, eventRevenue])
+
   const totals = useMemo(() => requests.reduce((acc, r) => {
     const a = toNum(r.amount), s = String(r.status || 'PENDING').toUpperCase()
     if (s !== 'CANCELLED') acc.requested += a
@@ -159,7 +189,7 @@ export default function StartupPayoutRequest() {
     return acc
   }, { requested: 0, pending: 0, sent: 0, settled: 0 }), [requests])
 
-  const available = Math.max(0, eligibleAmount - totals.requested)
+  const available = Math.max(0, totalEligibleRevenue - totals.requested)
 
   const filtered = useMemo(() => {
     const sorted = [...requests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
@@ -216,7 +246,7 @@ export default function StartupPayoutRequest() {
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: NAVY }}>Payouts</h2>
           <p style={{ margin: '3px 0 0', fontSize: 12, color: '#64748b' }}>
-            {eligibleOrders.length} eligible order{eligibleOrders.length !== 1 ? 's' : ''} · {requests.length} request{requests.length !== 1 ? 's' : ''}
+            {eligibleOrders.length} eligible order{eligibleOrders.length !== 1 ? 's' : ''} · {money(eventRevenue)} event fees · {requests.length} request{requests.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
@@ -249,6 +279,7 @@ export default function StartupPayoutRequest() {
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <StatChip label="Available" value={money(available)} sub="Ready to request" accent={G} />
+        <StatChip label="Event Fees" value={money(eventRevenue)} sub="Paid registrations" accent="#10b981" />
         <StatChip label="Pending"   value={money(totals.pending)} sub={`${counts.PENDING || 0} request${counts.PENDING !== 1 ? 's' : ''}`} accent="#f59e0b" />
         <StatChip label="Sent"      value={money(totals.sent)}    sub={`${counts.SENT || 0} request${counts.SENT !== 1 ? 's' : ''}`}    accent={B} />
         <StatChip label="Settled"   value={money(totals.settled)} sub={`${counts.SETTLED || 0} settled`}  accent="#22c55e" />
@@ -392,7 +423,7 @@ export default function StartupPayoutRequest() {
           }}>
             <span>Eligible Orders Snapshot</span>
             <span style={{ fontSize: 11, color: '#94a3b8' }}>
-              {eligibleOrders.length} orders · {money(eligibleAmount)} total
+              {eligibleOrders.length} orders · {money(eligibleAmount)} orders · {money(eventRevenue)} event fees
             </span>
           </summary>
           <div style={{ padding: '0 18px 14px', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>

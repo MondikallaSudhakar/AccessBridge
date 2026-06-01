@@ -85,6 +85,7 @@ export async function loadGuardianOpportunities() {
       org: text(event.eventType, 'Community Event'),
       place: joinLocation(event.location, event.city, event.state) || 'Venue to be announced',
       summary: text(event.description, 'Event details available on event page.'),
+      registrationFee: event.registrationFee ?? 0,
     }))
 
   const therapy = coursesRaw

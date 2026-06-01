@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
+import { openRazorpayCheckout } from '../../utils/razorpay'
 
 const BASE = 'http://localhost:8081/api'
 const G = '#16a34a'
@@ -417,36 +418,75 @@ function EventsTab() {
       return
     }
 
+    const registrationFee = Number(registering.registrationFee || 0)
+    const rawUser = localStorage.getItem('user')
+    let profile = {}
     try {
-      const r = await fetch(`${BASE}/events/${registering.id}/apply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`
-        },
-        body: JSON.stringify(regForm.notes ? { notes: regForm.notes } : {})
-      })
-
-      if (r.ok) {
-        const appData = await r.json()
-        setMyApplications(prev => ({ ...prev, [registering.id]: appData }))
-        setRegMsg({ type: 'ok', text: 'Applied successfully!' })
-        setTimeout(() => {
-          setRegistering(null)
-          setRegMsg(null)
-          setRegForm({ notes: '' })
-        }, 2000)
-      } else {
-        const errorText = await r.text()
-        try {
-          const errorJson = JSON.parse(errorText)
-          setRegMsg({ type: 'err', text: errorJson.message || 'Application failed.' })
-        } catch {
-          setRegMsg({ type: 'err', text: errorText || 'Application failed.' })
-        }
-      }
+      profile = rawUser ? JSON.parse(rawUser) : {}
     } catch {
-      setRegMsg({ type: 'err', text: 'Network error.' })
+      profile = {}
+    }
+
+    try {
+      const payload = regForm.notes ? { notes: regForm.notes } : {}
+      const appData = registrationFee > 0
+        ? await openRazorpayCheckout({
+            order: await fetch(`${BASE}/events/${registering.id}/registration/order`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${authToken}` },
+            }).then(async (response) => {
+              if (!response.ok) throw new Error((await response.text()) || 'Failed to create payment order.')
+              return response.json()
+            }),
+            name: 'Community Event Registration',
+            description: registering.title,
+            themeColor: '#16a34a',
+            notes: {
+              eventId: String(registering.id),
+              eventTitle: registering.title,
+            },
+            prefill: {
+              name: profile?.name || '',
+              email: profile?.email || '',
+            },
+            onSuccess: async (paymentResponse) => fetch(`${BASE}/events/${registering.id}/registration/verify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                ...payload,
+                orderId: paymentResponse.razorpay_order_id || paymentResponse.order_id,
+                paymentId: paymentResponse.razorpay_payment_id || paymentResponse.payment_id,
+                signature: paymentResponse.razorpay_signature || paymentResponse.signature,
+              }),
+            }).then(async (response) => {
+              if (!response.ok) throw new Error((await response.text()) || 'Failed to verify payment.')
+              return response.json()
+            }),
+          })
+        : await fetch(`${BASE}/events/${registering.id}/apply`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${authToken}`
+            },
+            body: JSON.stringify(payload)
+          }).then(async (response) => {
+            if (!response.ok) throw new Error((await response.text()) || 'Application failed.')
+            return response.json()
+          })
+
+      setMyApplications(prev => ({ ...prev, [registering.id]: appData }))
+      setRegMsg({ type: 'ok', text: registrationFee > 0 ? 'Payment completed and registration submitted!' : 'Applied successfully!' })
+      setTimeout(() => {
+        setRegistering(null)
+        setRegMsg(null)
+        setRegForm({ notes: '' })
+      }, 2000)
+    } catch (error) {
+      setRegMsg({ type: 'err', text: error.message || 'Network error.' })
     }
   }
 
@@ -468,6 +508,7 @@ function EventsTab() {
                 <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: G }}>{ev.eventDate ? new Date(ev.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</p>
                 {ev.maxParticipants && <p style={{ margin: '0 0 8px', fontSize: 11, color: '#94a3b8' }}>Capacity: {ev.registeredParticipants || 0}/{ev.maxParticipants}</p>}
                 <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>{ev.description || 'Join this event.'}</p>
+                {Number(ev.registrationFee || 0) > 0 && <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: G }}>Registration fee: ₹{Number(ev.registrationFee).toLocaleString('en-IN')}</p>}
                 {myApp ? (
                   <div style={{ padding: 10, borderRadius: 8, background: '#f0fdf4', border: `1px solid ${G}` }}>
                     <p style={{ margin: 0, fontSize: 12, color: G, fontWeight: 700 }}>
@@ -490,6 +531,7 @@ function EventsTab() {
             <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: G, textTransform: 'uppercase' }}>Apply for Event</p>
             <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 900, color: NAVY }}>{registering.title}</h3>
             {registering.ngo && <p style={{ margin: '0 0 16px', fontSize: 12, color: '#64748b' }}>By: {registering.ngo.name}</p>}
+            {Number(registering.registrationFee || 0) > 0 && <p style={{ margin: '0 0 16px', fontSize: 12, fontWeight: 700, color: G }}>Registration fee: ₹{Number(registering.registrationFee).toLocaleString('en-IN')}</p>}
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>Additional Notes (optional)</label>
