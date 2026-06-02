@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { loadBookmarks, toggleBookmark } from './specialData'
 
-const API = 'http://localhost:8081/api'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const GREEN = '#16a34a'
+const NAVY = '#0f172a'
 
 const STATUS_BADGE = {
-  OPEN: { bg: '#dcfce7', color: '#16a34a', label: 'Open' },
-  CLOSED: { bg: '#fee2e2', color: '#dc2626', label: 'Closed' },
+  OPEN: { bg: '#dcfce7', color: '#16a34a', label: 'OPEN' },
+  CLOSED: { bg: '#fee2e2', color: '#dc2626', label: 'CLOSED' },
 }
 
 const EMP_LABELS = {
@@ -24,78 +26,141 @@ function fmt(dateStr) {
   } catch { return null }
 }
 
-function JobCard({ job, bookmarked, onBookmark, onApply, ngoName }) {
+/* ═══════════ JOB CARD ═══════════ */
+function JobCard({ job, bookmarked, onBookmark, onApply, orgName }) {
   const status = STATUS_BADGE[job.status] || STATUS_BADGE.OPEN
   const lastDate = fmt(job.lastDateToApply)
   const isExpired = job.lastDateToApply && new Date(job.lastDateToApply) < new Date()
+  const [hov, setHov] = useState(false)
 
   return (
-    <article className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-              style={{ backgroundColor: status.bg, color: status.color }}
-            >
+    <article
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', flexDirection: 'column',
+        background: '#fff', borderRadius: 16,
+        border: `1.5px solid ${hov ? '#e2e8f0' : '#f1f5f9'}`,
+        padding: '22px 24px',
+        boxShadow: hov ? '0 4px 20px rgba(0,0,0,.06)' : '0 1px 3px rgba(0,0,0,.02)',
+        transition: 'all .2s',
+        transform: hov ? 'translateY(-1px)' : 'none',
+      }}
+    >
+      {/* Top row: badges + save */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              display: 'inline-block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
+              letterSpacing: '0.04em', padding: '3px 10px', borderRadius: 6,
+              background: status.bg, color: status.color,
+            }}>
               {status.label}
             </span>
             {job.employmentType && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">
+              <span style={{
+                display: 'inline-block', fontSize: 10, fontWeight: 700,
+                padding: '3px 10px', borderRadius: 6,
+                background: NAVY, color: '#fff',
+              }}>
                 {EMP_LABELS[job.employmentType] || job.employmentType}
               </span>
             )}
           </div>
-          <h4 className="mt-2 text-base font-extrabold text-slate-900">{job.title}</h4>
-          <p className="mt-0.5 text-xs font-semibold text-slate-500">{ngoName}{job.location ? ` • ${job.location}` : ''}</p>
+
+          {/* Title */}
+          <h4 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: NAVY, lineHeight: 1.3 }}>
+            {job.title}
+          </h4>
+
+          {/* Org + Location */}
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: '#64748b' }}>
+            {orgName}{job.location ? ` • ${job.location}` : ''}
+          </p>
         </div>
+
+        {/* Save button */}
         <button
           type="button"
           onClick={onBookmark}
-          className="shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition-colors"
-          style={{ borderColor: bookmarked ? '#5BCB2B' : '#cbd5e1', color: bookmarked ? '#5BCB2B' : '#64748b' }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+            padding: '5px 14px', borderRadius: 8,
+            border: `1.5px solid ${bookmarked ? GREEN : '#d1d5db'}`,
+            background: bookmarked ? `${GREEN}08` : '#fff',
+            color: bookmarked ? GREEN : '#6b7280',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            transition: 'all .15s',
+          }}
         >
-          {bookmarked ? '★ Saved' : '☆ Save'}
+          {bookmarked ? '★' : '☆'} {bookmarked ? 'Saved' : 'Save'}
         </button>
       </div>
 
-      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{job.description}</p>
+      {/* Description */}
+      {job.description && (
+        <p style={{
+          margin: '12px 0 0', fontSize: 13.5, color: '#64748b', lineHeight: 1.65,
+          display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {job.description}
+        </p>
+      )}
 
-      {/* Date strip */}
-      <div className="mt-3 flex flex-wrap gap-4 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+      {/* Date / Salary strip */}
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: 24,
+        marginTop: 14, padding: '10px 14px', borderRadius: 10,
+        background: '#f8fafc', border: '1px solid #f1f5f9',
+      }}>
         {job.salaryRange && (
-          <div className="flex flex-col">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Salary</span>
-            <span className="text-xs font-bold text-slate-700">{job.salaryRange}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>Salary</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: NAVY }}>
+              {typeof job.salaryRange === 'number' ? `₹${Number(job.salaryRange).toLocaleString('en-IN')}` : job.salaryRange}
+            </span>
           </div>
         )}
         {lastDate && (
-          <div className="flex flex-col">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Last Date</span>
-            <span className={`text-xs font-bold ${isExpired ? 'text-rose-500' : 'text-slate-700'}`}>{lastDate}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>Last Date</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: isExpired ? '#dc2626' : GREEN }}>{lastDate}</span>
           </div>
         )}
-        <div className="flex flex-col">
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">Posted</span>
-          <span className="text-xs font-bold text-slate-700">{fmt(job.createdAt) || '—'}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>Posted</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: NAVY }}>{fmt(job.createdAt) || '—'}</span>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      {/* Action buttons */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
         <button
           type="button"
-          onClick={() => onApply(job, ngoName)}
+          onClick={() => onApply(job, orgName)}
           disabled={job.status === 'CLOSED' || isExpired}
-          className="rounded-xl px-4 py-2 text-xs font-bold text-white transition-opacity disabled:opacity-40"
-          style={{ backgroundColor: '#0d9488' }}
+          style={{
+            padding: '9px 20px', borderRadius: 10, border: 'none',
+            background: GREEN, color: '#fff',
+            fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+            opacity: (job.status === 'CLOSED' || isExpired) ? 0.4 : 1,
+            transition: 'opacity .15s',
+          }}
         >
           Apply on Platform
         </button>
         <button
           type="button"
           onClick={onBookmark}
-          className="rounded-xl border px-4 py-2 text-xs font-bold"
-          style={{ borderColor: '#5BCB2B', color: '#5BCB2B' }}
+          style={{
+            padding: '9px 20px', borderRadius: 10,
+            border: `1.5px solid ${GREEN}`,
+            background: '#fff', color: GREEN,
+            fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+            transition: 'all .15s',
+          }}
         >
           {bookmarked ? 'Remove Save' : 'Save Job'}
         </button>
@@ -104,6 +169,7 @@ function JobCard({ job, bookmarked, onBookmark, onApply, ngoName }) {
   )
 }
 
+/* ═══════════ APPLICATION MODAL ═══════════ */
 function ApplicationModal({ job, orgName, source, onClose, onSuccess }) {
   const { user } = useAuth()
   const [form, setForm] = useState({
@@ -150,120 +216,72 @@ function ApplicationModal({ job, orgName, source, onClose, onSuccess }) {
     }
   }
 
+  const inputStyle = {
+    width: '100%', boxSizing: 'border-box',
+    border: '1.5px solid #e2e8f0', borderRadius: 10,
+    padding: '10px 14px', fontSize: 13.5, outline: 'none',
+    transition: 'border-color .15s', fontFamily: "'Inter', sans-serif",
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 md:items-center">
-      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 640, background: '#fff', borderRadius: 20, boxShadow: '0 20px 60px rgba(0,0,0,.2)', maxHeight: '90vh', overflowY: 'auto' }}>
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-5">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid #f1f5f9', padding: 22 }}>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600">Apply on Platform</span>
-            <h3 className="mt-0.5 text-lg font-extrabold text-slate-900">{job.title}</h3>
-            <p className="text-sm text-slate-500">{ngoName}</p>
+            <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: GREEN }}>Apply on Platform</span>
+            <h3 style={{ margin: '4px 0 2px', fontSize: 18, fontWeight: 900, color: NAVY }}>{job.title}</h3>
+            <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>{orgName}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-bold text-slate-600 hover:bg-slate-50">
-            ✕ Close
-          </button>
+          <button type="button" onClick={onClose} style={{
+            border: '1.5px solid #e2e8f0', background: '#fff', borderRadius: 10,
+            padding: '6px 14px', fontSize: 13, fontWeight: 700, color: '#64748b', cursor: 'pointer',
+          }}>✕ Close</button>
         </div>
 
-        <div className="space-y-4 p-5">
+        <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-              {error}
-            </div>
+            <div style={{ padding: '12px 16px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div>
           )}
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Full Name *</span>
-              <input
-                value={form.applicantName}
-                onChange={update('applicantName')}
-                type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-                placeholder="Your full name"
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Email *</span>
-              <input
-                value={form.applicantEmail}
-                onChange={update('applicantEmail')}
-                type="email"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-                placeholder="your@email.com"
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Phone</span>
-              <input
-                value={form.applicantPhone}
-                onChange={update('applicantPhone')}
-                type="tel"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-                placeholder="Mobile number"
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Disability Type <span className="normal-case font-normal text-slate-400">(optional)</span></span>
-              <input
-                value={form.disabilityType}
-                onChange={update('disabilityType')}
-                type="text"
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-                placeholder="e.g. Visual, Hearing, Mobility…"
-              />
-            </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+            {[['applicantName', 'Full Name *', 'text', 'Your full name'], ['applicantEmail', 'Email *', 'email', 'your@email.com'], ['applicantPhone', 'Phone', 'tel', 'Mobile number'], ['disabilityType', 'Disability Type (optional)', 'text', 'e.g. Visual, Hearing…']].map(([field, label, type, ph]) => (
+              <div key={field}>
+                <span style={{ display: 'block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', marginBottom: 6 }}>{label}</span>
+                <input value={form[field]} onChange={update(field)} type={type} placeholder={ph} style={inputStyle} />
+              </div>
+            ))}
           </div>
 
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cover Letter</span>
-            <textarea
-              value={form.coverLetter}
-              onChange={update('coverLetter')}
-              rows={5}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-              placeholder="Tell the organization why you're a great fit…"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Resume / Skills Summary</span>
-            <textarea
-              value={form.resumeText}
-              onChange={update('resumeText')}
-              rows={4}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-teal-500"
-              placeholder="Paste your resume or a short skills summary…"
-            />
-          </label>
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Audio Note <span className="normal-case font-normal text-slate-400">(optional)</span></span>
-            <input
-              type="file"
-              accept="audio/*"
-              onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-              className="mt-2 block w-full text-sm text-slate-600"
-            />
-            {audioFile && (
-              <p className="mt-1 text-xs font-semibold text-teal-700">Attached: {audioFile.name}</p>
-            )}
-            <p className="mt-1 text-xs text-slate-400">Record a short voice introduction to support your application.</p>
+          <div>
+            <span style={{ display: 'block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', marginBottom: 6 }}>Cover Letter</span>
+            <textarea value={form.coverLetter} onChange={update('coverLetter')} rows={5} placeholder="Tell the organization why you're a great fit…" style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={submit}
-              disabled={submitting}
-              className="flex-1 rounded-xl py-3 text-sm font-bold text-white transition-opacity disabled:opacity-50"
-              style={{ backgroundColor: '#0d9488' }}
-            >
+          <div>
+            <span style={{ display: 'block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', marginBottom: 6 }}>Resume / Skills Summary</span>
+            <textarea value={form.resumeText} onChange={update('resumeText')} rows={4} placeholder="Paste your resume or a short skills summary…" style={{ ...inputStyle, resize: 'vertical' }} />
+          </div>
+
+          <div style={{ padding: 16, borderRadius: 12, background: '#f8fafc', border: '1.5px solid #f1f5f9' }}>
+            <span style={{ display: 'block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#94a3b8', marginBottom: 8 }}>Audio Note (optional)</span>
+            <input type="file" accept="audio/*" onChange={(e) => setAudioFile(e.target.files?.[0] || null)} style={{ fontSize: 13, color: '#64748b' }} />
+            {audioFile && <p style={{ margin: '6px 0 0', fontSize: 12, fontWeight: 700, color: GREEN }}>Attached: {audioFile.name}</p>}
+            <p style={{ margin: '4px 0 0', fontSize: 11, color: '#94a3b8' }}>Record a short voice introduction to support your application.</p>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, paddingTop: 4 }}>
+            <button type="button" onClick={submit} disabled={submitting} style={{
+              flex: 1, padding: '12px 20px', borderRadius: 12, border: 'none',
+              background: GREEN, color: '#fff', fontSize: 13.5, fontWeight: 700,
+              cursor: 'pointer', opacity: submitting ? 0.5 : 1,
+            }}>
               {submitting ? 'Submitting…' : 'Submit Application'}
             </button>
-            <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50">
-              Cancel
-            </button>
+            <button type="button" onClick={onClose} style={{
+              padding: '12px 24px', borderRadius: 12, border: '1.5px solid #e2e8f0',
+              background: '#fff', fontSize: 13.5, fontWeight: 700, color: '#64748b', cursor: 'pointer',
+            }}>Cancel</button>
           </div>
         </div>
       </div>
@@ -271,33 +289,31 @@ function ApplicationModal({ job, orgName, source, onClose, onSuccess }) {
   )
 }
 
+/* ═══════════ SUCCESS BANNER ═══════════ */
 function SuccessBanner({ job, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl">✓</div>
-        <h3 className="mt-4 text-xl font-extrabold text-slate-900">Application Submitted!</h3>
-        <p className="mt-2 text-sm text-slate-600">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 20, padding: 32, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
+        <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: 28, color: GREEN }}>✓</div>
+        <h3 style={{ margin: '16px 0 8px', fontSize: 20, fontWeight: 900, color: NAVY }}>Application Submitted!</h3>
+        <p style={{ margin: 0, fontSize: 13.5, color: '#64748b', lineHeight: 1.6 }}>
           Your application for <strong>{job.title}</strong> has been submitted successfully. The organisation will review and respond via the platform.
         </p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-6 w-full rounded-xl py-3 text-sm font-bold text-white"
-          style={{ backgroundColor: '#0d9488' }}
-        >
-          Done
-        </button>
+        <button type="button" onClick={onClose} style={{
+          marginTop: 24, width: '100%', padding: '12px', borderRadius: 12, border: 'none',
+          background: GREEN, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+        }}>Done</button>
       </div>
     </div>
   )
 }
 
+/* ═══════════ MAIN PAGE ═══════════ */
 export default function SpecialJobsPage() {
   const [bookmarks, setBookmarks] = useState(loadBookmarks())
-  const [jobs, setJobs] = useState([])         // { job, ngoName, ngoId }
+  const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')  // all | FULL_TIME | PART_TIME | INTERN | VOLUNTEER
+  const [filter, setFilter] = useState('all')
   const [selectedJob, setSelectedJob] = useState(null)
   const [successJob, setSuccessJob] = useState(null)
 
@@ -362,25 +378,31 @@ export default function SpecialJobsPage() {
     : jobs.filter((j) => j.job.employmentType === filter)
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-black text-slate-900">Disability-Friendly Job Listings</h2>
-        <p className="mt-1 text-sm text-slate-600">
+    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* ═══ Header ═══ */}
+      <section style={{
+        background: '#fff', borderRadius: 16, border: '1.5px solid #f1f5f9',
+        padding: '24px 28px', marginBottom: 24,
+        boxShadow: '0 1px 3px rgba(0,0,0,.03)',
+      }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: NAVY }}>Disability-Friendly Job Listings</h2>
+        <p style={{ margin: '6px 0 0', fontSize: 13.5, color: '#64748b' }}>
           Apply directly on the platform — no external links. Text or audio applications supported.
         </p>
 
         {/* Filter chips */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 18 }}>
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
               onClick={() => setFilter(f.id)}
-              className="rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all"
               style={{
-                backgroundColor: filter === f.id ? '#0d9488' : '#f1f5f9',
-                color: filter === f.id ? '#ffffff' : '#475569',
+                padding: '7px 16px', borderRadius: 10, border: 'none',
+                fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                background: filter === f.id ? GREEN : '#f1f5f9',
+                color: filter === f.id ? '#fff' : '#475569',
+                transition: 'all .15s',
               }}
             >
               {f.label}
@@ -389,47 +411,49 @@ export default function SpecialJobsPage() {
         </div>
       </section>
 
-      {/* Job cards */}
-      <section>
-        {loading && (
-          <div className="space-y-3">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-40 animate-pulse rounded-2xl border border-slate-200 bg-white" />
-            ))}
-          </div>
-        )}
+      {/* ═══ Job Cards ═══ */}
+      {loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 16 }}>
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} style={{ height: 220, borderRadius: 16, background: '#f8fafc', border: '1.5px solid #f1f5f9' }} />
+          ))}
+        </div>
+      )}
 
-        {!loading && visible.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
-            <p className="text-base font-bold text-slate-700">No jobs found for this filter.</p>
-            <p className="mt-1 text-sm text-slate-500">Try a different category or check back later.</p>
-          </div>
-        )}
+      {!loading && visible.length === 0 && (
+        <div style={{
+          borderRadius: 16, border: '2px dashed #e2e8f0', background: '#fff',
+          padding: '48px 24px', textAlign: 'center',
+        }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#475569' }}>No jobs found for this filter.</p>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: '#94a3b8' }}>Try a different category or check back later.</p>
+        </div>
+      )}
 
-        {!loading && (
-          <div className="grid gap-4 md:grid-cols-2">
-            {visible.map(({ job, orgName, source }) => {
-              const key = `${source}-job-${job.id}`
-              return (
-                <JobCard
-                  key={key}
-                  job={job}
-                  ngoName={orgName}
-                  bookmarked={bookmarkSet.has(key)}
-                  onBookmark={() => setBookmarks((b) => toggleBookmark(b, key))}
-                  onApply={(j, n) => setSelectedJob({ job: j, orgName: n, source })}
-                />
-              )
-            })}
-          </div>
-        )}
-      </section>
+      {!loading && visible.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 16 }}>
+          {visible.map(({ job, orgName, source }) => {
+            const key = `${source}-job-${job.id}`
+            return (
+              <JobCard
+                key={key}
+                job={job}
+                orgName={orgName}
+                bookmarked={bookmarkSet.has(key)}
+                onBookmark={() => setBookmarks((b) => toggleBookmark(b, key))}
+                onApply={(j, n) => setSelectedJob({ job: j, orgName: n, source })}
+              />
+            )
+          })}
+        </div>
+      )}
 
       {/* Application modal */}
       {selectedJob && !successJob && (
         <ApplicationModal
           job={selectedJob.job}
-          ngoName={selectedJob.ngoName}
+          orgName={selectedJob.orgName}
+          source={selectedJob.source}
           onClose={() => setSelectedJob(null)}
           onSuccess={() => { setSuccessJob(selectedJob); setSelectedJob(null) }}
         />
