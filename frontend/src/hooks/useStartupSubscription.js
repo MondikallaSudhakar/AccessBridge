@@ -100,7 +100,7 @@ export function useStartupSubscription(startupId) {
       order_id: razorpayOrderId,
       amount: order.amountPaise || SUBSCRIPTION_AMOUNT_INR * 100,
       currency: order.currency || 'INR',
-      name: 'NexInclusion Startup Subscription',
+      name: 'KnotneX Startup Subscription',
       description: `${SUBSCRIPTION_PLAN} access for startup posting features`,
       notes: {
         startupId: String(startupId),

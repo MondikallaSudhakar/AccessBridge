@@ -116,7 +116,7 @@ export function useNgoSubscription(ngoId) {
       order_id: razorpayOrderId,
       amount: order.amountPaise || SUBSCRIPTION_AMOUNT_INR * 100,
       currency: order.currency || 'INR',
-      name: 'NexInclusion NGO Subscription',
+      name: 'KnotneX NGO Subscription',
       description: `${SUBSCRIPTION_PLAN} access for NGO posting features`,
       notes: {
         ngoId: String(ngoId),

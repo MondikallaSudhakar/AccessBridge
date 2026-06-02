@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import logoImg from '../assets/logo.jpeg'
 
 const API = 'http://localhost:8081/api'
 
@@ -121,8 +122,8 @@ function TopNav({ user, activeTab }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 md:px-6">
         <div className="flex items-center justify-between gap-3">
           <a href="/" className="flex shrink-0 items-center gap-2">
-            <div className="h-8 w-8 rounded-lg font-bold text-sm grid place-items-center" style={{ color: COLORS.primary, backgroundColor: COLORS.primaryLight }}>IC</div>
-            <span className="hidden text-lg font-bold tracking-tight md:inline" style={{ color: COLORS.text }}>NexInclusion</span>
+            <img src={logoImg} alt="KnotneX" className="h-8 w-8 rounded-lg object-cover" />
+            <span className="hidden text-lg font-bold tracking-tight md:inline" style={{ color: COLORS.text }}>KnotneX</span>
           </a>
         </div>
 
@@ -413,7 +414,7 @@ export default function Home() {
             {/* Hero Section */}
             <section className="mb-16 mt-12 flex flex-col items-center text-center">
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-normal text-yc-black max-w-5xl leading-tight md:leading-tight">
-                NexInclusion turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
+                KnotneX turns members into <em className="italic">formidable changemakers</em><sup className="text-2xl md:text-3xl ml-1 align-super">[1]</sup>
               </h1>
               
               <div className="mt-12 max-w-2xl px-4">

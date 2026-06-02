@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { SPECIAL_NAV } from './specialData'
+import logoImg from '../../assets/logo.jpeg'
 
 const ICONS = {
   home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6',
@@ -80,10 +81,8 @@ export default function SpecialLayout() {
       <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col" style={{ borderColor: '#e6f6fb' }}>
         <div className="border-b border-lime-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/') }>
-            <div className="grid h-8 w-8 place-items-center rounded bg-lime-500 text-xs font-bold text-white font-sans shadow-sm shadow-lime-200">
-              IC
-            </div>
-            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">NexInclusion</span>
+            <img src={logoImg} alt="KnotneX" className="h-8 w-8 rounded object-cover shadow-sm shadow-lime-200" />
+            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">KnotneX</span>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1 shadow-sm backdrop-blur" style={{ borderColor: HOME.primaryLight }}>

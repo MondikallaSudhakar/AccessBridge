@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import logoImg from '../../assets/logo.jpeg'
 
 const BASE = 'http://localhost:8081/api'
 
@@ -98,11 +99,8 @@ export default function SchoolDetail() {
             </button>
             <span className="text-gray-200 text-xs">|</span>
             <a href="/" className="flex items-center gap-2">
-              <div className="flex items-center">
-                <div className="w-3 h-5" style={{ backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0, 60% 0, 100% 50%, 60% 100%, 0 100%, 40% 50%)' }}></div>
-                <div className="w-3 h-5 -ml-0.5" style={{ backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0, 100% 0, 100% 100%, 40% 100%, 0 50%)' }}></div>
-              </div>
-              <span className="text-xs font-bold text-gray-900">NexInclusion</span>
+              <img src={logoImg} alt="KnotneX" className="h-6 w-6 rounded object-cover" />
+              <span className="text-xs font-bold text-gray-900">KnotneX</span>
             </a>
           </div>
           <div className="flex items-center gap-3">

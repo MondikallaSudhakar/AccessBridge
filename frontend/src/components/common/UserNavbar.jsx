@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import logoImg from '../../assets/logo.jpeg'
 
 const ICONS = {
   home: 'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"',
@@ -81,11 +82,8 @@ export default function UserNavbar({
     <aside className="hidden lg:flex" style={{ width: 250, minWidth: 250, background: '#fff', borderRight: '1px solid #e9ecef', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
       <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid #f1f5f9' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, cursor: 'pointer' }} onClick={handleBrandClick}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ width: 16, height: 28, backgroundColor: '#1A8FD1', clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-            <div style={{ width: 16, height: 28, marginLeft: -6, backgroundColor: '#5BBE00', clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
-          </div>
-          <span style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>NexInclusion</span>
+          <img src={logoImg} alt="KnotneX" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover' }} />
+          <span style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>KnotneX</span>
         </div>
 
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, background: brandBadgeBackground || `${brandBadgeColor}12`, border: `1px solid ${brandBadgeBorder || `${brandBadgeColor}30`}` }}>

@@ -1174,7 +1174,7 @@ export default function NgoProfile() {
             </div>
             <div>
               <p style={{margin:0,fontSize:15,fontWeight:800,color:NAVY,lineHeight:1.1,letterSpacing:'-0.02em'}}>NGO Portal</p>
-              <p style={{margin:0,fontSize:11,color:'#94a3b8',lineHeight:1.5}}>NexInclusion</p>
+              <p style={{margin:0,fontSize:11,color:'#94a3b8',lineHeight:1.5}}>KnotneX</p>
             </div>
           </div>
 
@@ -2275,7 +2275,7 @@ export default function NgoProfile() {
                         <div style={{width:80,height:80,borderRadius:'50%',background:'#e2e8f0',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 16px'}}>
                           <Ic n="inbox" s={36} c="#94a3b8"/>
                         </div>
-                        <p style={{fontSize:16,margin:'0 0 6px',fontWeight:700,color:'#374151'}}>NexInclusion</p>
+                        <p style={{fontSize:16,margin:'0 0 6px',fontWeight:700,color:'#374151'}}>KnotneX</p>
                         <p style={{fontSize:13,margin:0,color:'#94a3b8',lineHeight:1.6}}>Select a conversation from the left<br/>to start reading messages</p>
                       </div>
                     </div>

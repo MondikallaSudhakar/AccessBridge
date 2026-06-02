@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { SCHOOL_WORKSPACE_NAV } from './schoolWorkspaceData'
+import logoImg from '../../assets/logo.jpeg'
 
 const G = '#5BCB2B'
 const B = '#1A8FD1'
@@ -87,11 +88,8 @@ export default function SchoolWorkspaceLayout() {
         {/* Brand */}
         <div className="border-b border-slate-100 px-5 pb-4 pt-6">
           <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
-            <div className="flex items-center">
-              <div style={{ width: 14, height: 24, backgroundColor: B, clipPath: 'polygon(0 0,60% 0,100% 50%,60% 100%,0 100%,40% 50%)' }} />
-              <div style={{ width: 14, height: 24, marginLeft: -5, backgroundColor: G, clipPath: 'polygon(40% 0,100% 0,100% 100%,40% 100%,0 50%)' }} />
-            </div>
-            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>NexInclusion</span>
+            <img src={logoImg} alt="KnotneX" className="h-8 w-8 rounded-lg object-cover" />
+            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>KnotneX</span>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${AMBER}50`, backgroundColor: `${AMBER}18` }}>
