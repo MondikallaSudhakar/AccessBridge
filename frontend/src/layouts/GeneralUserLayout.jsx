@@ -31,7 +31,7 @@ export default function GeneralUserLayout() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       <UserNavbar
         brandBadgeText="Community Marketplace"
         brandBadgeColor="#5BCB2B"

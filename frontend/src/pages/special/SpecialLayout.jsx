@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { SPECIAL_NAV } from './specialData'
@@ -16,6 +16,9 @@ const ICONS = {
   help: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
   star: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915',
   logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3-3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
+  chevronDown: 'M19 9l-7 7-7-7',
+  menu: 'M4 6h16M4 12h16M4 18h16',
+  x: 'M6 18L18 6M6 6l12 12',
 }
 
 const HOME = {
@@ -51,25 +54,118 @@ function Ic({ name, size = 16, color = 'currentColor' }) {
   )
 }
 
-function SidebarLink({ item }) {
+/* ── Grouped nav items for top bar ── */
+const NAV_GROUPS = [
+  { label: 'Home', items: ['Home'] },
+  { label: 'Profile', items: ['Profile'] },
+  { label: 'Opportunities', items: ['Jobs', 'Training', 'Events', 'Campaigns', 'Schemes'] },
+  { label: 'Services', items: ['Marketplace', 'Cart', 'Orders', 'NGOs'] },
+  { label: 'Support', items: ['Request Help', 'Request History', 'Saved'] },
+]
+
+function TopNavDropdown({ group, navItems, currentPath }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const groupNavItems = navItems.filter(item => group.items.includes(item.label))
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  if (groupNavItems.length === 0) return null
+
+  const hasActive = groupNavItems.some(item => {
+    if (item.to === '/special') return currentPath === '/special'
+    return currentPath.startsWith(item.to)
+  })
+
+  // Single item — render directly
+  if (groupNavItems.length === 1) {
+    const item = groupNavItems[0]
+    const isActive = item.to === '/special' ? currentPath === '/special' : currentPath.startsWith(item.to)
+    return (
+      <NavLink to={item.to} end={item.to === '/special'}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 14px', borderRadius: 8, textDecoration: 'none',
+          background: isActive ? HOME.primary : 'transparent',
+          color: isActive ? '#fff' : '#374151',
+          fontSize: 13, fontWeight: isActive ? 700 : 500,
+          transition: 'all .15s', whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f1f5f9' }}
+        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? HOME.primary : 'transparent' }}
+      >
+        <Ic name={NAV_ICON[item.label] || 'home'} size={15} color={isActive ? '#fff' : '#64748b'} />
+        {item.label}
+      </NavLink>
+    )
+  }
+
+  // Multiple items — dropdown
   return (
-    <NavLink to={item.to} end={item.to === '/special'} className="mb-1 block">
-      {({ isActive }) => (
-        <div
-          className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-sans transition-all ${isActive ? 'font-medium shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-          style={isActive ? { border: `1px solid ${HOME.primary}`, backgroundColor: HOME.primaryLight, color: HOME.primary } : undefined}
-        >
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? HOME.primary : 'currentColor'} />
-          <span>{item.label}</span>
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+          background: hasActive ? `${HOME.primary}15` : 'transparent',
+          color: hasActive ? HOME.primary : '#374151',
+          fontSize: 13, fontWeight: hasActive ? 700 : 500,
+          transition: 'all .15s', whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={e => { if (!hasActive) e.currentTarget.style.background = '#f1f5f9' }}
+        onMouseLeave={e => { if (!hasActive) e.currentTarget.style.background = hasActive ? `${HOME.primary}15` : 'transparent' }}
+      >
+        {group.label}
+        <Ic name="chevronDown" size={12} color={hasActive ? HOME.primary : '#94a3b8'} />
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+          background: '#fff', borderRadius: 12, border: '1px solid #e9ecef',
+          boxShadow: '0 12px 40px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06)',
+          minWidth: 200, padding: '6px', zIndex: 1000,
+          animation: 'specialDropIn .15s ease',
+        }}>
+          {groupNavItems.map(item => {
+            const isActive = item.to === '/special' ? currentPath === '/special' : currentPath.startsWith(item.to)
+            return (
+              <NavLink key={item.to} to={item.to} end={item.to === '/special'}
+                onClick={() => setOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                  padding: '9px 12px', borderRadius: 8, textDecoration: 'none',
+                  background: isActive ? HOME.primary : 'transparent',
+                  color: isActive ? '#fff' : '#374151',
+                  fontSize: 13, fontWeight: isActive ? 700 : 500,
+                  transition: 'background .12s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f1f5f9' }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? HOME.primary : 'transparent' }}
+              >
+                <Ic name={NAV_ICON[item.label] || 'home'} size={15} color={isActive ? '#fff' : '#64748b'} />
+                {item.label}
+              </NavLink>
+            )
+          })}
         </div>
       )}
-    </NavLink>
+    </div>
   )
 }
 
 export default function SpecialLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const currentPath = window.location.pathname
 
   const handleLogout = () => {
     logout()
@@ -77,62 +173,140 @@ export default function SpecialLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-white lg:flex">
-      <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col" style={{ borderColor: '#e6f6fb' }}>
-        <div className="border-b border-lime-100 px-5 pb-4 pt-6">
-          <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/') }>
-            <img src={logoImg} alt="KnotneX" className="h-8 w-8 rounded object-cover shadow-sm shadow-lime-200" />
-            <span className="text-sm font-bold tracking-tight text-lime-950 font-sans">KnotneX</span>
-          </div>
+    <div className="min-h-screen bg-white">
+      <style>{`
+        @keyframes specialDropIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .special-topnav {
+          display: flex; align-items: center; width: 100%;
+          background: #fff; border-bottom: 1px solid #e9ecef;
+          padding: 0 20px; height: 58px; position: sticky; top: 0;
+          z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+          gap: 16px; font-family: 'Inter', sans-serif;
+        }
+        .special-topnav-links { display: flex; align-items: center; gap: 2px; flex: 1; overflow-x: auto; }
+        .special-topnav-links::-webkit-scrollbar { display: none; }
+        .special-topnav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .special-hamburger { display: none; }
+        @media (max-width: 900px) {
+          .special-topnav-links { display: none !important; }
+          .special-hamburger { display: flex !important; }
+        }
+      `}</style>
 
-          <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 px-3 py-1 shadow-sm backdrop-blur" style={{ borderColor: HOME.primaryLight }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: HOME.primary }} />
-            <span className="text-xs font-semibold text-slate-700 font-sans">Specially Abled</span>
-          </div>
-
-          <p className="mt-3 truncate text-xs text-slate-500 font-sans">{user?.email || user?.name || 'User'}</p>
+      {/* ── Top Navbar ── */}
+      <nav className="special-topnav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0 }} onClick={() => navigate('/')}>
+          <img src={logoImg} alt="KnotneX" style={{ width: 30, height: 30, borderRadius: 7, objectFit: 'cover' }} />
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>KnotneX</span>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-3 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-lime-700 font-sans">Workspace</p>
-          {SPECIAL_NAV.map((item) => (
-            <SidebarLink key={item.to} item={item} />
-          ))}
-        </nav>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 10px', borderRadius: 20, flexShrink: 0,
+          background: `${HOME.primary}12`, border: `1px solid ${HOME.primary}30`,
+        }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: HOME.primary, display: 'inline-block' }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: HOME.primary, whiteSpace: 'nowrap' }}>Specially Abled</span>
+        </div>
 
-        <div className="space-y-1.5 border-t p-3" style={{ borderColor: HOME.primaryLight }}>
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 font-sans" style={{ backgroundColor: 'transparent' }}>
-            <Ic name="home" size={16} color="currentColor" />
+        <div className="special-topnav-links">
+          {NAV_GROUPS.map(group => (
+            <TopNavDropdown key={group.label} group={group} navItems={SPECIAL_NAV} currentPath={currentPath} />
+          ))}
+        </div>
+
+        {/* Mobile hamburger */}
+        <button className="special-hamburger"
+          onClick={() => setMobileOpen(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ic name="menu" size={22} color="#374151" />
+        </button>
+
+        <div className="special-topnav-right">
+          <div style={{ padding: '4px 12px', borderRadius: 8, background: '#f8fafc' }}>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+              {user?.email || user?.name || 'User'}
+            </p>
+          </div>
+          <button type="button" onClick={() => navigate('/dashboard')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#f1f5f9', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#374151', transition: 'background .15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
+            onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}
+          >
+            <Ic name="home" size={14} color="#64748b" />
             Dashboard
           </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 font-sans">
-            <Ic name="logout" size={16} color="currentColor" />
-            Logout
+          <button type="button" onClick={handleLogout}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#fef2f2', cursor: 'pointer', transition: 'background .15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
+            onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
+          >
+            <Ic name="logout" size={14} color="#ef4444" />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#ef4444' }}>Sign Out</span>
           </button>
         </div>
-      </aside>
+      </nav>
 
-      <section className="min-w-0 flex-1">
-        <header className="border-b bg-white lg:hidden" style={{ borderColor: HOME.primaryLight }}>
-          <div className="px-4 py-4 sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-lime-700 font-sans">Specially Abled Workspace</p>
-            <h1 className="mt-2 text-xl font-serif text-lime-950">Dedicated pages for each feature</h1>
-          </div>
-          <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
-            {SPECIAL_NAV.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.to === '/special'} className="whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors font-sans"
-                style={({ isActive }) => isActive ? { borderColor: HOME.primary, backgroundColor: HOME.primaryLight, color: HOME.primary } : { borderColor: HOME.primaryLight, backgroundColor: 'rgba(255,255,255,0.8)' }}
+      {/* ── Mobile drawer ── */}
+      {mobileOpen && (
+        <div onClick={() => setMobileOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.3)', zIndex: 9998, backdropFilter: 'blur(2px)' }} />
+      )}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0, width: 280, maxWidth: '80vw',
+        background: '#fff', zIndex: 9999,
+        transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform .25s cubic-bezier(.4,0,.2,1)',
+        boxShadow: mobileOpen ? '4px 0 30px rgba(0,0,0,.15)' : 'none',
+        display: 'flex', flexDirection: 'column', overflowY: 'auto',
+      }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>Menu</span>
+          <button onClick={() => setMobileOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+            <Ic name="x" size={18} color="#64748b" />
+          </button>
+        </div>
+        <nav style={{ flex: 1, padding: '12px' }}>
+          {SPECIAL_NAV.map(item => {
+            const isActive = item.to === '/special' ? currentPath === '/special' : currentPath.startsWith(item.to)
+            return (
+              <NavLink key={item.to} to={item.to} end={item.to === '/special'}
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px',
+                  borderRadius: 9, textDecoration: 'none', marginBottom: 1,
+                  background: isActive ? HOME.primary : 'transparent',
+                  color: isActive ? '#fff' : '#374151',
+                  fontSize: 13.5, fontWeight: isActive ? 700 : 500,
+                }}
               >
+                <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#fff' : '#64748b'} />
                 {item.label}
               </NavLink>
-            ))}
-          </nav>
-        </header>
+            )
+          })}
+        </nav>
+        <div style={{ padding: '12px', borderTop: '1px solid #f1f5f9' }}>
+          <button type="button" onClick={() => { navigate('/dashboard'); setMobileOpen(false) }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#374151' }}
+          >
+            <Ic name="home" size={16} color="#64748b" /> Dashboard
+          </button>
+          <button type="button" onClick={() => { handleLogout(); setMobileOpen(false) }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: '#ef4444' }}
+          >
+            <Ic name="logout" size={16} color="#ef4444" /> Sign Out
+          </button>
+        </div>
+      </div>
 
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
-        </main>
-      </section>
+      {/* ── Main Content ── */}
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+        <Outlet />
+      </main>
     </div>
   )
 }

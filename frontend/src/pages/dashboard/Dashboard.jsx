@@ -656,7 +656,7 @@ export default function Dashboard() {
   ]
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f6f8', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f4f6f8', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
@@ -664,27 +664,14 @@ export default function Dashboard() {
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-track { background: transparent; }
 
-        /* ── Desktop sidebar: visible ≥ 768px ── */
-        .ds-sidebar { display: flex; }
         .ds-main    { flex: 1; min-width: 0; padding-bottom: 0; }
-        .ds-bottom-nav { display: none; }
-        .dashboard-mobile-topbar { display: none !important; }
 
         /* ── Mobile: ≤ 767px ── */
         @media (max-width: 767px) {
-          .ds-sidebar    { display: none !important; }
-          .ds-main       { padding-bottom: 76px !important; }
-          .ds-bottom-nav { display: flex !important; }
           .ds-hero       { border-radius: 18px !important; margin: 12px !important; }
           .ds-content    { padding: 12px 14px 24px !important; }
           .ds-card-grid  { grid-template-columns: 1fr !important; gap: 12px !important; }
-          .ds-topbar     { padding: 0 14px !important; }
           .ds-welcome-text h1 { font-size: 22px !important; }
-          .dashboard-mobile-topbar { display: flex !important; }
-        }
-
-        @media (min-width: 768px) {
-          .dashboard-mobile-topbar { display: none !important; }
         }
 
         /* ── Tablet: 768–1023px ── */
@@ -716,33 +703,6 @@ export default function Dashboard() {
 
       {/* ══════════════ MAIN CONTENT ══════════════ */}
       <main className="ds-main" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-
-        {/* Top bar */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #e9ecef', height: 58, alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,.05)', position: 'sticky', top: 0, zIndex: 40, padding: '0 24px' }} className="dashboard-mobile-topbar ds-topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Mobile menu toggle (shown via media query) */}
-            <button
-              onClick={() => setMobileMenuOpen(o => !o)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 9, border: 'none', background: '#f8fafc', cursor: 'pointer' }}
-              className="mobile-menu-btn"
-            >
-              <Ic n={mobileMenuOpen ? 'x' : 'menu'} s={18} c="#374151" />
-            </button>
-            <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: NAVY }}>Dashboard</p>
-              <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Welcome back, {user?.email?.split('@')[0]}</p>
-            </div>
-          </div>
-          {/* Desktop logout */}
-          <button
-            onClick={handleLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#fef2f2', color: '#ef4444', fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'background .15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
-            onMouseLeave={e => e.currentTarget.style.background = '#fef2f2'}
-          >
-            <Ic n="logout" s={14} c="#ef4444" /> Sign Out
-          </button>
-        </header>
 
         {/* Scrollable body */}
         <div className="ds-content" style={{ flex: 1, overflowY: 'auto', padding: '28px 28px 48px' }}>
@@ -1488,40 +1448,6 @@ export default function Dashboard() {
           )}
         </div>{/* /content */}
       </main>
-
-      {/* ══════════════ BOTTOM NAV (mobile only) ══════════════ */}
-      <nav className="ds-bottom-nav" style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
-        background: '#fff', borderTop: '1px solid #e9ecef',
-        boxShadow: '0 -2px 12px rgba(0,0,0,.08)',
-        height: 64, alignItems: 'stretch',
-        justifyContent: 'space-around',
-      }}>
-        {bottomNav.map(item => {
-          const active = activeNav === item.id
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveNav(item.id)
-                if (item.path) navigate(item.path)
-              }}
-              style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: 3, border: 'none', background: 'transparent',
-                cursor: 'pointer', padding: '8px 4px',
-                borderTop: active ? `3px solid ${TEAL}` : '3px solid transparent',
-                transition: 'border-color .15s',
-              }}
-            >
-              <Ic n={item.icon} s={20} c={active ? TEAL : '#94a3b8'} sw={active ? 2.2 : 1.7} />
-              <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? TEAL : '#94a3b8' }}>
-                {item.label}
-              </span>
-            </button>
-          )
-        })}
-      </nav>
     </div>
   )
 }

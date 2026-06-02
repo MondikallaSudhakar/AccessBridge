@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { GUARDIAN_NAV } from './guardianData'
 import logoImg from '../../assets/logo.jpeg'
 
-const G = '#5BCB2B'
-const B = '#1A8FD1'
 const TEAL = '#0d9488'
 const NAVY = '#0f172a'
 
@@ -21,127 +19,92 @@ const ICONS = {
   star: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915',
   chart: 'M3 3v18h18M18 17V9M13 17V5M8 17v-3',
   logout: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
+  chevronDown: 'M19 9l-7 7-7-7',
+  menu: 'M4 6h16M4 12h16M4 18h16',
+  x: 'M6 18L18 6M6 6l12 12',
 }
 
-const NAV_ICON = {
-  Home: 'home',
-  'Dependent Profile': 'user',
-  Jobs: 'briefcase',
-  Schools: 'school',
-  'NGO Support': 'ngo',
-  Learning: 'learning',
-  Events: 'calendar',
-  Therapy: 'plus',
-  'Request Help': 'ngo',
-  'Request History': 'chart',
-  Saved: 'star',
-  'Track Progress': 'chart',
-}
+const NAV_ICON = { Home:'home','Dependent Profile':'user',Jobs:'briefcase',Schools:'school','NGO Support':'ngo',Learning:'learning',Events:'calendar',Therapy:'plus','Request Help':'ngo','Request History':'chart',Saved:'star','Track Progress':'chart' }
 
 function Ic({ name, size = 16, color = 'currentColor' }) {
-  const d = ICONS[name]
-  if (!d) return null
-  return (
-    <svg width={size} height={size} fill="none" stroke={color} strokeWidth="1.8" viewBox="0 0 24 24" style={{ display: 'block', flexShrink: 0 }}>
-      <path strokeLinecap="round" strokeLinejoin="round" d={d} />
-    </svg>
-  )
+  const d = ICONS[name]; if (!d) return null
+  return (<svg width={size} height={size} fill="none" stroke={color} strokeWidth="1.8" viewBox="0 0 24 24" style={{ display:'block',flexShrink:0 }}><path strokeLinecap="round" strokeLinejoin="round" d={d} /></svg>)
 }
 
-function SidebarLink({ item }) {
-  const [hover, setHover] = useState(false)
+const NAV_GROUPS = [
+  { label:'Home', items:['Home'] },
+  { label:'Dependent Profile', items:['Dependent Profile'] },
+  { label:'Opportunities', items:['Jobs','Schools','Learning','Events'] },
+  { label:'Support', items:['NGO Support','Therapy','Request Help','Request History'] },
+  { label:'More', items:['Saved','Track Progress'] },
+]
+
+function TopNavDropdown({ group, navItems, currentPath }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const items = navItems.filter(i => group.items.includes(i.label))
+  useEffect(() => { const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }; document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h) }, [])
+  if (!items.length) return null
+  const hasActive = items.some(i => i.to === '/guardian' ? currentPath === '/guardian' : currentPath.startsWith(i.to))
+
+  if (items.length === 1) {
+    const i = items[0]; const a = i.to === '/guardian' ? currentPath === '/guardian' : currentPath.startsWith(i.to)
+    return (<NavLink to={i.to} end={i.to==='/guardian'} style={{ display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:8,textDecoration:'none',background:a?TEAL:'transparent',color:a?'#fff':'#374151',fontSize:13,fontWeight:a?700:500,transition:'all .15s',whiteSpace:'nowrap' }} onMouseEnter={e=>{if(!a)e.currentTarget.style.background='#f1f5f9'}} onMouseLeave={e=>{if(!a)e.currentTarget.style.background=a?TEAL:'transparent'}}><Ic name={NAV_ICON[i.label]||'home'} size={15} color={a?'#fff':'#64748b'} />{i.label}</NavLink>)
+  }
 
   return (
-    <NavLink
-      to={item.to}
-      end={item.to === '/guardian'}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className={({ isActive }) => `mb-1 flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? 'text-white' : 'text-slate-700'}`}
-      style={({ isActive }) => ({
-        backgroundColor: isActive ? TEAL : hover ? '#f8fafc' : 'transparent',
-        fontWeight: isActive ? 700 : 500,
-      })}
-    >
-      {({ isActive }) => (
-        <>
-          <Ic name={NAV_ICON[item.label] || 'home'} size={16} color={isActive ? '#ffffff' : '#64748b'} />
-          <span>{item.label}</span>
-        </>
-      )}
-    </NavLink>
-  )
+    <div ref={ref} style={{ position:'relative' }}>
+      <button onClick={() => setOpen(o=>!o)} style={{ display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:8,border:'none',cursor:'pointer',background:hasActive?`${TEAL}15`:'transparent',color:hasActive?TEAL:'#374151',fontSize:13,fontWeight:hasActive?700:500,transition:'all .15s',whiteSpace:'nowrap' }} onMouseEnter={e=>{if(!hasActive)e.currentTarget.style.background='#f1f5f9'}} onMouseLeave={e=>{if(!hasActive)e.currentTarget.style.background=hasActive?`${TEAL}15`:'transparent'}}>
+        {group.label}<Ic name="chevronDown" size={12} color={hasActive?TEAL:'#94a3b8'} />
+      </button>
+      {open && (<div style={{ position:'absolute',top:'calc(100% + 6px)',left:0,background:'#fff',borderRadius:12,border:'1px solid #e9ecef',boxShadow:'0 12px 40px rgba(0,0,0,.12)',minWidth:200,padding:6,zIndex:1000,animation:'gDropIn .15s ease' }}>
+        {items.map(i => { const a = i.to==='/guardian'?currentPath==='/guardian':currentPath.startsWith(i.to); return (
+          <NavLink key={i.to} to={i.to} end={i.to==='/guardian'} onClick={()=>setOpen(false)} style={{ display:'flex',alignItems:'center',gap:10,width:'100%',padding:'9px 12px',borderRadius:8,textDecoration:'none',background:a?TEAL:'transparent',color:a?'#fff':'#374151',fontSize:13,fontWeight:a?700:500,transition:'background .12s',whiteSpace:'nowrap' }} onMouseEnter={e=>{if(!a)e.currentTarget.style.background='#f1f5f9'}} onMouseLeave={e=>{if(!a)e.currentTarget.style.background=a?TEAL:'transparent'}}>
+            <Ic name={NAV_ICON[i.label]||'home'} size={15} color={a?'#fff':'#64748b'} />{i.label}
+          </NavLink>)})}</div>)}
+    </div>)
 }
 
 export default function GuardianLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const currentPath = window.location.pathname
+  const handleLogout = () => { logout(); navigate('/login') }
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
-      <aside className="hidden border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-col">
-        <div className="border-b border-slate-100 px-5 pb-4 pt-6">
-          <div className="mb-4 flex cursor-pointer items-center gap-2.5" onClick={() => navigate('/')}>
-            <img src={logoImg} alt="KnotneX" className="h-8 w-8 rounded-lg object-cover" />
-            <span className="text-sm font-black tracking-tight" style={{ color: NAVY }}>KnotneX</span>
-          </div>
+    <div className="min-h-screen bg-slate-50">
+      <style>{`@keyframes gDropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.g-tnav{display:flex;align-items:center;width:100%;background:#fff;border-bottom:1px solid #e9ecef;padding:0 20px;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04);gap:16px}.g-tnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}.g-tnav-links::-webkit-scrollbar{display:none}.g-tnav-right{display:flex;align-items:center;gap:12px;flex-shrink:0}.g-ham{display:none}@media(max-width:900px){.g-tnav-links{display:none!important}.g-ham{display:flex!important}}`}</style>
 
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1" style={{ borderColor: `${TEAL}50`, backgroundColor: `${TEAL}12` }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: TEAL }} />
-            <span className="text-xs font-bold" style={{ color: TEAL }}>Guardian / Caregiver</span>
-          </div>
-
-          <p className="mt-3 truncate text-xs text-slate-500">{user?.email || user?.name || 'User'}</p>
+      <nav className="g-tnav">
+        <div style={{ display:'flex',alignItems:'center',gap:10,cursor:'pointer',flexShrink:0 }} onClick={()=>navigate('/')}>
+          <img src={logoImg} alt="KnotneX" style={{ width:30,height:30,borderRadius:7,objectFit:'cover' }} />
+          <span style={{ fontSize:14,fontWeight:900,color:NAVY,letterSpacing:'-0.02em' }}>KnotneX</span>
         </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Workspace</p>
-          {GUARDIAN_NAV.map((item) => (
-            <SidebarLink key={item.to} item={item} />
-          ))}
-        </nav>
-
-        <div className="space-y-1.5 border-t border-slate-100 p-3">
-          <button type="button" onClick={() => navigate('/dashboard')} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
-            <Ic name="home" size={16} color="#64748b" />
-            Dashboard
-          </button>
-          <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50">
-            <Ic name="logout" size={16} color="#e11d48" />
-            Logout
-          </button>
+        <div style={{ display:'inline-flex',alignItems:'center',gap:6,padding:'4px 10px',borderRadius:20,flexShrink:0,background:`${TEAL}12`,border:`1px solid ${TEAL}30` }}>
+          <span style={{ width:7,height:7,borderRadius:'50%',background:TEAL,display:'inline-block' }} />
+          <span style={{ fontSize:11,fontWeight:700,color:TEAL,whiteSpace:'nowrap' }}>Guardian / Caregiver</span>
         </div>
-      </aside>
+        <div className="g-tnav-links">{NAV_GROUPS.map(g=><TopNavDropdown key={g.label} group={g} navItems={GUARDIAN_NAV} currentPath={currentPath} />)}</div>
+        <button className="g-ham" onClick={()=>setMobileOpen(true)} style={{ background:'none',border:'none',cursor:'pointer',padding:6,marginLeft:'auto',display:'flex',alignItems:'center',justifyContent:'center' }}><Ic name="menu" size={22} color="#374151" /></button>
+        <div className="g-tnav-right">
+          <div style={{ padding:'4px 12px',borderRadius:8,background:'#f8fafc' }}><p style={{ margin:0,fontSize:12,fontWeight:600,color:'#0f172a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:160 }}>{user?.email||user?.name||'User'}</p></div>
+          <button type="button" onClick={()=>navigate('/dashboard')} style={{ display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:8,border:'none',background:'#f1f5f9',cursor:'pointer',fontSize:12,fontWeight:600,color:'#374151' }} onMouseEnter={e=>e.currentTarget.style.background='#e2e8f0'} onMouseLeave={e=>e.currentTarget.style.background='#f1f5f9'}><Ic name="home" size={14} color="#64748b" />Dashboard</button>
+          <button type="button" onClick={handleLogout} style={{ display:'flex',alignItems:'center',gap:6,padding:'7px 14px',borderRadius:8,border:'none',background:'#fef2f2',cursor:'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='#fee2e2'} onMouseLeave={e=>e.currentTarget.style.background='#fef2f2'}><Ic name="logout" size={14} color="#ef4444" /><span style={{ fontSize:12,fontWeight:700,color:'#ef4444' }}>Sign Out</span></button>
+        </div>
+      </nav>
 
-      <section className="min-w-0 flex-1">
-        <header className="border-b border-slate-200 bg-white lg:hidden">
-          <div className="px-4 py-4 sm:px-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">Guardian / Caregiver Workspace</p>
-            <h1 className="mt-2 text-lg font-black text-slate-900">Support and manage opportunities for dependents</h1>
-          </div>
-          <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
-            {GUARDIAN_NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/guardian'}
-                className={({ isActive }) => `whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'}`}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </header>
+      {mobileOpen&&<div onClick={()=>setMobileOpen(false)} style={{ position:'fixed',inset:0,background:'rgba(0,0,0,.3)',zIndex:9998,backdropFilter:'blur(2px)' }} />}
+      <div style={{ position:'fixed',top:0,left:0,bottom:0,width:280,maxWidth:'80vw',background:'#fff',zIndex:9999,transform:mobileOpen?'translateX(0)':'translateX(-100%)',transition:'transform .25s cubic-bezier(.4,0,.2,1)',boxShadow:mobileOpen?'4px 0 30px rgba(0,0,0,.15)':'none',display:'flex',flexDirection:'column',overflowY:'auto' }}>
+        <div style={{ padding:'16px 18px',borderBottom:'1px solid #f1f5f9',display:'flex',alignItems:'center',justifyContent:'space-between' }}><span style={{ fontSize:14,fontWeight:800,color:NAVY }}>Menu</span><button onClick={()=>setMobileOpen(false)} style={{ background:'none',border:'none',cursor:'pointer',padding:4 }}><Ic name="x" size={18} color="#64748b" /></button></div>
+        <nav style={{ flex:1,padding:12 }}>{GUARDIAN_NAV.map(i=>{const a=i.to==='/guardian'?currentPath==='/guardian':currentPath.startsWith(i.to);return(<NavLink key={i.to} to={i.to} end={i.to==='/guardian'} onClick={()=>setMobileOpen(false)} style={{ display:'flex',alignItems:'center',gap:10,padding:'9px 10px',borderRadius:9,textDecoration:'none',marginBottom:1,background:a?TEAL:'transparent',color:a?'#fff':'#374151',fontSize:13.5,fontWeight:a?700:500 }}><Ic name={NAV_ICON[i.label]||'home'} size={16} color={a?'#fff':'#64748b'} />{i.label}</NavLink>)})}</nav>
+        <div style={{ padding:12,borderTop:'1px solid #f1f5f9' }}>
+          <button type="button" onClick={()=>{navigate('/dashboard');setMobileOpen(false)}} style={{ display:'flex',alignItems:'center',gap:10,width:'100%',padding:'9px 10px',borderRadius:9,border:'none',background:'transparent',cursor:'pointer',fontSize:13.5,fontWeight:500,color:'#374151' }}><Ic name="home" size={16} color="#64748b" />Dashboard</button>
+          <button type="button" onClick={()=>{handleLogout();setMobileOpen(false)}} style={{ display:'flex',alignItems:'center',gap:10,width:'100%',padding:'9px 10px',borderRadius:9,border:'none',background:'transparent',cursor:'pointer',fontSize:13.5,fontWeight:700,color:'#ef4444' }}><Ic name="logout" size={16} color="#ef4444" />Sign Out</button>
+        </div>
+      </div>
 
-        <main className="w-full px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
-        </main>
-      </section>
+      <main className="w-full px-4 py-6 sm:px-6 lg:px-8"><Outlet /></main>
     </div>
   )
 }
