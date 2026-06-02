@@ -188,6 +188,7 @@ export default function SpecialLayout() {
       <nav className="sp-topnav">
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flexShrink: 0 }} onClick={() => navigate('/')}>
+          <img src={logoImg} alt="KnotneX" style={{ width: 30, height: 30, borderRadius: 7, objectFit: 'cover' }} />
           <span style={{ fontSize: 18, fontWeight: 900, color: NAVY, letterSpacing: '-0.03em' }}>KnotneX</span>
         </div>
 

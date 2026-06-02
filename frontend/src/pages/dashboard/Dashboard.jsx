@@ -690,10 +690,8 @@ export default function Dashboard() {
       `}</style>
 
       <SidebarNav
-        brandBadgeText={user?.role === 'USER' ? 'Community Marketplace' : roleInfo.label}
-        brandBadgeColor={user?.role === 'USER' ? G : roleInfo.color}
+        badgeText={user?.role === 'USER' ? 'Community Marketplace' : roleInfo.label}
         sections={sidebarSections}
-        footerLabel={user?.role === 'USER' ? 'General User' : roleInfo.label}
         footerEmail={user?.email}
         onBrandClick={() => navigate('/')}
         onLogout={handleLogout}

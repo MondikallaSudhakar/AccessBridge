@@ -33,10 +33,8 @@ export default function GeneralUserLayout() {
   return (
     <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
       <UserNavbar
-        brandBadgeText="Community Marketplace"
-        brandBadgeColor="#5BCB2B"
+        badgeText="Community Marketplace"
         sections={sections}
-        footerLabel="General User"
         isItemActive={(item) => item.id === currentPage}
       />
       <div className="min-w-0 flex-1">
