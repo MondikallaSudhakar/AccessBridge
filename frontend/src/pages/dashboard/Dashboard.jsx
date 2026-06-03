@@ -661,70 +661,22 @@ export default function Dashboard() {
       <div className="min-h-screen bg-white flex flex-col font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
         
         {/* ── NAVBAR ── */}
-        <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5">
-            {/* Left: Brand logo & name */}
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
-              <img src={logoImg} alt="KnotneX" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
-              <span className="text-xl font-black tracking-tight text-gray-900">KnotneX</span>
-            </div>
-
-            {/* Center: Tabs */}
-            <nav className="flex items-center gap-6">
-              {[
-                { label: 'All', href: '/' },
-                { label: 'Events', href: '/?tab=events' },
-                { label: 'Stories', href: '/?tab=stories' },
-                { label: 'Jobs', href: '/?tab=jobs' }
-              ].map((tabItem) => {
-                const isSelected = tabItem.label === 'All';
-                return (
-                  <a
-                    key={tabItem.label}
-                    href={tabItem.href}
-                    className={`text-sm font-semibold cursor-pointer pb-1 transition-colors border-b-2 hover:text-gray-950 ${
-                      isSelected ? 'text-gray-900 border-[#82cd27]' : 'text-gray-400 border-transparent'
-                    }`}
-                  >
-                    {tabItem.label}
-                  </a>
-                );
-              })}
-            </nav>
-
-            {/* Right: Search, Log out, Avatar */}
-            <div className="flex items-center gap-6">
-              {/* Search Pill */}
-              <div className="relative flex items-center bg-[#f0f4fc] rounded-full px-4 py-1.5 w-60 border border-transparent focus-within:border-gray-200 transition-all">
-                <svg className="w-4 h-4 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search resources..."
-                  className="bg-transparent border-none outline-none text-xs text-gray-700 w-full placeholder-gray-400"
-                />
-              </div>
-
-              {/* Log out link */}
-              <button
-                onClick={handleLogout}
-                className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Log out
-              </button>
-
-              {/* Avatar */}
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-150 shadow-sm shrink-0">
-                <img
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120&auto=format&fit=crop"
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </header>
+        <SidebarNav
+          badgeText="Community Marketplace"
+          sections={[
+            {
+              label: 'Navigation',
+              items: [
+                { id: 'dashboard', label: 'Dashboard', icon: 'home', path: '/dashboard' },
+                { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
+                { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
+                { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
+                { id: 'cart', label: 'Cart', icon: 'cart', path: '/cart' },
+              ],
+            },
+          ]}
+          isItemActive={(item) => item.id === 'dashboard'}
+        />
 
         {/* ── MAIN CONTENT AREA ── */}
         <main className="flex-1 bg-white">

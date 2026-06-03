@@ -136,10 +136,57 @@ export default function UserNavbar({
         <span style={{fontSize:18,fontWeight:900,color:NAVY,letterSpacing:'-0.03em'}}>KnotneX</span>
       </div>
 
-      <div className="un-nav-center">
-        {sections.map(section=>(
-          <NavDropdown key={section.label||'section'} section={section} onItemClick={defaultItemClick} isItemActive={item=>Boolean(isItemActive(item))}/>
-        ))}
+      <div className="un-nav-center" style={{ gap: 8 }}>
+        {sections.map(section => {
+          if (section.label === 'Navigation') {
+            return (
+              <div key={section.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {section.items.map(item => {
+                  const active = isItemActive(item)
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => defaultItemClick(item)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '6px 12px',
+                        background: active ? '#f0fdf4' : 'transparent',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: active ? 700 : 500,
+                        color: active ? GREEN : '#4b5563',
+                        transition: 'all 0.15s ease',
+                        whiteSpace: 'nowrap',
+                      }}
+                      onMouseEnter={e => {
+                        if (!active) {
+                          e.currentTarget.style.background = '#f8fafc';
+                          e.currentTarget.style.color = NAVY;
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!active) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#4b5563';
+                        }
+                      }}
+                    >
+                      <Ic n={item.icon} s={16} c={active ? GREEN : '#64748b'} />
+                      {item.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          }
+          return (
+            <NavDropdown key={section.label||'section'} section={section} onItemClick={defaultItemClick} isItemActive={item=>Boolean(isItemActive(item))}/>
+          )
+        })}
       </div>
 
       <div className="un-nav-search">
