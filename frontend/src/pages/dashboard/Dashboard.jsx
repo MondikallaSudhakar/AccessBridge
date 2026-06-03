@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import api from '../../services/api'
 import SidebarNav from '../../components/common/UserNavbar'
+import logoImg from '../../assets/logo.jpeg'
 
 /* ── brand tokens ─────────────────────────────────────────────────────── */
 const G    = '#5BCB2B'   // brand green
@@ -654,6 +655,255 @@ export default function Dashboard() {
     ...(user?.role === 'SUPER_ADMIN' ? [{ id: 'approvals', label: 'Approvals', icon: 'check', path: '/admin/approvals' }] : []),
     { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
   ]
+
+  if (user?.role === 'USER') {
+    return (
+      <div className="min-h-screen bg-white flex flex-col font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+        
+        {/* ── NAVBAR ── */}
+        <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5">
+            {/* Left: Brand logo & name */}
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
+              <img src={logoImg} alt="KnotneX" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
+              <span className="text-xl font-black tracking-tight text-gray-900">KnotneX</span>
+            </div>
+
+            {/* Center: Tabs */}
+            <nav className="flex items-center gap-6">
+              {[
+                { label: 'All', href: '/' },
+                { label: 'Events', href: '/?tab=events' },
+                { label: 'Stories', href: '/?tab=stories' },
+                { label: 'Jobs', href: '/?tab=jobs' }
+              ].map((tabItem) => {
+                const isSelected = tabItem.label === 'All';
+                return (
+                  <a
+                    key={tabItem.label}
+                    href={tabItem.href}
+                    className={`text-sm font-semibold cursor-pointer pb-1 transition-colors border-b-2 hover:text-gray-950 ${
+                      isSelected ? 'text-gray-900 border-[#82cd27]' : 'text-gray-400 border-transparent'
+                    }`}
+                  >
+                    {tabItem.label}
+                  </a>
+                );
+              })}
+            </nav>
+
+            {/* Right: Search, Log out, Avatar */}
+            <div className="flex items-center gap-6">
+              {/* Search Pill */}
+              <div className="relative flex items-center bg-[#f0f4fc] rounded-full px-4 py-1.5 w-60 border border-transparent focus-within:border-gray-200 transition-all">
+                <svg className="w-4 h-4 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search resources..."
+                  className="bg-transparent border-none outline-none text-xs text-gray-700 w-full placeholder-gray-400"
+                />
+              </div>
+
+              {/* Log out link */}
+              <button
+                onClick={handleLogout}
+                className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Log out
+              </button>
+
+              {/* Avatar */}
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-150 shadow-sm shrink-0">
+                <img
+                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120&auto=format&fit=crop"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* ── MAIN CONTENT AREA ── */}
+        <main className="flex-1 bg-white">
+          
+          {/* Hero section */}
+          <div className="mx-auto max-w-6xl px-6 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              {/* Left Column: Welcome text */}
+              <div className="flex flex-col items-start text-left">
+                {/* Platform Update Badge */}
+                <div className="bg-[#f0fbe0] text-[#71b61c] px-3 py-1 rounded-full text-xs font-bold mb-6 tracking-wide">
+                  Platform Update v2.4
+                </div>
+
+                {/* Title with Highlight */}
+                <h1 className="text-4xl md:text-5xl font-black text-gray-955 leading-[1.1] tracking-tight mb-6">
+                  Professional Networking<br />
+                  <span className="bg-[#82cd27] text-gray-950 px-2 py-0.5 rounded-lg inline-block mt-2">
+                    Simplified
+                  </span>
+                </h1>
+
+                {/* Description */}
+                <p className="text-gray-600 text-sm leading-relaxed mb-8 max-w-md font-medium">
+                  KnotneX provides a clean, focused ecosystem for professionals to exchange requirements, find opportunities, and grow communities without the noise of traditional social media.
+                </p>
+
+                {/* Button */}
+                <button
+                  onClick={() => navigate('/marketplace')}
+                  className="bg-[#82cd27] text-gray-950 font-bold px-6 py-3.5 rounded-xl flex items-center gap-2 hover:bg-[#74b823] transition-colors shadow-sm text-sm"
+                >
+                  Explore Marketplace
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Right Column: Large Placeholder Box */}
+              <div className="w-full h-80 bg-[#f0f4fc] rounded-2xl border border-gray-100 shadow-inner flex items-center justify-center">
+                {/* Visual empty area corresponding to the image placeholder */}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access Section */}
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            {/* Section Header */}
+            <div className="flex justify-between items-end mb-6">
+              <div className="text-left">
+                <h2 className="text-2xl font-black text-gray-955 tracking-tight">Quick Access</h2>
+                <p className="text-gray-500 text-sm mt-1 font-medium">Direct entry to your most frequented hubs</p>
+              </div>
+              <div
+                onClick={() => navigate('/marketplace')}
+                className="flex items-center gap-1 text-sm font-bold text-[#71b61c] hover:underline cursor-pointer transition-all"
+              >
+                View All Apps
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Quick Access Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {/* Card 1: Community Browser */}
+              <div className="bg-white border border-gray-150 rounded-2xl p-6 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-955 mb-2">Community Browser</h3>
+                <p className="text-gray-500 text-xs leading-relaxed mb-6 flex-1 font-medium">
+                  Discover and join niche professional circles and industry-specific discussion groups.
+                </p>
+                <button
+                  onClick={() => navigate('/search')}
+                  className="bg-[#1a1a1a] text-[#82cd27] hover:bg-black font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
+                >
+                  Join Community
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Card 2: Product Marketplace */}
+              <div className="bg-white border border-gray-150 rounded-2xl p-6 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-6">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-955 mb-2">Product Marketplace</h3>
+                <p className="text-gray-500 text-xs leading-relaxed mb-6 flex-1 font-medium">
+                  Browse curated professional tools, templates, and services offered by the network.
+                </p>
+                <button
+                  onClick={() => navigate('/marketplace')}
+                  className="w-full border border-gray-200 text-gray-800 hover:bg-gray-50 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-between transition-colors shadow-sm"
+                >
+                  Browse Store
+                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-1 5h12m-11 0a1 1 0 100 2 1 1 0 000-2zm10 0a1 1 0 100 2 1 1 0 000-2z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Card 3: My Profile */}
+              <div className="bg-white border border-gray-150 rounded-2xl p-6 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-955 mb-2">My Profile</h3>
+                <p className="text-gray-500 text-xs leading-relaxed mb-6 flex-1 font-medium">
+                  Update your professional identity, track your activity, and manage connections.
+                </p>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="text-gray-700 hover:text-gray-955 font-bold text-xs flex items-center gap-1 transition-colors mt-auto py-2"
+                >
+                  View Dashboard
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Need Help Banner */}
+          <div className="mx-auto max-w-6xl px-6 mb-16">
+            <div className="bg-[#151515] text-white rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4 text-left">
+                <div className="w-12 h-12 rounded-full bg-[#82cd27] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-[#132c02]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-base font-extrabold text-white">Need Help?</h4>
+                  <p className="text-gray-400 text-xs mt-1 font-medium">Our support team is available 24/7 to assist with your professional journey.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => alert("Support ticket created. Our team will contact you shortly!")}
+                className="bg-[#82cd27] text-[#132c02] hover:bg-[#74b823] font-black text-xs py-3 px-6 rounded-xl transition-colors shadow-sm shrink-0"
+              >
+                Contact Support
+              </button>
+            </div>
+          </div>
+
+        </main>
+
+        {/* ── FOOTER ── */}
+        <footer className="bg-[#f0f2fe] border-t border-gray-150 py-12 mt-auto text-left animate-fade-in">
+          <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+              <span className="text-lg font-black text-gray-900 block mb-1">KnotneX</span>
+              <span className="text-gray-500 text-xs font-medium">© 2024 KnotneX. All rights reserved.</span>
+            </div>
+            <div className="flex gap-6 text-xs font-bold text-gray-500">
+              <span className="hover:text-gray-900 cursor-pointer transition-colors">About</span>
+              <span className="hover:text-gray-900 cursor-pointer transition-colors">Terms</span>
+              <span className="hover:text-gray-900 cursor-pointer transition-colors">Privacy</span>
+              <span className="hover:text-gray-900 cursor-pointer transition-colors">Contact</span>
+            </div>
+          </div>
+        </footer>
+
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f4f6f8', fontFamily: "'Inter', sans-serif" }}>
