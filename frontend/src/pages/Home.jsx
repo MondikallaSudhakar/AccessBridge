@@ -190,6 +190,7 @@ function getCardDetails(item) {
 }
 
 function TopNav({ user, activeTab }) {
+  const { logout } = useAuth()
   const navItems = user
     ? [
       { label: 'Home', href: '/', Icon: () => null },
@@ -234,11 +235,19 @@ function TopNav({ user, activeTab }) {
 
         <nav className="flex items-center gap-4">
           {user ? (
-            navItems.map((item) => (
-              <Link key={item.label} to={item.href} className="hidden items-center gap-1.5 rounded px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:flex">
-                <span>{item.label}</span>
-              </Link>
-            ))
+            <>
+              {navItems.map((item) => (
+                <Link key={item.label} to={item.href} className="hidden items-center gap-1.5 rounded px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 md:flex">
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 rounded px-3 py-2 text-sm font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-colors duration-150"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <>
               <Link to="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">

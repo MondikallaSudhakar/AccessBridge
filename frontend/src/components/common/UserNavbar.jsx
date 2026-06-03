@@ -57,7 +57,9 @@ function NavDropdown({section,onItemClick,isItemActive}){
 }
 
 /* ── Mobile drawer ── */
-function MobileDrawer({open,onClose,sections,onItemClick,isItemActive}){
+function MobileDrawer({open,onClose,sections,onItemClick,isItemActive,onLogout}){
+  const { logout } = useAuth()
+  const handleLogout = onLogout || (() => logout('/login'))
   return(<>
     {open&&<div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.3)',zIndex:9998,backdropFilter:'blur(2px)'}}/>}
     <div style={{position:'fixed',top:0,left:0,bottom:0,width:290,maxWidth:'82vw',background:'#fff',zIndex:9999,transform:open?'translateX(0)':'translateX(-100%)',transition:'transform .25s cubic-bezier(.4,0,.2,1)',boxShadow:open?'4px 0 30px rgba(0,0,0,.15)':'none',display:'flex',flexDirection:'column',overflowY:'auto'}}>
@@ -72,6 +74,34 @@ function MobileDrawer({open,onClose,sections,onItemClick,isItemActive}){
               </button>)})}
           </div>))}
       </nav>
+      <div style={{padding:'12px 16px',borderTop:'1px solid #f1f5f9',marginTop:'auto'}}>
+        <button
+          onClick={() => {
+            handleLogout()
+            onClose()
+          }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            width: '100%',
+            padding: '10px 12px',
+            borderRadius: 10,
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+            background: '#fff5f5',
+            color: '#e11d48',
+            fontSize: '13.5px',
+            fontWeight: 700,
+            transition: 'background .12s',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#ffe4e6' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = '#fff5f5' }}
+        >
+          <Ic n="logout" s={18} c="#e11d48"/>Logout
+        </button>
+      </div>
     </div>
   </>)
 }
@@ -128,10 +158,14 @@ export default function UserNavbar({
           <div style={{textAlign:'right'}}><span style={{display:'block',fontSize:12,fontWeight:700,color:NAVY,lineHeight:1.2}}>{badgeText||'User'}</span><span style={{display:'block',fontSize:11,color:'#94a3b8',lineHeight:1.2}}>Profile</span></div>
           <div style={{width:34,height:34,borderRadius:'50%',background:`linear-gradient(135deg, ${GREEN}, #22c55e)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'#fff',border:'2px solid #e5e7eb',flexShrink:0}}>{initials}</div>
         </div>
+        <div style={{width:1,height:28,background:'#e5e7eb'}}/>
+        <button onClick={handleLogout} title="Logout" style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',justifyContent:'center',color:'#e11d48',transition:'color .15s'}} onMouseEnter={e=>e.currentTarget.style.color='#be123c'} onMouseLeave={e=>e.currentTarget.style.color='#e11d48'}>
+          <Ic n="logout" s={20} c="currentColor"/>
+        </button>
       </div>
     </nav>
     <div style={{height:2,background:`linear-gradient(90deg, ${GREEN}, #22c55e, transparent 70%)`}}/>
 
-    <MobileDrawer open={mobileOpen} onClose={()=>setMobileOpen(false)} sections={sections} onItemClick={defaultItemClick} isItemActive={item=>Boolean(isItemActive(item))}/>
+    <MobileDrawer open={mobileOpen} onClose={()=>setMobileOpen(false)} sections={sections} onItemClick={defaultItemClick} isItemActive={item=>Boolean(isItemActive(item))} onLogout={handleLogout}/>
   </>)
 }

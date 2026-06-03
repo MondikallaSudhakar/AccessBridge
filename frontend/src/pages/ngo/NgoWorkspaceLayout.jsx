@@ -127,17 +127,21 @@ export default function NgoWorkspaceLayout() {
 
       {/* ── Main content ── */}
       <section className="min-w-0 flex-1">
-        {/* Mobile top-bar */}
         <header className="border-b border-slate-200 bg-white lg:hidden">
-          <div className="px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${GREEN}12` }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
-                <span className="
-                text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
+          <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${GREEN}12` }}>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: GREEN }}>NGO / Organization / Corporate CSR</span>
+                </div>
               </div>
+              <h1 className="mt-2 text-lg font-black text-slate-900">Workspace</h1>
             </div>
-            <h1 className="mt-2 text-lg font-black text-slate-900">Workspace</h1>
+            <button onClick={handleLogout} title="Logout" className="flex items-center gap-1 rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50">
+              <Ic name="logout" size={14} color="#e11d48" />
+              <span>Logout</span>
+            </button>
           </div>
           <nav className="flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
             {NGO_WORKSPACE_NAV.map((item) => (

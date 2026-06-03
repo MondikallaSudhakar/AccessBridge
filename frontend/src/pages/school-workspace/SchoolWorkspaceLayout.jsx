@@ -88,6 +88,10 @@ export default function SchoolWorkspaceLayout(){
             <div style={{textAlign:'right'}}><span style={{display:'block',fontSize:12,fontWeight:700,color:NAVY,lineHeight:1.2}}>School</span><span style={{display:'block',fontSize:11,color:'#94a3b8',lineHeight:1.2}}>Profile</span></div>
             <div style={{width:34,height:34,borderRadius:'50%',background:`linear-gradient(135deg, ${GREEN}, #22c55e)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:'#fff',border:'2px solid #e5e7eb',flexShrink:0}}>{initials}</div>
           </div>
+          <div style={{width:1,height:28,background:'#e5e7eb'}}/>
+          <button onClick={handleLogout} title="Logout" style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',justifyContent:'center',color:'#e11d48',transition:'color .15s'}} onMouseEnter={e=>e.currentTarget.style.color='#be123c'} onMouseLeave={e=>e.currentTarget.style.color='#e11d48'}>
+            <Ic name="logout" size={20} color="currentColor"/>
+          </button>
         </div>
       </nav>
       <div style={{height:2,background:`linear-gradient(90deg, ${GREEN}, #22c55e, transparent 70%)`}}/>

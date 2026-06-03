@@ -296,6 +296,14 @@ export default function SpecialLayout() {
               {initials}
             </div>
           </div>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 28, background: '#e5e7eb' }} />
+
+          {/* Logout button */}
+          <button onClick={handleLogout} title="Logout" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e11d48', transition: 'color .15s' }} onMouseEnter={e => e.currentTarget.style.color = '#be123c'} onMouseLeave={e => e.currentTarget.style.color = '#e11d48'}>
+            <Ic name="logout" size={20} color="currentColor" />
+          </button>
         </div>
       </nav>
 
