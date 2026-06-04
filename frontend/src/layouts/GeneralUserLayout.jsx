@@ -1,19 +1,20 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import UserNavbar from '../components/common/UserNavbar'
 
 const PAGE_BY_PATH = {
-  '/dashboard': 'dashboard',
   '/marketplace': 'marketplace',
   '/cart': 'cart',
   '/orders': 'orders',
   '/profile': 'profile',
   '/dashboard/profile': 'profile',
-  '/search': 'dashboard',
-  '/messages': 'dashboard',
+  '/search': 'search',
+  '/messages': 'messages',
+  '/dashboard': 'dashboard',
 }
 
 export default function GeneralUserLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
 
   const currentPage = PAGE_BY_PATH[location.pathname] || 'marketplace'
 
@@ -21,21 +22,23 @@ export default function GeneralUserLayout() {
     {
       label: 'Navigation',
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: 'home', path: '/dashboard' },
-        { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
-        { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
-        { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
-        { id: 'cart', label: 'Cart', icon: 'cart', path: '/cart' },
+        { id: 'all', label: 'All', icon: 'grid', path: '/dashboard' },
+        { id: 'events', label: 'Events', icon: 'grid', path: '/dashboard' },
+        { id: 'stories', label: 'Stories', icon: 'info', path: '/dashboard' },
+        { id: 'jobs', label: 'Jobs', icon: 'grid', path: '/dashboard' },
+        { id: 'requirements', label: 'Requirements', icon: 'info', path: '/dashboard' },
+        { id: 'marketplace', label: 'Products', icon: 'shop', path: '/marketplace' },
       ],
     },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Inter', sans-serif" }}>
       <UserNavbar
-        badgeText="Community Marketplace"
+        badgeText="Community"
         sections={sections}
-        isItemActive={(item) => item.id === currentPage}
+        profilePath="/profile"
+        isItemActive={(item) => item.id === currentPage || (item.id === 'marketplace' && currentPage === 'marketplace')}
       />
       <div className="min-w-0 flex-1">
         <Outlet />
