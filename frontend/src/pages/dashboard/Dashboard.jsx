@@ -659,23 +659,32 @@ export default function Dashboard() {
   if (user?.role === 'USER') {
     return (
       <div className="min-h-screen bg-white flex flex-col font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
-        
+
         {/* ── NAVBAR ── */}
         <SidebarNav
-          badgeText="Community Marketplace"
+          badgeText="Community"
           sections={[
             {
               label: 'Navigation',
               items: [
-                { id: 'dashboard', label: 'Dashboard', icon: 'home', path: '/dashboard' },
-                { id: 'profile', label: 'Profile', icon: 'user', path: '/profile' },
-                { id: 'marketplace', label: 'Marketplace', icon: 'shop', path: '/marketplace' },
-                { id: 'orders', label: 'Orders', icon: 'shop', path: '/orders' },
-                { id: 'cart', label: 'Cart', icon: 'cart', path: '/cart' },
+                { id: 'all',          label: 'All',          icon: 'grid',   path: '/dashboard' },
+                { id: 'events',       label: 'Events',       icon: 'grid',   path: '/dashboard' },
+                { id: 'stories',      label: 'Stories',      icon: 'info',   path: '/dashboard' },
+                { id: 'jobs',         label: 'Jobs',         icon: 'grid',   path: '/dashboard' },
+                { id: 'requirements', label: 'Requirements', icon: 'info',   path: '/dashboard' },
+                { id: 'marketplace',  label: 'Products',     icon: 'shop',   path: '/marketplace' },
+              ],
+            },
+            {
+              label: 'My Account',
+              items: [
+                { id: 'profile', label: 'Profile',   icon: 'user',  path: '/profile' },
+                { id: 'orders',  label: 'My Orders', icon: 'check', path: '/orders'  },
+                { id: 'cart',    label: 'Cart',      icon: 'cart',  path: '/cart'    },
               ],
             },
           ]}
-          isItemActive={(item) => item.id === 'dashboard'}
+          isItemActive={(item) => item.id === 'all'}
         />
 
         {/* ── MAIN CONTENT AREA ── */}
