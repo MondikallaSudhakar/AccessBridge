@@ -118,7 +118,7 @@
 
 /* Add Button */
 .add-btn {
-  background: linear-gradient(135deg, var(--school-primary) 0%, var(--school-accent) 100%);
+  background: #16a34a;
   border: none;
   color: white;
   padding: 12px 24px;
@@ -127,13 +127,355 @@
   font-weight: 700;
   font-size: 14px;
   margin-bottom: 20px;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
 }
 
 .add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(22, 163, 74, 0.28);
+  background: #15803d;
 }
+
+/* ── Students Section ──────────────────────────────────── */
+.students-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.students-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.students-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.students-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.st-add-btn {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.st-add-btn:hover {
+  background: #15803d;
+}
+
+/* Form Panel */
+.st-form-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #16a34a;
+  border-radius: 14px;
+  padding: 24px;
+  animation: stSlideDown 0.18s ease;
+}
+
+@keyframes stSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.st-form-title {
+  margin: 0 0 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.st-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.st-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.st-field--full {
+  grid-column: 1 / -1;
+}
+
+.st-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.st-field input,
+.st-field textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: #fff;
+  color: #0f172a;
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.st-field input:focus,
+.st-field textarea:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+.st-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.st-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 10px;
+}
+
+.st-btn-primary {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.st-btn-primary:hover {
+  background: #15803d;
+}
+
+.st-btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.st-btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+/* Empty state */
+.st-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.st-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.st-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #475569;
+  margin: 0 0 4px;
+}
+
+.st-empty-sub {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Table */
+.st-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.st-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.st-table thead tr {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.st-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.st-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s;
+}
+
+.st-row:last-child {
+  border-bottom: none;
+}
+
+.st-row:hover {
+  background: #f8fafc;
+}
+
+.st-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+/* Avatar */
+.st-student-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.st-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.st-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #e2e8f0;
+}
+
+.st-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 13.5px;
+}
+
+.st-disability {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Contact */
+.st-contact-email {
+  color: #374151;
+  font-size: 13px;
+}
+
+.st-contact-phone {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Skill tags */
+.st-skills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.st-skill-tag {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* Status badges — solid colors, no gradients */
+.st-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.st-status--active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.st-status--inactive {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.st-status--pending {
+  background: #fef9c3;
+  color: #92400e;
+}
+
+.st-status--completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Delete button */
+.st-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #ef4444;
+  transition: background 0.15s;
+}
+
+.st-delete-btn:hover {
+  background: #fee2e2;
+}
+
+
 
 /* Forms */
 .form-container {
@@ -184,13 +526,12 @@
 }
 
 .form-container button[type="submit"] {
-  background: linear-gradient(135deg, var(--school-primary) 0%, var(--school-accent) 100%);
+  background: #16a34a;
   color: white;
 }
 
 .form-container button[type="submit"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.24);
+  background: #15803d;
 }
 
 .form-container button[type="button"] {
@@ -276,7 +617,7 @@
 
 /* Delete Button */
 .delete-btn {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: #ef4444;
   border: none;
   color: white;
   padding: 8px 16px;
@@ -284,14 +625,13 @@
   cursor: pointer;
   font-weight: 700;
   font-size: 12px;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
   margin-top: 10px;
   width: 100%;
 }
 
 .delete-btn:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: scale(1.02);
+  background: #dc2626;
 }
 
 /* Status Badge */
