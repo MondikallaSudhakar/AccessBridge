@@ -536,6 +536,23 @@
   transition: width 0.3s ease;
 }
 
+/* ── Volunteers Section extras ─────────────────────────── */
+.vo-role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.vo-availability {
+  font-size: 12.5px;
+  color: #374151;
+  font-weight: 500;
+}
+
 /* Forms */
 .form-container {
   background: #f8fafc;

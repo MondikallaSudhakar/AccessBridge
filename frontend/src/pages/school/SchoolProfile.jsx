@@ -819,46 +819,160 @@ const SchoolProfile = () => {
 
           {/* Volunteers Tab */}
           {currentTab === 'volunteers' && (
-            <div>
-              <button className="add-btn" onClick={() => { setFormType('volunteer'); setShowForm(true); }}>
-                + Add Volunteer/Mentor
-              </button>
-              {showForm && formType === 'volunteer' && (
-                <form className="form-container" onSubmit={handleSubmitVolunteer}>
-                  <input placeholder="Volunteer Name" value={volunteerForm.volunteerName} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerName: e.target.value})} required />
-                  <input placeholder="Volunteer Email" type="email" value={volunteerForm.volunteerEmail} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerEmail: e.target.value})} required />
-                  <input placeholder="Volunteer Phone" value={volunteerForm.volunteerPhone} onChange={(e) => setVolunteerForm({...volunteerForm, volunteerPhone: e.target.value})} />
-                  <input placeholder="Skills (comma-separated)" value={volunteerForm.skills} onChange={(e) => setVolunteerForm({...volunteerForm, skills: e.target.value})} />
-                  <select value={volunteerForm.role} onChange={(e) => setVolunteerForm({...volunteerForm, role: e.target.value})}>
-                    <option value="MENTOR">Mentor</option>
-                    <option value="INSTRUCTOR">Instructor</option>
-                    <option value="COUNSELOR">Counselor</option>
-                    <option value="THERAPIST">Therapist</option>
-                    <option value="COORDINATOR">Coordinator</option>
-                  </select>
-                  <input placeholder="Availability (e.g., Mon-Fri 2-4 PM)" value={volunteerForm.availability} onChange={(e) => setVolunteerForm({...volunteerForm, availability: e.target.value})} />
-                  <textarea placeholder="Bio" value={volunteerForm.bio} onChange={(e) => setVolunteerForm({...volunteerForm, bio: e.target.value})} />
-                  <input placeholder="Profile Image URL" value={volunteerForm.profileImageUrl} onChange={(e) => setVolunteerForm({...volunteerForm, profileImageUrl: e.target.value})} />
-                  <button type="submit">Add Volunteer</button>
-                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
-                </form>
-              )}
-              <div className="volunteers-grid">
-                {volunteers.map(volunteer => (
-                  <div key={volunteer.id} className="volunteer-card">
-                    {volunteer.profileImageUrl && <img src={volunteer.profileImageUrl} alt={volunteer.volunteerName} className="volunteer-img" />}
-                    <h5>{volunteer.volunteerName}</h5>
-                    <p><strong>Role:</strong> {volunteer.role}</p>
-                    <p><strong>Email:</strong> {volunteer.volunteerEmail}</p>
-                    <p><strong>Skills:</strong> {volunteer.skills}</p>
-                    <p><strong>Available:</strong> {volunteer.availability}</p>
-                    <p><strong>Status:</strong> {volunteer.status}</p>
-                    <button onClick={() => deleteVolunteer(volunteer.id)} className="delete-btn">Remove</button>
-                  </div>
-                ))}
+            <div className="students-section">
+              {/* Header row */}
+              <div className="students-header">
+                <div>
+                  <h2 className="students-title">Volunteers & Mentors</h2>
+                  <p className="students-subtitle">{volunteers.length} volunteer{volunteers.length !== 1 ? 's' : ''} registered</p>
+                </div>
+                <button
+                  className="st-add-btn"
+                  onClick={() => { setFormType('volunteer'); setShowForm(s => !s); }}
+                >
+                  {showForm && formType === 'volunteer' ? '✕ Close' : '+ Add Volunteer'}
+                </button>
               </div>
+
+              {/* Add Volunteer Form */}
+              {showForm && formType === 'volunteer' && (
+                <div className="st-form-panel">
+                  <h3 className="st-form-title">New Volunteer / Mentor</h3>
+                  <form className="st-form-grid" onSubmit={handleSubmitVolunteer}>
+                    <div className="st-field">
+                      <label>Full Name *</label>
+                      <input placeholder="e.g. Arjun Mehta" value={volunteerForm.volunteerName} onChange={e => setVolunteerForm({...volunteerForm, volunteerName: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Email *</label>
+                      <input type="email" placeholder="arjun@example.com" value={volunteerForm.volunteerEmail} onChange={e => setVolunteerForm({...volunteerForm, volunteerEmail: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Phone</label>
+                      <input placeholder="+91 98765 43210" value={volunteerForm.volunteerPhone} onChange={e => setVolunteerForm({...volunteerForm, volunteerPhone: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Role</label>
+                      <select value={volunteerForm.role} onChange={e => setVolunteerForm({...volunteerForm, role: e.target.value})} style={{ padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 13.5, fontFamily: 'inherit', background: '#fff', color: '#0f172a', outline: 'none' }}>
+                        <option value="MENTOR">Mentor</option>
+                        <option value="INSTRUCTOR">Instructor</option>
+                        <option value="COUNSELOR">Counselor</option>
+                        <option value="THERAPIST">Therapist</option>
+                        <option value="COORDINATOR">Coordinator</option>
+                      </select>
+                    </div>
+                    <div className="st-field">
+                      <label>Skills</label>
+                      <input placeholder="Sign Language, Braille, Art" value={volunteerForm.skills} onChange={e => setVolunteerForm({...volunteerForm, skills: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Availability</label>
+                      <input placeholder="e.g. Mon–Fri, 2–4 PM" value={volunteerForm.availability} onChange={e => setVolunteerForm({...volunteerForm, availability: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Profile Image URL</label>
+                      <input placeholder="https://..." value={volunteerForm.profileImageUrl} onChange={e => setVolunteerForm({...volunteerForm, profileImageUrl: e.target.value})} />
+                    </div>
+                    <div className="st-field st-field--full">
+                      <label>Bio</label>
+                      <textarea placeholder="A short description about the volunteer..." value={volunteerForm.bio} onChange={e => setVolunteerForm({...volunteerForm, bio: e.target.value})} />
+                    </div>
+                    <div className="st-form-actions">
+                      <button type="submit" className="st-btn-primary">Add Volunteer</button>
+                      <button type="button" className="st-btn-cancel" onClick={() => setShowForm(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Volunteers Table */}
+              {volunteers.length === 0 ? (
+                <div className="st-empty">
+                  <div className="st-empty-icon">🤝</div>
+                  <p className="st-empty-title">No volunteers yet</p>
+                  <p className="st-empty-sub">Click "Add Volunteer" to register the first mentor or volunteer.</p>
+                </div>
+              ) : (
+                <div className="st-table-wrap">
+                  <table className="st-table">
+                    <thead>
+                      <tr>
+                        <th>Volunteer</th>
+                        <th>Role</th>
+                        <th>Contact</th>
+                        <th>Skills</th>
+                        <th>Availability</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {volunteers.map((volunteer, idx) => {
+                        const initials = (volunteer.volunteerName || 'V').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                        const colors = ['#16a34a','#1a8fd1','#7c3aed','#d97706','#db2777'];
+                        const bg = colors[idx % colors.length];
+                        const statusClass = (volunteer.status || 'active').toLowerCase();
+                        const roleColors = {
+                          MENTOR: { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+                          INSTRUCTOR: { bg: '#eff6ff', color: '#1e40af', border: '#bfdbfe' },
+                          COUNSELOR: { bg: '#faf5ff', color: '#7c3aed', border: '#e9d5ff' },
+                          THERAPIST: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
+                          COORDINATOR: { bg: '#fdf4ff', color: '#a21caf', border: '#f0abfc' },
+                        };
+                        const roleStyle = roleColors[volunteer.role] || roleColors.MENTOR;
+                        return (
+                          <tr key={volunteer.id} className="st-row">
+                            <td>
+                              <div className="st-student-cell">
+                                {volunteer.profileImageUrl ? (
+                                  <img src={volunteer.profileImageUrl} alt={volunteer.volunteerName} className="st-avatar-img" />
+                                ) : (
+                                  <div className="st-avatar" style={{ background: bg }}>{initials}</div>
+                                )}
+                                <div className="st-name">{volunteer.volunteerName}</div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="vo-role-badge" style={{ background: roleStyle.bg, color: roleStyle.color, border: `1px solid ${roleStyle.border}` }}>
+                                {volunteer.role}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="st-contact-email">{volunteer.volunteerEmail}</div>
+                              {volunteer.volunteerPhone && <div className="st-contact-phone">{volunteer.volunteerPhone}</div>}
+                            </td>
+                            <td>
+                              <div className="st-skills-wrap">
+                                {(volunteer.skills || '').split(',').filter(Boolean).slice(0, 3).map((sk, i) => (
+                                  <span key={i} className="st-skill-tag">{sk.trim()}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <div className="vo-availability">
+                                {volunteer.availability || <span className="st-contact-phone">—</span>}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`st-status st-status--${statusClass}`}>
+                                {volunteer.status || 'Active'}
+                              </span>
+                            </td>
+                            <td>
+                              <button className="st-delete-btn" onClick={() => deleteVolunteer(volunteer.id)} title="Remove volunteer">
+                                🗑
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
+
       </div>
     </div>
   );
