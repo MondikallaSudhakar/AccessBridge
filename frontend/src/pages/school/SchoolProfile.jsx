@@ -393,35 +393,130 @@ const SchoolProfile = () => {
 
           {/* Students Tab */}
           {currentTab === 'students' && (
-            <div>
-              <button className="add-btn" onClick={() => { setFormType('student'); setShowForm(true); }}>
-                + Add Student
-              </button>
-              {showForm && formType === 'student' && (
-                <form className="form-container" onSubmit={handleSubmitStudent}>
-                  <input placeholder="Name" value={studentForm.name} onChange={(e) => setStudentForm({...studentForm, name: e.target.value})} required />
-                  <input placeholder="Email" type="email" value={studentForm.email} onChange={(e) => setStudentForm({...studentForm, email: e.target.value})} required />
-                  <input placeholder="Phone" value={studentForm.phone} onChange={(e) => setStudentForm({...studentForm, phone: e.target.value})} />
-                  <input placeholder="Skills (comma-separated)" value={studentForm.skills} onChange={(e) => setStudentForm({...studentForm, skills: e.target.value})} />
-                  <input placeholder="Disability Type (if applicable)" value={studentForm.disabilityType} onChange={(e) => setStudentForm({...studentForm, disabilityType: e.target.value})} />
-                  <textarea placeholder="Bio" value={studentForm.bio} onChange={(e) => setStudentForm({...studentForm, bio: e.target.value})} />
-                  <input placeholder="Profile Image URL" value={studentForm.profileImageUrl} onChange={(e) => setStudentForm({...studentForm, profileImageUrl: e.target.value})} />
-                  <button type="submit">Create Student</button>
-                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
-                </form>
-              )}
-              <div className="students-grid">
-                {students.map(student => (
-                  <div key={student.id} className="student-card">
-                    <h5>{student.name}</h5>
-                    <p><strong>Email:</strong> {student.email}</p>
-                    <p><strong>Phone:</strong> {student.phone}</p>
-                    <p><strong>Skills:</strong> {student.skills}</p>
-                    <p><strong>Status:</strong> {student.status}</p>
-                    <button onClick={() => deleteStudent(student.id)} className="delete-btn">Delete</button>
-                  </div>
-                ))}
+            <div className="students-section">
+              {/* Header row */}
+              <div className="students-header">
+                <div>
+                  <h2 className="students-title">Students</h2>
+                  <p className="students-subtitle">{students.length} enrolled student{students.length !== 1 ? 's' : ''}</p>
+                </div>
+                <button
+                  className="st-add-btn"
+                  onClick={() => { setFormType('student'); setShowForm(s => !s); }}
+                >
+                  {showForm && formType === 'student' ? '✕ Close' : '+ Add Student'}
+                </button>
               </div>
+
+              {/* Add Student Form */}
+              {showForm && formType === 'student' && (
+                <div className="st-form-panel">
+                  <h3 className="st-form-title">New Student</h3>
+                  <form className="st-form-grid" onSubmit={handleSubmitStudent}>
+                    <div className="st-field">
+                      <label>Full Name *</label>
+                      <input placeholder="e.g. Riya Sharma" value={studentForm.name} onChange={e => setStudentForm({...studentForm, name: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Email *</label>
+                      <input type="email" placeholder="riya@example.com" value={studentForm.email} onChange={e => setStudentForm({...studentForm, email: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Phone</label>
+                      <input placeholder="+91 98765 43210" value={studentForm.phone} onChange={e => setStudentForm({...studentForm, phone: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Skills</label>
+                      <input placeholder="Reading, Communication, Art" value={studentForm.skills} onChange={e => setStudentForm({...studentForm, skills: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Disability Type</label>
+                      <input placeholder="e.g. Visual Impairment" value={studentForm.disabilityType} onChange={e => setStudentForm({...studentForm, disabilityType: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Profile Image URL</label>
+                      <input placeholder="https://..." value={studentForm.profileImageUrl} onChange={e => setStudentForm({...studentForm, profileImageUrl: e.target.value})} />
+                    </div>
+                    <div className="st-field st-field--full">
+                      <label>Bio</label>
+                      <textarea placeholder="A short description about the student..." value={studentForm.bio} onChange={e => setStudentForm({...studentForm, bio: e.target.value})} />
+                    </div>
+                    <div className="st-form-actions">
+                      <button type="submit" className="st-btn-primary">Create Student</button>
+                      <button type="button" className="st-btn-cancel" onClick={() => setShowForm(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Students Table */}
+              {students.length === 0 ? (
+                <div className="st-empty">
+                  <div className="st-empty-icon">👨‍🎓</div>
+                  <p className="st-empty-title">No students yet</p>
+                  <p className="st-empty-sub">Click "Add Student" to enroll the first student.</p>
+                </div>
+              ) : (
+                <div className="st-table-wrap">
+                  <table className="st-table">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Contact</th>
+                        <th>Skills</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student, idx) => {
+                        const initials = (student.name || 'S').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                        const colors = ['#16a34a','#1a8fd1','#7c3aed','#d97706','#db2777'];
+                        const bg = colors[idx % colors.length];
+                        const statusClass = (student.status || 'active').toLowerCase();
+                        return (
+                          <tr key={student.id} className="st-row">
+                            <td>
+                              <div className="st-student-cell">
+                                {student.profileImageUrl ? (
+                                  <img src={student.profileImageUrl} alt={student.name} className="st-avatar-img" />
+                                ) : (
+                                  <div className="st-avatar" style={{ background: bg }}>{initials}</div>
+                                )}
+                                <div>
+                                  <div className="st-name">{student.name}</div>
+                                  {student.disabilityType && <div className="st-disability">{student.disabilityType}</div>}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="st-contact-email">{student.email}</div>
+                              {student.phone && <div className="st-contact-phone">{student.phone}</div>}
+                            </td>
+                            <td>
+                              <div className="st-skills-wrap">
+                                {(student.skills || '').split(',').filter(Boolean).slice(0, 3).map((sk, i) => (
+                                  <span key={i} className="st-skill-tag">{sk.trim()}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`st-status st-status--${statusClass}`}>
+                                {student.status || 'Active'}
+                              </span>
+                            </td>
+                            <td>
+                              <button className="st-delete-btn" onClick={() => deleteStudent(student.id)} title="Remove student">
+                                🗑
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
