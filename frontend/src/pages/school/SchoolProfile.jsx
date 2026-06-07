@@ -522,39 +522,164 @@ const SchoolProfile = () => {
 
           {/* Courses Tab */}
           {currentTab === 'courses' && (
-            <div>
-              <button className="add-btn" onClick={() => { setFormType('course'); setShowForm(true); }}>
-                + Post Course
-              </button>
-              {showForm && formType === 'course' && (
-                <form className="form-container" onSubmit={handleSubmitCourse}>
-                  <input placeholder="Course Title" value={courseForm.courseTitle} onChange={(e) => setCourseForm({...courseForm, courseTitle: e.target.value})} required />
-                  <textarea placeholder="Description" value={courseForm.description} onChange={(e) => setCourseForm({...courseForm, description: e.target.value})} />
-                  <input placeholder="Category" value={courseForm.category} onChange={(e) => setCourseForm({...courseForm, category: e.target.value})} />
-                  <input placeholder="Start Date" type="date" value={courseForm.startDate} onChange={(e) => setCourseForm({...courseForm, startDate: e.target.value})} required />
-                  <input placeholder="End Date" type="date" value={courseForm.endDate} onChange={(e) => setCourseForm({...courseForm, endDate: e.target.value})} required />
-                  <input placeholder="Capacity" type="number" value={courseForm.capacity} onChange={(e) => setCourseForm({...courseForm, capacity: parseInt(e.target.value)})} />
-                  <textarea placeholder="Syllabus" value={courseForm.syllabus} onChange={(e) => setCourseForm({...courseForm, syllabus: e.target.value})} />
-                  <input placeholder="Instructor Name" value={courseForm.instructorName} onChange={(e) => setCourseForm({...courseForm, instructorName: e.target.value})} />
-                  <input placeholder="Instructor Email" type="email" value={courseForm.instructorEmail} onChange={(e) => setCourseForm({...courseForm, instructorEmail: e.target.value})} />
-                  <button type="submit">Create Course</button>
-                  <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
-                </form>
-              )}
-              <div className="courses-grid">
-                {courses.map(course => (
-                  <div key={course.id} className="course-card">
-                    <h5>{course.courseTitle}</h5>
-                    <p><strong>Category:</strong> {course.category}</p>
-                    <p><strong>Capacity:</strong> {course.capacity} | <strong>Enrolled:</strong> {course.enrolled}</p>
-                    <p><strong>Status:</strong> {course.status}</p>
-                    <p><strong>Dates:</strong> {course.startDate} to {course.endDate}</p>
-                    <button onClick={() => deleteCourse(course.id)} className="delete-btn">Delete</button>
-                  </div>
-                ))}
+            <div className="students-section">
+              {/* Header row */}
+              <div className="students-header">
+                <div>
+                  <h2 className="students-title">Courses</h2>
+                  <p className="students-subtitle">{courses.length} course{courses.length !== 1 ? 's' : ''} available</p>
+                </div>
+                <button
+                  className="st-add-btn"
+                  onClick={() => { setFormType('course'); setShowForm(s => !s); }}
+                >
+                  {showForm && formType === 'course' ? '✕ Close' : '+ Post Course'}
+                </button>
               </div>
+
+              {/* Add Course Form */}
+              {showForm && formType === 'course' && (
+                <div className="st-form-panel">
+                  <h3 className="st-form-title">New Course</h3>
+                  <form className="st-form-grid" onSubmit={handleSubmitCourse}>
+                    <div className="st-field">
+                      <label>Course Title *</label>
+                      <input placeholder="e.g. Basic Communication Skills" value={courseForm.courseTitle} onChange={e => setCourseForm({...courseForm, courseTitle: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Category</label>
+                      <input placeholder="e.g. Life Skills" value={courseForm.category} onChange={e => setCourseForm({...courseForm, category: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Start Date *</label>
+                      <input type="date" value={courseForm.startDate} onChange={e => setCourseForm({...courseForm, startDate: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>End Date *</label>
+                      <input type="date" value={courseForm.endDate} onChange={e => setCourseForm({...courseForm, endDate: e.target.value})} required />
+                    </div>
+                    <div className="st-field">
+                      <label>Capacity</label>
+                      <input type="number" placeholder="30" value={courseForm.capacity} onChange={e => setCourseForm({...courseForm, capacity: parseInt(e.target.value)})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Instructor Name</label>
+                      <input placeholder="e.g. Dr. Priya Nair" value={courseForm.instructorName} onChange={e => setCourseForm({...courseForm, instructorName: e.target.value})} />
+                    </div>
+                    <div className="st-field">
+                      <label>Instructor Email</label>
+                      <input type="email" placeholder="instructor@school.com" value={courseForm.instructorEmail} onChange={e => setCourseForm({...courseForm, instructorEmail: e.target.value})} />
+                    </div>
+                    <div className="st-field st-field--full">
+                      <label>Description</label>
+                      <textarea placeholder="What will students learn in this course?" value={courseForm.description} onChange={e => setCourseForm({...courseForm, description: e.target.value})} />
+                    </div>
+                    <div className="st-field st-field--full">
+                      <label>Syllabus</label>
+                      <textarea placeholder="Week 1: Introduction..." value={courseForm.syllabus} onChange={e => setCourseForm({...courseForm, syllabus: e.target.value})} />
+                    </div>
+                    <div className="st-form-actions">
+                      <button type="submit" className="st-btn-primary">Create Course</button>
+                      <button type="button" className="st-btn-cancel" onClick={() => setShowForm(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Courses Table */}
+              {courses.length === 0 ? (
+                <div className="st-empty">
+                  <div className="st-empty-icon">📚</div>
+                  <p className="st-empty-title">No courses yet</p>
+                  <p className="st-empty-sub">Click "Post Course" to create the first course.</p>
+                </div>
+              ) : (
+                <div className="st-table-wrap">
+                  <table className="st-table">
+                    <thead>
+                      <tr>
+                        <th>Course</th>
+                        <th>Instructor</th>
+                        <th>Dates</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((course, idx) => {
+                        const catColors = ['#16a34a','#1a8fd1','#7c3aed','#d97706','#db2777'];
+                        const catBg = catColors[idx % catColors.length];
+                        const statusClass = (course.status || 'active').toLowerCase();
+                        const enrolled = course.enrolled || 0;
+                        const capacity = course.capacity || 1;
+                        const pct = Math.min(Math.round((enrolled / capacity) * 100), 100);
+                        return (
+                          <tr key={course.id} className="st-row">
+                            <td>
+                              <div className="co-course-cell">
+                                <div className="co-icon" style={{ background: catBg }}>
+                                  📖
+                                </div>
+                                <div>
+                                  <div className="st-name">{course.courseTitle}</div>
+                                  {course.category && (
+                                    <span className="co-category-tag">{course.category}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              {course.instructorName ? (
+                                <>
+                                  <div className="st-contact-email">{course.instructorName}</div>
+                                  {course.instructorEmail && <div className="st-contact-phone">{course.instructorEmail}</div>}
+                                </>
+                              ) : (
+                                <span className="st-contact-phone">—</span>
+                              )}
+                            </td>
+                            <td>
+                              <div className="co-date">{course.startDate || '—'}</div>
+                              {course.endDate && <div className="st-contact-phone">to {course.endDate}</div>}
+                            </td>
+                            <td>
+                              <div className="co-capacity-wrap">
+                                <div className="co-capacity-text">
+                                  <span>{enrolled}</span>
+                                  <span className="st-contact-phone"> / {capacity}</span>
+                                </div>
+                                <div className="co-progress-bar">
+                                  <div
+                                    className="co-progress-fill"
+                                    style={{
+                                      width: `${pct}%`,
+                                      background: pct >= 90 ? '#ef4444' : pct >= 60 ? '#d97706' : '#16a34a'
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`st-status st-status--${statusClass}`}>
+                                {course.status || 'Active'}
+                              </span>
+                            </td>
+                            <td>
+                              <button className="st-delete-btn" onClick={() => deleteCourse(course.id)} title="Delete course">
+                                🗑
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
+
 
           {/* Enrollments Tab */}
           {currentTab === 'enrollments' && (
