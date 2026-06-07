@@ -13,6 +13,7 @@ import UserProfile from './pages/profile/UserProfile'
 import Search from './pages/search/Search'
 import AdminApproval from './pages/dashboard/AdminApproval'
 import SchoolProfile from './pages/school/SchoolProfile'
+import SchoolProfileLayout from './pages/school/SchoolProfileLayout'
 import SchoolDetail from './pages/schools/SchoolDetail'
 import NotFound from './pages/NotFound'
 import StartupProfile from './pages/startup/StartupProfile'
@@ -164,7 +165,9 @@ function App() {
         {/* Protected Routes */}
         <Route path="/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />
         <Route path="/admin/approvals" element={<RoleRoute allowedRoles={['SUPER_ADMIN']}><AdminApproval /></RoleRoute>} />
-        <Route path="/school/profile" element={<RoleRoute allowedRoles={['SCHOOL_ADMIN', 'SUPER_ADMIN']}><SchoolProfile /></RoleRoute>} />
+        <Route path="/school/profile" element={<RoleRoute allowedRoles={['SCHOOL_ADMIN', 'SUPER_ADMIN']}><SchoolProfileLayout /></RoleRoute>}>
+          <Route index element={<SchoolProfile />} />
+        </Route>
         <Route path="/startup" element={<RoleRoute allowedRoles={['STARTUP_ADMIN', 'SUPER_ADMIN']}><StartupWorkspaceLayout /></RoleRoute>}>
           <Route index element={<Navigate to="profile" replace />} />
           <Route path="profile" element={<StartupProfile />} />
