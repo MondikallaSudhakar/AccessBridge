@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 import './SchoolProfile.css';
 
 const API_BASE = 'http://localhost:8081/api';
 
 const SchoolProfile = () => {
-  const { user, logout } = useAuth();
-  const [currentTab, setCurrentTab] = useState('overview');
+  const { user } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const currentTab = searchParams.get('tab') || 'overview';
   const [schoolData, setSchoolData] = useState(null);
   const [students, setStudents] = useState([]);
   const [baseCourses, setBaseCourses] = useState([]);
@@ -338,46 +341,38 @@ const SchoolProfile = () => {
     }
   };
 
-  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Loading school data...</div>;
+  if (loading) return (
+    <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ width: 40, height: 40, border: '3px solid #e2e8f0', borderTopColor: '#16a34a', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+      Loading school data...
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  );
 
   if (!schoolData) return <div style={{ padding: '20px' }}>School not found</div>;
 
   return (
-    <div className="school-profile-container">
-      {/* Sidebar */}
-      <div className="school-sidebar">
-        <div className="school-brand">
-          {schoolData.logoUrl && <img src={schoolData.logoUrl} alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '50%' }} />}
-          <h2>{schoolData.name}</h2>
+    <div className="school-content-wrapper">
+      {/* Page Header */}
+      <div className="school-page-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {schoolData.logoUrl && (
+            <img src={schoolData.logoUrl} alt="Logo" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0' }} />
+          )}
+          <div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>{schoolData.name}</h1>
+            <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>
+              {currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}
+            </span>
+          </div>
         </div>
-        <div className="school-role-badge">School Admin</div>
-        
-        <nav className="school-nav-tabs">
-          {['overview', 'students', 'courses', 'enrollments', 'certifications', 'partnerships', 'volunteers'].map(tab => (
-            <button
-              key={tab}
-              className={`nav-tab ${currentTab === tab ? 'active' : ''}`}
-              onClick={() => { setCurrentTab(tab); setShowForm(false); }}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </nav>
-
-        <button className="logout-btn" onClick={logout}>
-          Logout
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <div className="school-main-content">
-        <div className="school-topbar">
-          <h3>{currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}</h3>
+        <div style={{ display: 'flex', gap: 10 }}>
           {error && <div className="error-toast">{error}</div>}
           {successMessage && <div className="success-toast">{successMessage}</div>}
         </div>
+      </div>
 
-        <div className="school-tab-content">
+      <div className="school-tab-content">
           {/* Overview Tab */}
           {currentTab === 'overview' && (
             <div className="overview-section">
@@ -644,7 +639,6 @@ const SchoolProfile = () => {
               </div>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
