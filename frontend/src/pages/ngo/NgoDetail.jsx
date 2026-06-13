@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import logoImg from '../../assets/logo.jpeg'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 const G = '#84cc16'
 const B = '#4d7c0f'
 const NAVY = '#1e293b'
@@ -205,7 +205,7 @@ export default function NgoDetail() {
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border grid place-items-center" style={{ borderColor:'#dfecc2', backgroundColor:'#f7fbe9', boxShadow:'0 10px 22px rgba(132, 204, 22, 0.12)' }}>
               {ngo.logoUrl ? (
                 <img 
-                  src={ngo.logoUrl.startsWith('http') ? ngo.logoUrl : `http://localhost:8081${ngo.logoUrl.startsWith('/') ? '' : '/'}${ngo.logoUrl}`} 
+                  src={ngo.logoUrl.startsWith('http') ? ngo.logoUrl : `${ngo.logoUrl.startsWith('/') ? '' : '/'}${ngo.logoUrl}`} 
                   alt={ngo.name} 
                   className="h-full w-full object-contain p-1" 
                 />

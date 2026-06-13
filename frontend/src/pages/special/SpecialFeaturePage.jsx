@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { openRazorpayCheckout } from '../../utils/razorpay'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 const G = '#16a34a'
 const B = '#1A8FD1'
 const NAVY = '#0f172a'

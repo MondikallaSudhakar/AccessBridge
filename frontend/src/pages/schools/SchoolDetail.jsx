@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import logoImg from '../../assets/logo.jpeg'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 
 const CATEGORY_STYLE = {
   FUNDS:          { bg: '#EEF8E0', text: '#448800', label: 'Funds / Financial Aid' },

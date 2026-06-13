@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
-const API = 'http://localhost:8081/api'
+const API = '/api'
 
 const STATUS_STYLE = {
   PENDING: { bg: '#fef3c7', color: '#d97706', label: 'Pending' },

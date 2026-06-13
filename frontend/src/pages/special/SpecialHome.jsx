@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const BASE = '/api'
 const G = '#16a34a'
 const NAVY = '#0f172a'
 

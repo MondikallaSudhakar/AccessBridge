@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 const TEAL = '#0197B2'
 
 async function fetchOrgByEmail(type, email) {

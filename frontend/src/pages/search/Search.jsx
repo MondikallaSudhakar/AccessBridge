@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 const NGO_GREEN = '#5BCB2B'
 
 // Search Page

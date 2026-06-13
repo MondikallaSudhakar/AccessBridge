@@ -87,7 +87,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*")); // common dev hosts/ports
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://9991-36-255-17-152.ngrok-free.app"
+        )); // common dev hosts/ports + ngrok tunnel
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("*"));

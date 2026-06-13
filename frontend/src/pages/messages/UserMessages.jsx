@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 const BRAND_GREEN = '#5BCB2B'
 
 const formatTime = (value) => {

@@ -43,7 +43,7 @@ export default function StartupOrders() {
     if (!user?.email) return
 
     // Get Startup ID from email
-    fetch(`http://localhost:8081/api/startups/email/${encodeURIComponent(user.email)}`, {
+    fetch(`/api/startups/email/${encodeURIComponent(user.email)}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
       .then((r) => (r.ok ? r.json() : null))

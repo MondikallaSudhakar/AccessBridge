@@ -58,11 +58,11 @@ export async function loadVolunteerOpportunities() {
       schoolNeedsRes,
       storiesRes,
     ] = await Promise.allSettled([
-      fetch('http://localhost:8081/api/volunteer-opportunities').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8081/api/ngos/needs').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8081/api/events/public').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8081/api/schools/needs').then(r => r.ok ? r.json() : []),
-      fetch('http://localhost:8081/api/achievements').then(r => r.ok ? r.json() : []),
+      fetch('/api/volunteer-opportunities').then(r => r.ok ? r.json() : []),
+      fetch('/api/ngos/needs').then(r => r.ok ? r.json() : []),
+      fetch('/api/events/public').then(r => r.ok ? r.json() : []),
+      fetch('/api/schools/needs').then(r => r.ok ? r.json() : []),
+      fetch('/api/achievements').then(r => r.ok ? r.json() : []),
     ])
 
     return {

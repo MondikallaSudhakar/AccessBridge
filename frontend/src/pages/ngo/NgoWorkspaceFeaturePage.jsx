@@ -5,7 +5,7 @@ import NgoJobApplicationsPage from './NgoJobApplicationsPage'
 import { useAuth } from '../../context/AuthContext'
 import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
-const API = 'http://localhost:8081/api'
+const API = '/api'
 const GREEN = '#5BCB2B'
 
 const FEATURE_ACTIONS = {

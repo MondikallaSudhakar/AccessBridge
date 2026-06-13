@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loadBookmarks, toggleBookmark } from './specialData'
 
-const API = 'http://localhost:8081/api'
+const API = '/api'
 const NAVY = '#0f172a'
 const G = '#16a34a'
 

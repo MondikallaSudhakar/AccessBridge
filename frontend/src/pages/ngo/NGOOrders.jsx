@@ -43,7 +43,7 @@ export default function NGOOrders() {
     if (!user?.email) return
 
     // Get NGO ID from email
-    fetch(`http://localhost:8081/api/ngos/email/${encodeURIComponent(user.email)}`, {
+    fetch(`/api/ngos/email/${encodeURIComponent(user.email)}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
       .then((r) => (r.ok ? r.json() : null))

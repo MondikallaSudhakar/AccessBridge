@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
-const BASE = 'http://localhost:8081/api'
+const BASE = '/api'
 
 const NEED_CATEGORIES = [
   { value: 'FUNDS', label: 'Funds / Financial Aid', icon: '₹' },

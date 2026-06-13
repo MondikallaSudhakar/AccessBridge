@@ -14,7 +14,7 @@ const NAVY = '#0f172a'   // dark text
 
 // Super Admin constants
 const SUPER_ADMIN_TEAL = '#0197B2'
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const BASE = '/api'
 
 /* ── SVG icon helper ──────────────────────────────────────────────────── */
 const ICONS = {

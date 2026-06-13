@@ -7,7 +7,7 @@ import api from '../../services/api'
 import { useNgoSubscription } from '../../hooks/useNgoSubscription'
 
 /* ─────────────────────────── constants ──────────────────────────────── */
-const BASE  = 'http://localhost:8081/api'
+const BASE  = '/api'
 const G     = '#5BCB2B'          // brand green (buttons, badges)
 const B     = '#1A8FD1'          // brand blue
 const NAVY  = '#0f172a'          // dark text

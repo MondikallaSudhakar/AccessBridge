@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useStartupSubscription } from '../../hooks/useStartupSubscription'
 import { COLORS } from '../../utils/colors'
 
-const API = 'http://localhost:8081/api'
+const API = '/api'
 
 export default function StartupJobsPage() {
   const { user } = useAuth()

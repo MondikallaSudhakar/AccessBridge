@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import logoImg from '../assets/logo.jpeg'
 
-const API = 'http://localhost:8081/api'
+const API = '/api'
 
 const COLORS = {
   primary: '#0197B2',

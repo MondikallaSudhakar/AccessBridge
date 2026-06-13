@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import './SchoolProfile.css';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = '/api';
 
 const SchoolProfile = () => {
   const { user } = useAuth();

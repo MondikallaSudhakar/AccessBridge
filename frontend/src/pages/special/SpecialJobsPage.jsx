@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { loadBookmarks, toggleBookmark } from './specialData'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const API = '/api'
 const GREEN = '#16a34a'
 const NAVY = '#0f172a'
 
